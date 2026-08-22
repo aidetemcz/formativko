@@ -10,6 +10,8 @@ import { useSubjects, useCreateSubject } from "@/hooks/useSubjects";
 import { useCourse, useCreateCourse, useUpdateCourse } from "@/hooks/useCourses";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildUploadPath } from "@/lib/storage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function K02CreateCourse() {
@@ -18,6 +20,7 @@ export default function K02CreateCourse() {
   const isEdit = !!courseId;
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: classes = [] } = useClasses();
   const { data: subjects = [] } = useSubjects();
   const createSubject = useCreateSubject();
@@ -49,19 +52,15 @@ export default function K02CreateCourse() {
 
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${crypto.randomUUID()}.${ext}`;
+      if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
+      const path = buildUploadPath(user.id, file.name);
       const { error } = await supabase.storage
         .from("course-files")
         .upload(path, file);
       if (error) throw error;
 
-      const { data: urlData } = supabase.storage
-        .from("course-files")
-        .getPublicUrl(path);
-
       setPlanFileName(file.name);
-      setPlanFileUrl(urlData.publicUrl);
+      setPlanFileUrl(path);
       toast({ title: "Soubor nahrán" });
     } catch (err: any) {
       toast({ title: "Chyba při nahrávání", description: err?.message, variant: "destructive" });

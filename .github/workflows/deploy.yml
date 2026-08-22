@@ -24,11 +24,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Supabase config comes from the committed .env. Do not pass these as
+      # secrets: unset secrets expand to empty strings, and Vite lets real env
+      # vars override .env, so a missing secret would silently ship a build
+      # with no Supabase connection at all.
       - run: npm run build
-        env:
-          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

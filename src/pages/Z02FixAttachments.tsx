@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useProofsWithFiles } from "@/hooks/useProofs";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { buildUploadPath } from "@/lib/storage";
+
+/** Shape returned by useProofsWithFiles. */
+type ProofRow = {
+  id: string;
+  title: string;
+  type: string;
+  date: string;
+  file_url: string | null;
+  file_name: string | null;
+};
 
 export default function Z02FixAttachments() {
   usePageTitle("Oprava příloh");
@@ -22,20 +33,16 @@ export default function Z02FixAttachments() {
   const handleUpload = async (proof: ProofRow, file: File) => {
     setUploading(proof.id);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user!.id}/${crypto.randomUUID()}.${ext}`;
+      if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
+      const path = buildUploadPath(user.id, file.name);
       const { error: uploadErr } = await supabase.storage
         .from("proof-files")
         .upload(path, file);
       if (uploadErr) throw uploadErr;
 
-      const { data: urlData } = supabase.storage
-        .from("proof-files")
-        .getPublicUrl(path);
-
       const { error: updateErr } = await supabase
         .from("proofs_of_learning")
-        .update({ file_url: urlData.publicUrl, file_name: file.name })
+        .update({ file_url: path, file_name: file.name })
         .eq("id", proof.id);
       if (updateErr) throw updateErr;
 

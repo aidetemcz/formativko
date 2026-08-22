@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DEFAULT_LEVEL_DESCRIPTORS, type LevelDescriptor } from "@/constants/goalLevels";
 import { ShimmerField } from "@/components/ui/field-shimmer";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { createSignedUrl, EDGE_FUNCTION_URL_TTL_SECONDS } from "@/lib/storage";
 
 export default function G03CreateGoal() {
   usePageTitle("Vzdělávací cíl");
@@ -181,6 +182,16 @@ export default function G03CreateGoal() {
       // Title+description done, now generating criteria
       setGenPhase("criteria");
 
+      // The bucket is private, so the edge function gets a short-lived signed
+      // URL rather than the stored object path.
+      const signedPlanUrl = hasThematicPlan
+        ? await createSignedUrl(
+            "course-files",
+            selectedCourse.thematic_plan_file_url,
+            EDGE_FUNCTION_URL_TTL_SECONDS,
+          )
+        : null;
+
       // Step 2: Generate criteria
       const { data: critData, error: critErr } = await supabase.functions.invoke(
         "generate-criteria",
@@ -191,9 +202,7 @@ export default function G03CreateGoal() {
             subject: subjectName || undefined,
             levelNames: sendLevelNames ? currentNames : undefined,
             className: className || undefined,
-            thematicPlanFileUrl: hasThematicPlan
-              ? selectedCourse.thematic_plan_file_url
-              : undefined,
+            thematicPlanFileUrl: signedPlanUrl ?? undefined,
           },
         }
       );
