@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Mic, Camera, Upload, FileText, Plus, Star } from "lucide-react";
 import { useStudent, useStudents, getStudentDisplayName } from "@/hooks/useStudents";
@@ -20,6 +20,10 @@ import { useStudentClasses } from "@/hooks/useClasses";
 import { useGoalsForClass, type EducationalGoal } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { buildUploadPath } from "@/lib/storage";
+import { SelectedFile } from "@/components/shared/SelectedFile";
 
 type ProofType = "text" | "voice" | "camera" | "file" | "grade";
 
@@ -50,6 +54,20 @@ export default function B04AddProofOfLearning() {
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
   const [goalSearchOpen, setGoalSearchOpen] = useState(false);
+  const { user } = useAuth();
+  // The picked file is held until save, so an abandoned form leaves nothing
+  // behind in storage.
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
+
+  const pickFile = (chosen: File | undefined) => {
+    if (!chosen) return;
+    setFile(chosen);
+    // Offer the file name as the title so saving needs one less step.
+    if (!title.trim()) setTitle(chosen.name.replace(/\.[^.]+$/, ""));
+  };
 
   const handleSave = async () => {
     if (selectedType === "grade") {
@@ -84,7 +102,28 @@ export default function B04AddProofOfLearning() {
       toast({ title: "Zadejte název důkazu", variant: "destructive" });
       return;
     }
+    const needsFile = selectedType === "file" || selectedType === "camera";
+    if (needsFile && !file) {
+      toast({
+        title: selectedType === "camera" ? "Vyfoťte nebo vyberte obrázek" : "Vyberte soubor",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
+      let filePath: string | undefined;
+      if (needsFile && file) {
+        if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
+        setUploading(true);
+        // The bucket is private; the stored value is the object path and the
+        // app signs it on read.
+        filePath = buildUploadPath(user.id, file.name);
+        const { error: uploadErr } = await supabase.storage
+          .from("proof-files")
+          .upload(filePath, file);
+        if (uploadErr) throw uploadErr;
+      }
+
       await createProof.mutateAsync({
         title: title.trim(),
         type: selectedType,
@@ -93,12 +132,20 @@ export default function B04AddProofOfLearning() {
         lessonId: selectedLessonId,
         studentIds: attachedStudentIds,
         goalIds: selectedGoalIds,
+        fileName: file?.name,
+        fileUrl: filePath,
       });
       toast({ title: "Důkaz o učení uložen" });
       navigate(`/student-profiles/${id}`);
     } catch (err) {
       console.error("Chyba při ukládání", err);
-      toast({ title: "Chyba při ukládání", variant: "destructive" });
+      toast({
+        title: "Chyba při ukládání",
+        description: err instanceof Error ? err.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -241,20 +288,66 @@ export default function B04AddProofOfLearning() {
           )}
 
           {selectedType === "camera" && (
-            <Button variant="outline" className="w-full gap-2 h-16 text-base">
-              <Camera className="h-5 w-5" />
-              Vyfotit obrázek
-            </Button>
+            <>
+              {/* capture asks a phone for the camera; a laptop falls back to the
+                  normal file picker, so the button works on both. */}
+              <input
+                ref={cameraInput}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => pickFile(e.target.files?.[0])}
+              />
+              {file ? (
+                <SelectedFile file={file} onClear={() => setFile(null)} />
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 h-16 text-base"
+                  onClick={() => cameraInput.current?.click()}
+                >
+                  <Camera className="h-5 w-5" />
+                  Vyfotit obrázek
+                </Button>
+              )}
+            </>
           )}
 
           {selectedType === "file" && (
-            <div className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-card">
-              <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <Button variant="outline" className="gap-2">
-                <Upload className="h-4 w-4" />
-                Nahrát soubor
-              </Button>
-            </div>
+            <>
+              <input
+                ref={fileInput}
+                type="file"
+                className="hidden"
+                onChange={(e) => pickFile(e.target.files?.[0])}
+              />
+              {file ? (
+                <SelectedFile file={file} onClear={() => setFile(null)} />
+              ) : (
+                <div
+                  className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-card"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    pickFile(e.dataTransfer.files?.[0]);
+                  }}
+                >
+                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => fileInput.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Nahrát soubor
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    nebo sem soubor přetáhněte
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           <div>
@@ -390,8 +483,13 @@ export default function B04AddProofOfLearning() {
             </div>
           )}
 
-          <Button className="w-full" size="lg" onClick={handleSave} disabled={createProof.isPending}>
-            {createProof.isPending ? "Ukládání…" : "Uložit"}
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={handleSave}
+            disabled={createProof.isPending || uploading}
+          >
+            {uploading ? "Nahrávání…" : createProof.isPending ? "Ukládání…" : "Uložit"}
           </Button>
         </div>
       </div>
