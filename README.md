@@ -62,12 +62,27 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+The app is hosted on **Vercel**, which builds and deploys automatically on every
+push to `master`. There is no deploy workflow in this repository — Vercel's
+GitHub integration handles it.
 
-## Can I connect a custom domain to my Lovable project?
+`vercel.json` holds the two settings that matter:
 
-Yes, you can!
+- a rewrite sending every non-file path to `index.html`, because React Router
+  owns the URL and without it a direct visit to `/lessons` would 404;
+- a long `Cache-Control` for `/assets/*`, which is safe because Vite
+  fingerprints those filenames.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The app is served from the domain root, so `base` is left at Vite's default.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Configuration comes from the committed `.env` (the Supabase publishable key is
+public by design). To point a deployment at a different Supabase project,
+override `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` and
+`VITE_SUPABASE_PROJECT_ID` in Vercel's environment variables.
+
+## Custom domain
+
+Add the domain in Vercel under Project > Settings > Domains and create the DNS
+record it asks for. Then update Site URL and Redirect URLs in Supabase under
+Authentication > URL Configuration to match, or sign-in and the confirmation
+links in registration e-mails will break.

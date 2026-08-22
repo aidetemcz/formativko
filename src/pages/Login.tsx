@@ -30,8 +30,8 @@ export default function Login() {
           password,
           options: {
             data: { first_name: firstName, last_name: lastName },
-            // must include BASE_URL — in production the app is served from
-            // a subpath (/formativko/), so origin alone lands on a 404
+            // BASE_URL keeps this correct if the app is ever served from a
+            // subpath again; on Vercel it resolves to the domain root
             emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
           },
         });
