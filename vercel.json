@@ -5,14 +5,12 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "comment": "Single-page app: React Router owns the URL, so any path that is not a real file must serve index.html. Without this, opening or refreshing /lessons returns a 404. /api is excluded explicitly rather than relying on Vercel resolving functions before rewrites — if that assumption were wrong, every AI call would receive the HTML page instead of JSON.",
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "comment": "Vite fingerprints these filenames, so a new build produces new names and a stale cache can never be served.",
       "source": "/assets/(.*)",
       "headers": [
         {

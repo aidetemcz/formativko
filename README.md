@@ -69,11 +69,18 @@ GitHub integration handles it.
 `vercel.json` holds the two settings that matter:
 
 - a rewrite sending every non-file path to `index.html`, because React Router
-  owns the URL and without it a direct visit to `/lessons` would 404;
+  owns the URL and without it a direct visit to `/lessons` would 404. `/api` is
+  excluded from it explicitly, so a function call can never be answered with the
+  HTML page;
 - a long `Cache-Control` for `/assets/*`, which is safe because Vite
   fingerprints those filenames.
 
 The app is served from the domain root, so `base` is left at Vite's default.
+
+Vercel validates that file against a schema that forbids unknown keys, so it
+cannot carry explanatory comments — hence this section. `npm test` checks it
+against Vercel's own exported schema, because an invalid file builds cleanly
+here and only fails once deployed.
 
 Configuration comes from the committed `.env` (the Supabase publishable key is
 public by design). To point a deployment at a different Supabase project,
