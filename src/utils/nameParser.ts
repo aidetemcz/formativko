@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAiWithForm } from "@/lib/ai";
 
 export function parseNamesFromText(text: string): { first: string; last: string }[] {
   const results: { first: string; last: string }[] = [];
@@ -33,23 +33,11 @@ export async function processFileWithAI(file: File): Promise<{ first: string; la
   const formData = new FormData();
   formData.append("file", file);
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
-
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-names`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}` },
-      body: formData,
-    }
+  const { data, error } = await invokeAiWithForm<{ names?: { first: string; last: string }[] }>(
+    "extract-names",
+    formData,
   );
+  if (error) throw new Error(error.message || "Chyba při zpracování souboru");
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || "Chyba při zpracování souboru");
-  }
-
-  const { names } = await res.json();
-  return (names || []) as { first: string; last: string }[];
+  return data?.names || [];
 }

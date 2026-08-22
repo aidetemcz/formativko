@@ -1,6 +1,14 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getRvpContext } from "../_shared/rvp/rvp.ts";
+import { createClient } from "@supabase/supabase-js";
+import { webHandler } from "./_lib/handler";
+import { getRvpContext } from "./_lib/rvp";
+
+/**
+ * Ported from the Supabase Edge Function of the same name. Only the entry
+ * point and the environment lookups changed — the prompts, the OpenAI calls
+ * and the response handling below are unchanged from the version that was
+ * already running in production.
+ */
+export const config = { maxDuration: 60 };
 
 function bytesToBase64(bytes: Uint8Array): string {
   const CHUNK = 0x8000;
@@ -16,22 +24,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+export default webHandler(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader) throw new Error("No authorization header");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const anonClient = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!);
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
     const { fileUrl, subject, className, count } = await req.json();
     if (!fileUrl) throw new Error("fileUrl is required");
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     // Fetch the file
@@ -46,32 +54,23 @@ serve(async (req) => {
 
     const rvpContext = getRvpContext(className);
 
-    const systemPrompt = `Jsi zkušený český pedagog a odborník na formativní hodnocení podle RVP. Analyzuj přiložený tematický plán a navrhni vzdělávací cíle s kritérii hodnocení.
+    const systemPrompt = `Jsi zkušený český pedagog. Analyzuj přiložený tematický plán a navrhni lekce (vyučovací hodiny/bloky) pokrývající klíčová témata.
 
 Pravidla:
-- Navrhni ${count ? `přesně ${count}` : "5-8"} vzdělávacích cílů pokrývajících klíčová témata z plánu
-- Každý cíl formuluj z pohledu žáka ("Žák dokáže...", "Žák rozliší...", "Žák aplikuje...")
-- Ke každému cíli navrhni 1-2 kritéria hodnocení
-- Každé kritérium má 3 úrovně: Začínám, Rozvíjím se, Ovládám
-- Cíle by měly být konkrétní, měřitelné a relevantní
-- Inspiruj se přiloženým RVP ZV 2025 — cíle by měly odpovídat očekávaným výsledkům učení a klíčovým kompetencím pro daný stupeň a předmět
+- Navrhni ${count ? `přesně ${count}` : "8-15"} lekcí pokrývajících hlavní témata z plánu
+- Každá lekce má výstižný název
+- K lekci navrhni plánované aktivity (stručný popis toho, co se bude dělat)
+- K lekci navrhni zaměření pozorování (na co se učitel zaměří při sledování žáků)
+- Lekce řaď chronologicky tak, jak by na sebe měly navazovat
+- Inspiruj se přiloženým RVP ZV 2025 — lekce by měly směřovat k naplnění očekávaných výsledků učení a klíčových kompetencí
 
 Odpověz POUZE validním JSON objektem v tomto formátu:
 {
-  "goals": [
+  "lessons": [
     {
-      "title": "stručný název cíle",
-      "description": "podrobnější popis co žák dokáže",
-      "criteria": [
-        {
-          "description": "co konkrétně hodnotíme",
-          "level_descriptors": [
-            { "level": "Začínám", "description": "popis úrovně" },
-            { "level": "Rozvíjím se", "description": "popis úrovně" },
-            { "level": "Ovládám", "description": "popis úrovně" }
-          ]
-        }
-      ]
+      "title": "název lekce",
+      "planned_activities": "popis plánovaných aktivit",
+      "observation_focus": "na co se zaměřit při pozorování žáků"
     }
   ]
 }
@@ -79,7 +78,7 @@ ${rvpContext}`;
 
     const userPrompt = `Předmět: ${subject || "neurčen"}${className ? `\nTřída/ročník: ${className}` : ""}
 
-Analyzuj tento tematický plán a navrhni vzdělávací cíle s kritérii hodnocení.`;
+Analyzuj tento tematický plán a navrhni lekce.`;
 
     let messages: any[];
     let uploadedFileId = "";
@@ -190,7 +189,7 @@ Analyzuj tento tematický plán a navrhni vzdělávací cíle s kritérii hodnoc
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("generate-goals-from-plan error:", e);
+    console.error("generate-lessons-from-plan error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

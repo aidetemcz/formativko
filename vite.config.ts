@@ -5,7 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/formativko/" : "/",
   server: {
     // "true" binds 0.0.0.0 — "::" fails to listen in IPv6-less containers/CI
     host: true,

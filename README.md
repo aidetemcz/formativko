@@ -62,12 +62,59 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+The app is hosted on **Vercel**, which builds and deploys automatically on every
+push to `master`. There is no deploy workflow in this repository — Vercel's
+GitHub integration handles it.
 
-## Can I connect a custom domain to my Lovable project?
+`vercel.json` holds the two settings that matter:
 
-Yes, you can!
+- a rewrite sending every non-file path to `index.html`, because React Router
+  owns the URL and without it a direct visit to `/lessons` would 404;
+- a long `Cache-Control` for `/assets/*`, which is safe because Vite
+  fingerprints those filenames.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The app is served from the domain root, so `base` is left at Vite's default.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Configuration comes from the committed `.env` (the Supabase publishable key is
+public by design). To point a deployment at a different Supabase project,
+override `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` and
+`VITE_SUPABASE_PROJECT_ID` in Vercel's environment variables.
+
+## AI endpoints
+
+The seven AI features are Vercel Functions under `api/`, one file per endpoint.
+They were previously Supabase Edge Functions; each was ported with its prompts
+and response handling unchanged, and `api/_lib/handler.ts` adapts Vercel's Node
+signature to the Web-standard `Request`/`Response` those handlers were written
+against.
+
+Every handler verifies the caller's Supabase session before spending an OpenAI
+call, so the endpoints are not open to the internet. `maxDuration` is raised to
+60s because model calls routinely exceed the 10s default.
+
+The client never calls them directly — `src/lib/ai.ts` attaches the access
+token and mirrors the `{ data, error }` result shape.
+
+### Required environment variables
+
+Set these in Vercel under Project > Settings > Environment Variables. They are
+read at runtime by the functions, so unlike the `VITE_*` values they cannot come
+from the committed `.env`:
+
+| Variable | Used by |
+| --- | --- |
+| `OPENAI_API_KEY` | all seven endpoints |
+| `SUPABASE_URL` | verifying the caller's session |
+| `SUPABASE_ANON_KEY` | verifying the caller's session |
+| `SUPABASE_SERVICE_ROLE_KEY` | `generate-evaluation` only |
+
+Supabase injected the three `SUPABASE_*` values automatically; Vercel does not,
+so they have to be filled in by hand. Keep the service role key to the server —
+it bypasses row-level security.
+
+## Custom domain
+
+Add the domain in Vercel under Project > Settings > Domains and create the DNS
+record it asks for. Then update Site URL and Redirect URLs in Supabase under
+Authentication > URL Configuration to match, or sign-in and the confirmation
+links in registration e-mails will break.

@@ -10,7 +10,7 @@ import { useCourses, useCourseGoals } from "@/hooks/useCourses";
 import { useCreateEvaluationGroup, useCreateEvaluation } from "@/hooks/useEvaluations";
 import { getStudentDisplayName } from "@/hooks/useStudents";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAi } from "@/lib/ai";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Loader2, Sparkles, ChevronDown, RotateCcw, Code2, AlertTriangle } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -135,7 +135,7 @@ export default function C02aCreateEvaluationDraft() {
       const student = classStudents.find((s: any) => s.id === selectedStudentId) as any;
       if (!student) throw new Error("Student not found");
 
-      const { data, error } = await supabase.functions.invoke("generate-evaluation", {
+      const { data, error } = await invokeAi("generate-evaluation", {
         body: {
           studentId: student.id,
           evalType: selectedType,
