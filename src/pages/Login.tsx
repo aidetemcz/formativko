@@ -30,7 +30,9 @@ export default function Login() {
           password,
           options: {
             data: { first_name: firstName, last_name: lastName },
-            emailRedirectTo: window.location.origin,
+            // must include BASE_URL — in production the app is served from
+            // a subpath (/formativko/), so origin alone lands on a 404
+            emailRedirectTo: window.location.origin + import.meta.env.BASE_URL,
           },
         });
         if (error) throw error;
