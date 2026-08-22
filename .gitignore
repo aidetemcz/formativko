@@ -25,3 +25,6 @@ dist-ssr
 
 # TypeScript incremental build info (from npm run typecheck)
 *.tsbuildinfo
+
+# Vercel local build output
+.vercel

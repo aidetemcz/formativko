@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { webHandler } from "./_lib/handler";
+import { webHandler } from "./_lib/handler.js";
 
 /**
  * Ported from the Supabase Edge Function of the same name. Only the entry

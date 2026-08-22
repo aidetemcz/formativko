@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { webHandler } from "./_lib/handler";
-import { getRvpContext } from "./_lib/rvp";
+import { webHandler } from "./_lib/handler.js";
+import { getRvpContext } from "./_lib/rvp.js";
 
 /**
  * Ported from the Supabase Edge Function of the same name. Only the entry
