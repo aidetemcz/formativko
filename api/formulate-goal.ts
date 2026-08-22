@@ -1,21 +1,29 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getRvpContext } from "../_shared/rvp/rvp.ts";
+import { createClient } from "@supabase/supabase-js";
+import { webHandler } from "./_lib/handler";
+import { getRvpContext } from "./_lib/rvp";
+
+/**
+ * Ported from the Supabase Edge Function of the same name. Only the entry
+ * point and the environment lookups changed — the prompts, the OpenAI calls
+ * and the response handling below are unchanged from the version that was
+ * already running in production.
+ */
+export const config = { maxDuration: 60 };
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-serve(async (req) => {
+export default webHandler(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader) throw new Error("No authorization header");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const anonClient = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!);
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
@@ -45,7 +53,7 @@ ${rvpContext}`;
 
 Přeformuluj tento cíl do správné pedagogické formy podle RVP.`;
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {

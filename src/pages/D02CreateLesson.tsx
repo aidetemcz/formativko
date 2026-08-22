@@ -19,7 +19,7 @@ import { useGoalsForClass, useCreateGoal } from "@/hooks/useGoals";
 import { useSubjects, useCreateSubject } from "@/hooks/useSubjects";
 import { useCourse } from "@/hooks/useCourses";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAi } from "@/lib/ai";
 import type { LevelDescriptor } from "@/constants/goalLevels";
 import type { SuggestedGoal } from "@/types/ai";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -171,7 +171,7 @@ export default function D02CreateLesson() {
     try {
       const subjectName = subjects.find((s) => s.id === selectedSubjectId)?.name || "obecný";
       const selectedClass = classes.find((c) => c.id === selectedClassId);
-      const { data, error } = await supabase.functions.invoke("generate-goals", {
+      const { data, error } = await invokeAi("generate-goals", {
         body: { topic, subject: subjectName, classContext: selectedClass?.name || undefined },
       });
       if (error) throw error;

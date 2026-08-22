@@ -9,7 +9,7 @@ import { useClassStudents } from "@/hooks/useClasses";
 import { useCreateEvaluation, useUpdateEvaluation } from "@/hooks/useEvaluations";
 import { getStudentDisplayName } from "@/hooks/useStudents";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAi } from "@/lib/ai";
 import { Loader2, ArrowLeft, ArrowRight, AlertTriangle, FileSearch } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -101,7 +101,7 @@ export default function C02bCreateEvaluationDraft() {
         setProgress(`Generuji hodnocení pro ${getStudentDisplayName(student)} (${i + 1}/${remainingStudents.length})…`);
 
         try {
-          const { data, error } = await supabase.functions.invoke("generate-evaluation", {
+          const { data, error } = await invokeAi("generate-evaluation", {
             body: {
               studentId: student.id,
               evalType: selectedType,

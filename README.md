@@ -80,6 +80,38 @@ public by design). To point a deployment at a different Supabase project,
 override `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` and
 `VITE_SUPABASE_PROJECT_ID` in Vercel's environment variables.
 
+## AI endpoints
+
+The seven AI features are Vercel Functions under `api/`, one file per endpoint.
+They were previously Supabase Edge Functions; each was ported with its prompts
+and response handling unchanged, and `api/_lib/handler.ts` adapts Vercel's Node
+signature to the Web-standard `Request`/`Response` those handlers were written
+against.
+
+Every handler verifies the caller's Supabase session before spending an OpenAI
+call, so the endpoints are not open to the internet. `maxDuration` is raised to
+60s because model calls routinely exceed the 10s default.
+
+The client never calls them directly — `src/lib/ai.ts` attaches the access
+token and mirrors the `{ data, error }` result shape.
+
+### Required environment variables
+
+Set these in Vercel under Project > Settings > Environment Variables. They are
+read at runtime by the functions, so unlike the `VITE_*` values they cannot come
+from the committed `.env`:
+
+| Variable | Used by |
+| --- | --- |
+| `OPENAI_API_KEY` | all seven endpoints |
+| `SUPABASE_URL` | verifying the caller's session |
+| `SUPABASE_ANON_KEY` | verifying the caller's session |
+| `SUPABASE_SERVICE_ROLE_KEY` | `generate-evaluation` only |
+
+Supabase injected the three `SUPABASE_*` values automatically; Vercel does not,
+so they have to be filled in by hand. Keep the service role key to the server —
+it bypasses row-level security.
+
 ## Custom domain
 
 Add the domain in Vercel under Project > Settings > Domains and create the DNS

@@ -19,7 +19,7 @@ import { useCreateLesson, useLessons } from "@/hooks/useLessons";
 import { useClassStudents } from "@/hooks/useClasses";
 import { useToast } from "@/hooks/use-toast";
 import { getStudentDisplayName } from "@/hooks/useStudents";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeAi } from "@/lib/ai";
 import { useStudentGoalLevels, useSetStudentGoalLevel } from "@/hooks/useStudentGoalLevels";
 import { useResolvedGoalLevels, useGoalProofCounts, useGoalCriteriaCounts } from "@/hooks/useCourseDetail";
 import { StudentGoalMatrix } from "@/components/shared/StudentGoalMatrix";
@@ -154,7 +154,7 @@ export default function K03CourseDetail() {
         EDGE_FUNCTION_URL_TTL_SECONDS,
       );
       if (!signedPlanUrl) throw new Error("Tematický plán se nepodařilo zpřístupnit.");
-      const { data, error } = await supabase.functions.invoke("generate-goals-from-plan", {
+      const { data, error } = await invokeAi("generate-goals-from-plan", {
         body: {
           fileUrl: signedPlanUrl,
           subject: course.subjects?.name || undefined,
@@ -192,7 +192,7 @@ export default function K03CourseDetail() {
         EDGE_FUNCTION_URL_TTL_SECONDS,
       );
       if (!signedPlanUrl) throw new Error("Tematický plán se nepodařilo zpřístupnit.");
-      const { data, error } = await supabase.functions.invoke("generate-lessons-from-plan", {
+      const { data, error } = await invokeAi("generate-lessons-from-plan", {
         body: {
           fileUrl: signedPlanUrl,
           subject: course.subjects?.name || undefined,

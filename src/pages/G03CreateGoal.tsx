@@ -18,6 +18,7 @@ import { useClasses } from "@/hooks/useClasses";
 import { useGoals, useGoal, useCreateGoal, useUpdateGoal } from "@/hooks/useGoals";
 import { useCourses, useCourse } from "@/hooks/useCourses";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeAi } from "@/lib/ai";
 import { useToast } from "@/hooks/use-toast";
 import { DEFAULT_LEVEL_DESCRIPTORS, type LevelDescriptor } from "@/constants/goalLevels";
 import { ShimmerField } from "@/components/ui/field-shimmer";
@@ -160,7 +161,7 @@ export default function G03CreateGoal() {
         currentNames.length > 0 && (!hasThematicPlan || !isDefaultLevels);
 
       // Step 1: Formulate goal
-      const { data: formData, error: formErr } = await supabase.functions.invoke(
+      const { data: formData, error: formErr } = await invokeAi(
         "formulate-goal",
         {
           body: {
@@ -193,7 +194,7 @@ export default function G03CreateGoal() {
         : null;
 
       // Step 2: Generate criteria
-      const { data: critData, error: critErr } = await supabase.functions.invoke(
+      const { data: critData, error: critErr } = await invokeAi(
         "generate-criteria",
         {
           body: {
