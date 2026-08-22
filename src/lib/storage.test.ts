@@ -36,6 +36,25 @@ describe("toStoragePath", () => {
     expect(toStoragePath(url, "proof-files")).toBe(url);
   });
 
+  it("decodes a path left encoded by the private-buckets migration", () => {
+    // The SQL rewrite slices the fragment straight out of the public URL, so
+    // migrated rows arrive here still percent-encoded.
+    expect(toStoragePath("uuid.Dikt%C3%A1t", "proof-files")).toBe("uuid.Diktát");
+    expect(toStoragePath("uuid/pl%C3%A1n%20v2.pdf", "course-files")).toBe(
+      "uuid/plán v2.pdf",
+    );
+  });
+
+  it("leaves a literal percent sign alone", () => {
+    expect(toStoragePath("sleva-50%.jpg", "proof-files")).toBe("sleva-50%.jpg");
+  });
+
+  it("survives a malformed escape without throwing", () => {
+    expect(toStoragePath("odd-%zz-%E0%A4.jpg", "proof-files")).toBe(
+      "odd-%zz-%E0%A4.jpg",
+    );
+  });
+
   it("returns null for empty values", () => {
     expect(toStoragePath(null, "proof-files")).toBeNull();
     expect(toStoragePath(undefined, "proof-files")).toBeNull();
