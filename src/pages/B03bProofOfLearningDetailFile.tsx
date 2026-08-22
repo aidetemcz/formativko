@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import { useStudent, useStudents, getStudentDisplayName } from "@/hooks/useStudents";
 import { useProof } from "@/hooks/useProofs";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 
 export default function B03bProofOfLearningDetailFile() {
   usePageTitle("Detail důkazu");
@@ -17,6 +18,7 @@ export default function B03bProofOfLearningDetailFile() {
   const { data: student, isLoading: studentLoading } = useStudent(id);
   const { data: proof, isLoading: proofLoading } = useProof(proofId);
   const { data: allStudents = [] } = useStudents();
+  const { data: fileUrl } = useSignedUrl("proof-files", proof?.file_url);
 
   if (studentLoading || proofLoading || !student || !proof) {
     return <AppLayout><div className="text-center py-12 text-muted-foreground">Načítání…</div></AppLayout>;
@@ -49,8 +51,8 @@ export default function B03bProofOfLearningDetailFile() {
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">Příloha</label>
             <div className="relative rounded-xl border border-border bg-muted overflow-hidden">
-              {proof.file_url ? (
-                <img src={proof.file_url} alt={proof.file_name || "Příloha"} className="w-full aspect-video object-contain bg-background" />
+              {fileUrl ? (
+                <img src={fileUrl} alt={proof.file_name || "Příloha"} className="w-full aspect-video object-contain bg-background" />
               ) : (
                 <div className="aspect-video bg-[repeating-conic-gradient(hsl(var(--muted))_0%_25%,hsl(var(--card))_0%_50%)] bg-[length:20px_20px] flex items-center justify-center">
                   <span className="text-muted-foreground text-sm">{proof.file_name || "soubor.jpg"}</span>

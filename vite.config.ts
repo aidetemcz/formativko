@@ -7,7 +7,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   base: mode === "production" ? "/formativko/" : "/",
   server: {
-    host: "::",
+    // "true" binds 0.0.0.0 — "::" fails to listen in IPv6-less containers/CI
+    host: true,
     port: 8080,
     hmr: {
       overlay: false,

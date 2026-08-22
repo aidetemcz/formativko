@@ -9,6 +9,8 @@ import { useGoal, useGoalsForCourse } from "@/hooks/useGoals";
 import { useLessonGoals } from "@/hooks/useLessons";
 import { getStudentShortName } from "@/hooks/useStudents";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildUploadPath } from "@/lib/storage";
 import type { ProofTypeRow, ProofFieldKind } from "@/constants/proofTypes";
 
 interface CapturePanelProps {
@@ -33,6 +35,7 @@ export default function CapturePanel({
   onCaptured,
 }: CapturePanelProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const createProof = useCreateProof();
   const setStudentGoalLevel = useSetStudentGoalLevel();
 
@@ -174,13 +177,12 @@ export default function CapturePanel({
       // Handle image field
       if (hasImage && savedPhoto) {
         setUploading(true);
-        const ext = savedPhoto.name.split(".").pop() || "jpg";
-        const path = `${crypto.randomUUID()}.${ext}`;
+        if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
+        const path = buildUploadPath(user.id, savedPhoto.name || "photo.jpg");
         const { error: uploadErr } = await supabase.storage
           .from("proof-files")
           .upload(path, savedPhoto);
         if (uploadErr) throw uploadErr;
-        const { data: urlData } = supabase.storage.from("proof-files").getPublicUrl(path);
 
         await createProof.mutateAsync({
           title: `${proofType.name} ${today}`,
@@ -190,7 +192,7 @@ export default function CapturePanel({
           lessonId: selectedLesson,
           studentIds: capturedStudents,
           fileName: savedPhoto.name,
-          fileUrl: urlData.publicUrl,
+          fileUrl: path,
           goalIds: selectedGoalIds.length > 0 ? selectedGoalIds : undefined,
           proofTypeId: dbProofTypeId,
         });

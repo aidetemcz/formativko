@@ -28,6 +28,8 @@ import { AiSuggestionCards, AiShimmer } from "@/components/shared/AiSuggestionCa
 import type { SuggestedGoal, SuggestedLesson } from "@/types/ai";
 import { LESSON_STATUS_LABELS as statusLabels, LESSON_STATUS_COLORS as statusColors } from "@/constants/lessonStatus";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
+import { createSignedUrl, EDGE_FUNCTION_URL_TTL_SECONDS } from "@/lib/storage";
 
 export default function K03CourseDetail() {
   usePageTitle("Detail kurzu");
@@ -35,6 +37,7 @@ export default function K03CourseDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: course, isLoading } = useCourse(courseId);
+  const { data: planFileUrl } = useSignedUrl("course-files", course?.thematic_plan_file_url);
   const { data: lessons = [] } = useCourseLessons(courseId);
   const { data: goals = [] } = useCourseGoals(courseId);
   const { data: students = [] } = useClassStudents(course?.class_id || undefined);
@@ -145,9 +148,15 @@ export default function K03CourseDetail() {
     setGoalGenError(null);
     try {
       const parsedGoalCount = parseInt(goalCount, 10);
+      const signedPlanUrl = await createSignedUrl(
+        "course-files",
+        course.thematic_plan_file_url,
+        EDGE_FUNCTION_URL_TTL_SECONDS,
+      );
+      if (!signedPlanUrl) throw new Error("Tematický plán se nepodařilo zpřístupnit.");
       const { data, error } = await supabase.functions.invoke("generate-goals-from-plan", {
         body: {
-          fileUrl: course.thematic_plan_file_url,
+          fileUrl: signedPlanUrl,
           subject: course.subjects?.name || undefined,
           className: course.classes?.name || undefined,
           count: parsedGoalCount > 0 ? parsedGoalCount : undefined,
@@ -177,9 +186,15 @@ export default function K03CourseDetail() {
     setLessonGenError(null);
     try {
       const parsedLessonCount = parseInt(lessonCount, 10);
+      const signedPlanUrl = await createSignedUrl(
+        "course-files",
+        course.thematic_plan_file_url,
+        EDGE_FUNCTION_URL_TTL_SECONDS,
+      );
+      if (!signedPlanUrl) throw new Error("Tematický plán se nepodařilo zpřístupnit.");
       const { data, error } = await supabase.functions.invoke("generate-lessons-from-plan", {
         body: {
-          fileUrl: course.thematic_plan_file_url,
+          fileUrl: signedPlanUrl,
           subject: course.subjects?.name || undefined,
           className: course.classes?.name || undefined,
           count: parsedLessonCount > 0 ? parsedLessonCount : undefined,
@@ -343,7 +358,7 @@ export default function K03CourseDetail() {
           <h2 className="text-lg font-semibold mb-3">Tematický plán</h2>
           {course.thematic_plan_file_url ? (
             <a
-              href={course.thematic_plan_file_url}
+              href={planFileUrl ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-card border border-border hover:border-primary/30 transition-all text-sm"
