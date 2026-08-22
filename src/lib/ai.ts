@@ -28,6 +28,41 @@ async function authorization(): Promise<string> {
   return `Bearer ${token}`;
 }
 
+/**
+ * Explain a failure the handler never got to report itself.
+ *
+ * When a function crashes before its own error handling runs — a module that
+ * fails to load, a timeout, an exhausted plan limit — the response is the
+ * platform's HTML error page and carries no JSON body. Vercel names the cause
+ * in the `x-vercel-error` header, which is far more use than a bare status
+ * code both to a teacher and to whoever reads the report.
+ */
+export function describeTransportError(status: number, vercelError: string | null): string {
+  switch (vercelError) {
+    case "FUNCTION_INVOCATION_FAILED":
+      return "Funkce se nepodařilo spustit. Podrobnosti jsou v logu na Vercelu.";
+    case "FUNCTION_INVOCATION_TIMEOUT":
+    case "EDGE_FUNCTION_INVOCATION_TIMEOUT":
+      return "Odpověď trvala příliš dlouho a byla přerušena. Zkuste to prosím znovu.";
+    case "FUNCTION_PAYLOAD_TOO_LARGE":
+      return "Odesílaná data jsou příliš velká.";
+    case "FUNCTION_THROTTLED":
+    case "TOO_MANY_REQUESTS":
+      return "Příliš mnoho požadavků najednou. Zkuste to prosím za chvíli.";
+    case "NOT_FOUND":
+    case "DEPLOYMENT_NOT_FOUND":
+      return "Funkce nebyla nalezena. Zřejmě ještě neproběhlo nasazení.";
+  }
+
+  if (status === 504) return "Odpověď trvala příliš dlouho. Zkuste to prosím znovu.";
+  if (status === 401 || status === 403) return "Přihlášení vypršelo. Přihlaste se prosím znovu.";
+  // Surface the raw code when there is one — an unknown label still names the
+  // problem better than the status alone.
+  return vercelError
+    ? `Chyba serveru (${status}, ${vercelError}).`
+    : `Chyba serveru (${status}).`;
+}
+
 async function send<T>(name: AiFunction, init: RequestInit): Promise<AiResult<T>> {
   try {
     const response = await fetch(`/api/${name}`, {
@@ -36,15 +71,20 @@ async function send<T>(name: AiFunction, init: RequestInit): Promise<AiResult<T>
       headers: { ...init.headers, Authorization: await authorization() },
     });
 
-    // Handlers report failures as a JSON body, but a function that times out or
-    // crashes hard returns the platform's own HTML error page.
-    const payload = await response.json().catch(() => null);
+    // Read as text first: a handler reports failures as JSON, but a function
+    // that never ran returns an HTML page that would break response.json().
+    const raw = await response.text();
+    let payload: (T & { error?: string }) | null = null;
+    try {
+      payload = raw ? JSON.parse(raw) : null;
+    } catch {
+      payload = null;
+    }
+
     if (!response.ok) {
       const message =
         payload?.error ||
-        (response.status === 504
-          ? "Odpověď trvala příliš dlouho. Zkuste to prosím znovu."
-          : `Chyba serveru (${response.status}).`);
+        describeTransportError(response.status, response.headers.get("x-vercel-error"));
       return { data: null, error: new Error(message) };
     }
 
