@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { webHandler } from "./handler";
+import { webHandler } from "./handler.js";
 
 /** Minimal stand-in for the VercelResponse surface the adapter touches. */
 function fakeRes() {

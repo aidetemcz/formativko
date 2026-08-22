@@ -102,6 +102,13 @@ call, so the endpoints are not open to the internet. `maxDuration` is raised to
 The client never calls them directly — `src/lib/ai.ts` attaches the access
 token and mirrors the `{ data, error }` result shape.
 
+Relative imports inside `api/` must carry an explicit `.js` extension, which
+TypeScript maps back to the `.ts` source. Vercel compiles these files with
+`moduleResolution: nodenext`, which requires it; an extensionless import still
+*builds*, then fails at runtime when the module cannot be resolved, so the
+endpoint returns a 500 with no JSON body. `tsconfig.api.json` sets the same
+resolution mode so `npm run typecheck` catches it first.
+
 ### Required environment variables
 
 Set these in Vercel under Project > Settings > Environment Variables. They are
