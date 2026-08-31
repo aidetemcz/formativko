@@ -248,7 +248,7 @@ export default function A01Dashboard() {
                 <img
                   src={eliImage}
                   alt=""
-                  className="h-16 w-16 shrink-0 hidden sm:block"
+                  className="h-24 w-24 shrink-0 hidden sm:block"
                 />
                 <div className="flex-1">
                   <p className="text-muted-foreground mb-4">
