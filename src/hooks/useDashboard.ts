@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Lesson } from "@/hooks/useLessons";
+import { LESSONS_ENABLED } from "@/config/features";
 
 /**
  * Lessons happening today (ongoing or prepared with today's date).
@@ -30,7 +31,7 @@ export function useTodaysLessons() {
 
       return [...(ongoing || []), ...(prepared || [])] as Lesson[];
     },
-    enabled: !!user,
+    enabled: LESSONS_ENABLED && !!user,
   });
 }
 
@@ -54,7 +55,7 @@ export function useNextLesson(skip: boolean) {
       if (error) throw error;
       return (data?.[0] as Lesson) || null;
     },
-    enabled: !!user && !skip,
+    enabled: LESSONS_ENABLED && !!user && !skip,
   });
 }
 
@@ -78,7 +79,7 @@ export function useLessonGoalCounts(lessonIds: string[]) {
       }
       return counts;
     },
-    enabled: !!user && lessonIds.length > 0,
+    enabled: LESSONS_ENABLED && !!user && lessonIds.length > 0,
   });
 }
 
@@ -150,30 +151,35 @@ export function useCourseStudentHeatmap() {
         }
       }
 
-      // Lesson-based proofs (Path 2)
+      // Lesson-based proofs (Path 2). Only proofs captured against a lesson
+      // reach the heatmap this way, so the whole path is skipped while lesson
+      // planning is switched off — Path 1 (goals) covers every proof the
+      // prototype can record.
       const lessonToCourses: Record<string, Set<string>> = {};
-      const courseIds = courses.map((c) => c.id);
-      const { data: directLessons, error: clErr } = await supabase
-        .from("lessons")
-        .select("id, course_id")
-        .in("course_id", courseIds);
-      if (clErr) throw clErr;
-      for (const l of directLessons || []) {
-        if (!l.course_id) continue;
-        if (!lessonToCourses[l.id]) lessonToCourses[l.id] = new Set();
-        lessonToCourses[l.id].add(l.course_id);
-      }
-      if (allGoalIds.length > 0) {
-        const { data: lgData, error: lgErr } = await supabase
-          .from("lesson_goals")
-          .select("lesson_id, goal_id")
-          .in("goal_id", allGoalIds);
-        if (lgErr) throw lgErr;
-        for (const lg of lgData || []) {
-          for (const [cId, gIds] of Object.entries(courseGoals)) {
-            if (gIds.includes(lg.goal_id)) {
-              if (!lessonToCourses[lg.lesson_id]) lessonToCourses[lg.lesson_id] = new Set();
-              lessonToCourses[lg.lesson_id].add(cId);
+      if (LESSONS_ENABLED) {
+        const courseIds = courses.map((c) => c.id);
+        const { data: directLessons, error: clErr } = await supabase
+          .from("lessons")
+          .select("id, course_id")
+          .in("course_id", courseIds);
+        if (clErr) throw clErr;
+        for (const l of directLessons || []) {
+          if (!l.course_id) continue;
+          if (!lessonToCourses[l.id]) lessonToCourses[l.id] = new Set();
+          lessonToCourses[l.id].add(l.course_id);
+        }
+        if (allGoalIds.length > 0) {
+          const { data: lgData, error: lgErr } = await supabase
+            .from("lesson_goals")
+            .select("lesson_id, goal_id")
+            .in("goal_id", allGoalIds);
+          if (lgErr) throw lgErr;
+          for (const lg of lgData || []) {
+            for (const [cId, gIds] of Object.entries(courseGoals)) {
+              if (gIds.includes(lg.goal_id)) {
+                if (!lessonToCourses[lg.lesson_id]) lessonToCourses[lg.lesson_id] = new Set();
+                lessonToCourses[lg.lesson_id].add(cId);
+              }
             }
           }
         }

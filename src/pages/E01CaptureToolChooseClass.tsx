@@ -6,14 +6,17 @@ import { useTodaysLessons } from "@/hooks/useDashboard";
 import { useClassStudentCounts } from "@/hooks/useClasses";
 import { useMemo } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { LESSONS_ENABLED } from "@/config/features";
 
 export default function E01CaptureToolChooseClass() {
   usePageTitle("Zachytávač");
   const { data: courses = [], isLoading } = useCourses();
   const { data: todaysLessons = [] } = useTodaysLessons();
 
-  // Course IDs that have a lesson today (via class_id match)
+  // Course IDs that have a lesson today (via class_id match). Empty while
+  // lesson planning is off, which leaves the list in plain alphabetical order.
   const todayCourseIds = useMemo(() => {
+    if (!LESSONS_ENABLED) return new Set<string>();
     const todayClassIds = new Set(todaysLessons.map((l) => l.class_id).filter(Boolean));
     return new Set(
       courses

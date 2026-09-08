@@ -27,6 +27,7 @@ import { LinkEntityDialog } from "@/components/shared/LinkEntityDialog";
 import { AiSuggestionCards, AiShimmer } from "@/components/shared/AiSuggestionCards";
 import type { SuggestedGoal, SuggestedLesson } from "@/types/ai";
 import { LESSON_STATUS_LABELS as statusLabels, LESSON_STATUS_COLORS as statusColors } from "@/constants/lessonStatus";
+import { LESSONS_ENABLED } from "@/config/features";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSignedUrl } from "@/hooks/useSignedUrl";
 import { createSignedUrl, EDGE_FUNCTION_URL_TTL_SECONDS } from "@/lib/storage";
@@ -339,7 +340,8 @@ export default function K03CourseDetail() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Smazat kurz?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Tím smažete kurz &bdquo;{course.name}&ldquo;. Lekce a cíle zůstanou zachovány.
+                    Tím smažete kurz &bdquo;{course.name}&ldquo;.{" "}
+                    {LESSONS_ENABLED ? "Lekce a cíle zůstanou zachovány." : "Cíle zůstanou zachovány."}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -545,161 +547,164 @@ export default function K03CourseDetail() {
           )}
         </div>
 
-        {/* Lessons */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-muted-foreground" />
-              Lekce ({lessons.length})
-            </h2>
-            <div className="flex items-center gap-2">
-              {course.thematic_plan_file_url && suggestedLessons.length === 0 && (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    min="1"
-                    max="30"
-                    placeholder="Počet"
-                    value={lessonCount}
-                    onChange={(e) => setLessonCount(e.target.value)}
-                    className="w-16 h-8 text-xs text-center rounded-md border border-border bg-card px-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5 text-xs"
-                    onClick={handleGenerateLessons}
-                    disabled={generatingLessons}
-                  >
-                    {generatingLessons ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-3.5 w-3.5" />
-                    )}
-                    {generatingLessons ? "Generuji..." : "Generovat z plánu"}
-                  </Button>
-                </div>
-              )}
-              {availableLessons.length > 0 && (
-                <Button size="sm" variant="outline" className="gap-1" onClick={() => setLinkLessonOpen(true)}>
-                  <Link2 className="h-3.5 w-3.5" />
-                  Připojit existující
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="gap-1" asChild>
-                <Link to={`/lessons/create?courseId=${course.id}`}>
-                  <Plus className="h-3.5 w-3.5" />
-                  Nová lekce
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <LinkEntityDialog
-            open={linkLessonOpen}
-            onOpenChange={setLinkLessonOpen}
-            title="Připojit existující lekci"
-            emptyMessage="Žádné dostupné lekce"
-            items={availableLessons}
-            onSelect={handleLinkLesson}
-            renderItem={(lesson) => (
-              <>
-                <span className="text-sm font-medium text-foreground">{lesson.title}</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  {lesson.subjects?.name && (
-                    <Badge variant="outline" className="text-[10px]">{lesson.subjects.name}</Badge>
-                  )}
-                  {lesson.date && (
-                    <span className="text-xs text-muted-foreground">{lesson.date}</span>
-                  )}
-                  <Badge className={`text-[10px] ${statusColors[lesson.status] || ""}`}>
-                    {statusLabels[lesson.status] || lesson.status}
-                  </Badge>
-                </div>
-              </>
-            )}
-          />
-
-          {generatingLessons && <AiShimmer count={parseInt(lessonCount, 10) || 3} />}
-
-          {lessonGenError && !generatingLessons && suggestedLessons.length === 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-3">
-              <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-destructive font-medium">Generování selhalo</p>
-                <p className="text-xs text-destructive/70 truncate">{lessonGenError}</p>
-              </div>
-              <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={handleGenerateLessons}>
-                <RotateCcw className="h-3.5 w-3.5" />
-                Zkusit znovu
-              </Button>
-            </div>
-          )}
-
-          <AiSuggestionCards
-            items={suggestedLessons}
-            label="Navrhované lekce"
-            savingIdx={savingLessonIdx}
-            onAccept={handleAcceptLesson}
-            onReject={handleRejectLesson}
-            onAcceptAll={handleAcceptAllLessons}
-            onRejectAll={() => setSuggestedLessons([])}
-            renderItem={(lesson) => (
-              <>
-                <span className="font-medium text-foreground">{lesson.title}</span>
-                {lesson.planned_activities && (
-                  <p className="text-sm text-muted-foreground mt-0.5">{lesson.planned_activities}</p>
-                )}
-                {lesson.observation_focus && (
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">
-                    Zaměření pozorování: {lesson.observation_focus}
-                  </p>
-                )}
-              </>
-            )}
-          />
-
-          {lessons.length === 0 && suggestedLessons.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground bg-muted/50 rounded-xl border border-dashed border-border">
-              Zatím žádné lekce v tomto kurzu.
-            </div>
-          ) : lessons.length > 0 && (
-            <div className="space-y-4">
-              {(["ongoing", "prepared", "past"] as const).map((statusKey) => {
-                const items = lessonsByStatus[statusKey] || [];
-                if (items.length === 0) return null;
-                return (
-                  <div key={statusKey}>
-                    <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                      {statusLabels[statusKey]} ({items.length})
-                    </h3>
-                    <div className="space-y-1">
-                      {items.map((lesson: any) => (
-                        <Link
-                          key={lesson.id}
-                          to={`/lessons/${lesson.id}`}
-                          className="flex items-center justify-between gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/30 transition-all"
-                        >
-                          <div className="min-w-0">
-                            <span className="font-medium text-foreground">{lesson.title}</span>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {lesson.date && (
-                              <span className="text-xs text-muted-foreground">{lesson.date}</span>
-                            )}
-                            <Badge className={`text-xs ${statusColors[lesson.status] || ""}`}>
-                              {statusLabels[lesson.status] || lesson.status}
-                            </Badge>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+        {/* Lessons — the whole section, the AI that drafts lessons from the
+            thematic plan included, is hidden while lesson planning is off. */}
+        {LESSONS_ENABLED && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
+                Lekce ({lessons.length})
+              </h2>
+              <div className="flex items-center gap-2">
+                {course.thematic_plan_file_url && suggestedLessons.length === 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      placeholder="Počet"
+                      value={lessonCount}
+                      onChange={(e) => setLessonCount(e.target.value)}
+                      className="w-16 h-8 text-xs text-center rounded-md border border-border bg-card px-1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 text-xs"
+                      onClick={handleGenerateLessons}
+                      disabled={generatingLessons}
+                    >
+                      {generatingLessons ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      )}
+                      {generatingLessons ? "Generuji..." : "Generovat z plánu"}
+                    </Button>
                   </div>
-                );
-              })}
+                )}
+                {availableLessons.length > 0 && (
+                  <Button size="sm" variant="outline" className="gap-1" onClick={() => setLinkLessonOpen(true)}>
+                    <Link2 className="h-3.5 w-3.5" />
+                    Připojit existující
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" className="gap-1" asChild>
+                  <Link to={`/lessons/create?courseId=${course.id}`}>
+                    <Plus className="h-3.5 w-3.5" />
+                    Nová lekce
+                  </Link>
+                </Button>
+              </div>
             </div>
-          )}
-        </div>
+
+            <LinkEntityDialog
+              open={linkLessonOpen}
+              onOpenChange={setLinkLessonOpen}
+              title="Připojit existující lekci"
+              emptyMessage="Žádné dostupné lekce"
+              items={availableLessons}
+              onSelect={handleLinkLesson}
+              renderItem={(lesson) => (
+                <>
+                  <span className="text-sm font-medium text-foreground">{lesson.title}</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {lesson.subjects?.name && (
+                      <Badge variant="outline" className="text-[10px]">{lesson.subjects.name}</Badge>
+                    )}
+                    {lesson.date && (
+                      <span className="text-xs text-muted-foreground">{lesson.date}</span>
+                    )}
+                    <Badge className={`text-[10px] ${statusColors[lesson.status] || ""}`}>
+                      {statusLabels[lesson.status] || lesson.status}
+                    </Badge>
+                  </div>
+                </>
+              )}
+            />
+
+            {generatingLessons && <AiShimmer count={parseInt(lessonCount, 10) || 3} />}
+
+            {lessonGenError && !generatingLessons && suggestedLessons.length === 0 && (
+              <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center gap-3">
+                <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-destructive font-medium">Generování selhalo</p>
+                  <p className="text-xs text-destructive/70 truncate">{lessonGenError}</p>
+                </div>
+                <Button size="sm" variant="outline" className="gap-1.5 shrink-0" onClick={handleGenerateLessons}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Zkusit znovu
+                </Button>
+              </div>
+            )}
+
+            <AiSuggestionCards
+              items={suggestedLessons}
+              label="Navrhované lekce"
+              savingIdx={savingLessonIdx}
+              onAccept={handleAcceptLesson}
+              onReject={handleRejectLesson}
+              onAcceptAll={handleAcceptAllLessons}
+              onRejectAll={() => setSuggestedLessons([])}
+              renderItem={(lesson) => (
+                <>
+                  <span className="font-medium text-foreground">{lesson.title}</span>
+                  {lesson.planned_activities && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{lesson.planned_activities}</p>
+                  )}
+                  {lesson.observation_focus && (
+                    <p className="text-xs text-muted-foreground/70 mt-0.5">
+                      Zaměření pozorování: {lesson.observation_focus}
+                    </p>
+                  )}
+                </>
+              )}
+            />
+
+            {lessons.length === 0 && suggestedLessons.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground bg-muted/50 rounded-xl border border-dashed border-border">
+                Zatím žádné lekce v tomto kurzu.
+              </div>
+            ) : lessons.length > 0 && (
+              <div className="space-y-4">
+                {(["ongoing", "prepared", "past"] as const).map((statusKey) => {
+                  const items = lessonsByStatus[statusKey] || [];
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={statusKey}>
+                      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                        {statusLabels[statusKey]} ({items.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {items.map((lesson: any) => (
+                          <Link
+                            key={lesson.id}
+                            to={`/lessons/${lesson.id}`}
+                            className="flex items-center justify-between gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/30 transition-all"
+                          >
+                            <div className="min-w-0">
+                              <span className="font-medium text-foreground">{lesson.title}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {lesson.date && (
+                                <span className="text-xs text-muted-foreground">{lesson.date}</span>
+                              )}
+                              <Badge className={`text-xs ${statusColors[lesson.status] || ""}`}>
+                                {statusLabels[lesson.status] || lesson.status}
+                              </Badge>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

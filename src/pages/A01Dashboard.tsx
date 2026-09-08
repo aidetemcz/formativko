@@ -25,6 +25,7 @@ import {
 } from "@/hooks/useDashboard";
 import eliImage from "@/assets/Eli.svg";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { LESSONS_ENABLED } from "@/config/features";
 
 /**
  * Convert a Czech first name to vocative case (5. pád).
@@ -47,6 +48,15 @@ function toVocative(name: string): string {
 
 type OnboardingStep = 1 | 2 | 3 | 4 | 5 | null;
 
+/**
+ * The first setup step the teacher has not finished yet, or null once
+ * everything is in place.
+ *
+ * `hasLessons` is passed as already satisfied while lesson planning is off, so
+ * step 4 is skipped and the first proof (step 5) follows straight after the
+ * goals. Steps keep their numbers either way, so turning lessons back on needs
+ * no renumbering here or in the blocks below.
+ */
 function getOnboardingStep(
   hasClasses: boolean,
   hasCourses: boolean,
@@ -109,7 +119,7 @@ export default function A01Dashboard() {
     classes.length > 0,
     courses.length > 0,
     goals.length > 0,
-    lessons.length > 0,
+    !LESSONS_ENABLED || lessons.length > 0,
     hasProofs
   );
 
@@ -214,7 +224,7 @@ export default function A01Dashboard() {
                   </Link>
                 )}
 
-                {step > 4 && (
+                {LESSONS_ENABLED && step > 4 && (
                   <Link
                     to={
                       lessons.length === 1
@@ -346,7 +356,10 @@ export default function A01Dashboard() {
         {step === null && (
           <>
             {/* === TODAY'S LESSONS === */}
-            {todaysLessons.length > 0 ? (
+            {/* Hidden with lesson planning. The queries behind these two cards
+                are switched off as well, so the guard only spares a reader the
+                hunt for why the section never appears. */}
+            {LESSONS_ENABLED && todaysLessons.length > 0 ? (
               <div>
                 <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
@@ -404,7 +417,7 @@ export default function A01Dashboard() {
                   })}
                 </div>
               </div>
-            ) : nextLesson ? (
+            ) : LESSONS_ENABLED && nextLesson ? (
               <div>
                 <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
                   <CalendarDays className="h-4 w-4" />

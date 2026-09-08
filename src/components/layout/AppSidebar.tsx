@@ -7,6 +7,7 @@ import { useClasses } from "@/hooks/useClasses";
 import { useCourses } from "@/hooks/useCourses";
 import { useGoals } from "@/hooks/useGoals";
 import { useLessons } from "@/hooks/useLessons";
+import { LESSONS_ENABLED } from "@/config/features";
 import logoImage from "@/assets/logo.png";
 import {
   Sidebar,
@@ -31,7 +32,11 @@ const navItems: NavItem[] = [
   { title: "Kurzy", url: "/courses", icon: Layers, visibleWhen: "hasCourses" },
   { title: "Žáci", url: "/student-profiles", icon: Users, visibleWhen: "hasClasses" },
   { title: "Třídy", url: "/classes", icon: GraduationCap, visibleWhen: "hasClasses" },
-  { title: "Hodnocení", url: "/evaluations", icon: FileText, visibleWhen: "hasLessons" },
+  // Evaluations used to appear only once a lesson had been planned, which was
+  // the last step of the setup. Goals are that step now, and an evaluation
+  // draft never needed a lesson — it reads the course, its goals and the
+  // class's proofs.
+  { title: "Hodnocení", url: "/evaluations", icon: FileText, visibleWhen: "hasGoals" },
   { title: "Předměty", url: "/subjects", icon: Book, visibleWhen: "hasCourses" },
   { title: "Cíle", url: "/goals", icon: Target, visibleWhen: "hasGoals" },
   { title: "Lekce", url: "/lessons", icon: BookOpen, visibleWhen: "hasLessons" },
@@ -55,7 +60,9 @@ export function AppSidebar() {
     hasClasses: classes.length > 0,
     hasCourses: courses.length > 0,
     hasGoals: goals.length > 0,
-    hasLessons: lessons.length > 0,
+    // Never true while lesson planning is off, which is what keeps the "Lekce"
+    // entry out of the menu.
+    hasLessons: LESSONS_ENABLED && lessons.length > 0,
   };
 
   const visibleItems = navItems.filter((item) => visibility[item.visibleWhen]);

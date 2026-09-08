@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { StudentChip } from "@/components/shared/StudentChip";
 import { LessonLinkField } from "@/components/shared/LessonLinkField";
+import { LESSONS_ENABLED } from "@/config/features";
 import { DateField } from "@/components/shared/DateField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -361,7 +362,9 @@ export default function B04AddProofOfLearning() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <LessonLinkField lessonId={selectedLessonId} onLessonChange={setSelectedLessonId} />
+            {LESSONS_ENABLED && (
+              <LessonLinkField lessonId={selectedLessonId} onLessonChange={setSelectedLessonId} />
+            )}
             <DateField date={date} onDateChange={setDate} />
           </div>
 

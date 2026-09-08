@@ -22,6 +22,7 @@ import { useClasses } from "@/hooks/useClasses";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useToast } from "@/hooks/use-toast";
 import { useCourseLessonCounts } from "@/hooks/useLessons";
+import { LESSONS_ENABLED } from "@/config/features";
 import { useCourseGoalCounts } from "@/hooks/useCourseDetail";
 import { Pagination } from "@/components/shared/Pagination";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -166,9 +167,11 @@ export default function K01Courses() {
                           <span className="text-xs text-muted-foreground">
                             {gCount} {gCount === 1 ? "cíl" : gCount >= 2 && gCount <= 4 ? "cíle" : "cílů"}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            {lCount} {lCount === 1 ? "lekce" : lCount >= 2 && lCount <= 4 ? "lekce" : "lekcí"}
-                          </span>
+                          {LESSONS_ENABLED && (
+                            <span className="text-xs text-muted-foreground">
+                              {lCount} {lCount === 1 ? "lekce" : lCount >= 2 && lCount <= 4 ? "lekce" : "lekcí"}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -193,7 +196,8 @@ export default function K01Courses() {
             <AlertDialogHeader>
               <AlertDialogTitle>Smazat kurz</AlertDialogTitle>
               <AlertDialogDescription>
-                Opravdu chcete smazat kurz &bdquo;{deleteTarget?.name}&ldquo;? Lekce a cíle zůstanou zachovány, ale ztratí propojení s kurzem.
+                Opravdu chcete smazat kurz &bdquo;{deleteTarget?.name}&ldquo;?{" "}
+                {LESSONS_ENABLED ? "Lekce a cíle zůstanou zachovány" : "Cíle zůstanou zachovány"}, ale ztratí propojení s kurzem.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

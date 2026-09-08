@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { StudentChip } from "@/components/shared/StudentChip";
 import { LessonLinkField } from "@/components/shared/LessonLinkField";
+import { LESSONS_ENABLED } from "@/config/features";
 import { DateField } from "@/components/shared/DateField";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,7 +70,7 @@ export default function B03bProofOfLearningDetailFile() {
             </div>
           </div>
 
-          <LessonLinkField lessonId={proof.lesson_id || null} />
+          {LESSONS_ENABLED && <LessonLinkField lessonId={proof.lesson_id || null} />}
           <DateField date={new Date(proof.date)} />
 
           <div>

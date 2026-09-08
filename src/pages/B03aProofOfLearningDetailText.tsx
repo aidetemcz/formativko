@@ -3,6 +3,7 @@ import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { StudentChip } from "@/components/shared/StudentChip";
 import { Pencil } from "lucide-react";
 import { LessonLinkField } from "@/components/shared/LessonLinkField";
+import { LESSONS_ENABLED } from "@/config/features";
 import { DateField } from "@/components/shared/DateField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,7 +126,7 @@ export default function B03aProofOfLearningDetailText() {
         </div>
 
         <div className="space-y-4">
-          <LessonLinkField lessonId={proof.lesson_id || null} />
+          {LESSONS_ENABLED && <LessonLinkField lessonId={proof.lesson_id || null} />}
           <DateField date={new Date(proof.date)} />
 
           <div>
