@@ -17,7 +17,8 @@ interface StudentGridProps {
     emptyRows: Set<number>;
     emptyCols: Set<number>;
   } | null;
-  lessonGoalIds: string[];
+  /** Goals the coverage colouring is measured against (lesson's or course's). */
+  coverageGoalIds: string[];
   onToggleStudent: (id: string) => void;
 }
 
@@ -28,7 +29,7 @@ export function StudentGrid({
   proofTypeMap,
   coverageMap,
   seatingData,
-  lessonGoalIds,
+  coverageGoalIds,
   onToggleStudent,
 }: StudentGridProps) {
   // Responsive grid columns: fewer columns on small screens for larger touch targets
@@ -152,7 +153,7 @@ export function StudentGrid({
       >
         {gridCells}
       </div>
-      {lessonGoalIds.length > 0 && (
+      {coverageGoalIds.length > 0 && (
         <div className="flex items-center gap-4 pt-2 text-[10px] text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-sm bg-green-50 border border-green-300" />

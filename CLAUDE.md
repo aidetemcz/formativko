@@ -36,6 +36,13 @@ npm run test:watch   # Vitest watch mode
 
 ### Key Patterns
 
+- **Feature flags**: `src/config/features.ts`. `LESSONS_ENABLED` is currently
+  `false` — lesson planning (the `D*` pages, the sidebar entry, the lesson
+  picker on proofs and in the capture tool, the lesson section of a course, and
+  the lesson-drafting AI) is hidden in the prototype, and nothing else may
+  depend on a lesson existing. `src/test/lessons-hidden.test.tsx` pins that
+  down. The `D*` pages and `api/generate-lessons-from-plan.ts` stay in the repo,
+  unrouted and unreachable, so the flag can be flipped back on.
 - **Path alias**: `@/` maps to `src/`
 - **Server state**: TanStack React Query via hooks in `src/hooks/`
 - **Forms**: React Hook Form + Zod validation

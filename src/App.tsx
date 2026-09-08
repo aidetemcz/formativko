@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LESSONS_ENABLED } from "@/config/features";
 
 const Login = lazy(() => import("./pages/Login"));
 const A01Dashboard = lazy(() => import("./pages/A01Dashboard"));
@@ -89,10 +90,17 @@ const App = () => (
               <Route path="/courses/create" element={<ProtectedRoute><K02CreateCourse /></ProtectedRoute>} />
               <Route path="/courses/:courseId" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
               <Route path="/courses/:courseId/edit" element={<ProtectedRoute><K02CreateCourse /></ProtectedRoute>} />
-              <Route path="/lessons" element={<ProtectedRoute><D01Lessons /></ProtectedRoute>} />
-              <Route path="/lessons/create" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
-              <Route path="/lessons/:lessonId" element={<ProtectedRoute><D03LessonDetail /></ProtectedRoute>} />
-              <Route path="/lessons/:lessonId/edit" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
+              {/* Lesson planning is switched off in the prototype: the routes
+                  are not registered at all, so a bookmarked /lessons URL lands
+                  on the 404 page instead of a page that is meant to be hidden. */}
+              {LESSONS_ENABLED && (
+                <>
+                  <Route path="/lessons" element={<ProtectedRoute><D01Lessons /></ProtectedRoute>} />
+                  <Route path="/lessons/create" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
+                  <Route path="/lessons/:lessonId" element={<ProtectedRoute><D03LessonDetail /></ProtectedRoute>} />
+                  <Route path="/lessons/:lessonId/edit" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
+                </>
+              )}
               <Route path="/classes" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />
               <Route path="/capture" element={<ProtectedRoute><E01CaptureToolChooseClass /></ProtectedRoute>} />
               <Route path="/capture/:courseId" element={<ProtectedRoute><E02CaptureToolAddProofs /></ProtectedRoute>} />

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { EducationalGoal } from "@/hooks/useGoals";
+import { LESSONS_ENABLED } from "@/config/features";
 
 export interface Lesson {
   id: string;
@@ -29,7 +30,7 @@ export function useLessons() {
       if (error) throw error;
       return data as Lesson[];
     },
-    enabled: !!user,
+    enabled: LESSONS_ENABLED && !!user,
   });
 }
 
@@ -46,7 +47,7 @@ export function useLesson(lessonId: string | undefined) {
       if (error) throw error;
       return data as Lesson;
     },
-    enabled: !!user && !!lessonId,
+    enabled: LESSONS_ENABLED && !!user && !!lessonId,
   });
 }
 
@@ -62,7 +63,7 @@ export function useLessonGoals(lessonId: string | undefined) {
       if (error) throw error;
       return data.map((r: any) => r.educational_goals).filter(Boolean) as EducationalGoal[];
     },
-    enabled: !!user && !!lessonId,
+    enabled: LESSONS_ENABLED && !!user && !!lessonId,
   });
 }
 
@@ -246,7 +247,7 @@ export function useLessonProofs(lessonId: string | undefined) {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!lessonId,
+    enabled: LESSONS_ENABLED && !!user && !!lessonId,
   });
 }
 
@@ -293,6 +294,6 @@ export function useCourseLessonCounts() {
       }
       return map;
     },
-    enabled: !!user,
+    enabled: LESSONS_ENABLED && !!user,
   });
 }

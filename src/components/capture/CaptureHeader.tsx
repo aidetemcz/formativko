@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Home, Settings, LayoutGrid } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { LESSONS_ENABLED } from "@/config/features";
 
 interface CaptureHeaderProps {
   courseName: string;
@@ -69,37 +70,39 @@ export function CaptureHeader({
             ))}
           </div>
         )}
-        <div className="relative">
-          <Badge
-            variant={selectedLesson ? "default" : "outline"}
-            className="text-[11px] sm:text-xs py-1 px-2 sm:px-3 lg:text-sm lg:py-1.5 lg:px-4 cursor-pointer truncate max-w-[100px] sm:max-w-none"
-            onClick={onLessonToggle}
-          >
-            {selectedLessonTitle || "Lekce"}
-          </Badge>
-          {lessonOpen && (
-            <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg p-2 min-w-[200px] max-w-[calc(100vw-2rem)] max-h-[60vh] overflow-auto">
-              {classLessons.length === 0 ? (
-                <p className="text-sm text-muted-foreground px-3 py-2">Žádné dostupné lekce</p>
-              ) : (
-                classLessons.map((lesson: any) => (
-                  <button
-                    key={lesson.id}
-                    onClick={() => onLessonSelect(selectedLesson === lesson.id ? null : lesson.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                      selectedLesson === lesson.id
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-accent text-foreground"
-                    }`}
-                  >
-                    {lesson.title}
-                    {lesson.subjects?.name && <span className="text-xs text-muted-foreground ml-2">· {lesson.subjects.name}</span>}
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
+        {LESSONS_ENABLED && (
+          <div className="relative">
+            <Badge
+              variant={selectedLesson ? "default" : "outline"}
+              className="text-[11px] sm:text-xs py-1 px-2 sm:px-3 lg:text-sm lg:py-1.5 lg:px-4 cursor-pointer truncate max-w-[100px] sm:max-w-none"
+              onClick={onLessonToggle}
+            >
+              {selectedLessonTitle || "Lekce"}
+            </Badge>
+            {lessonOpen && (
+              <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg p-2 min-w-[200px] max-w-[calc(100vw-2rem)] max-h-[60vh] overflow-auto">
+                {classLessons.length === 0 ? (
+                  <p className="text-sm text-muted-foreground px-3 py-2">Žádné dostupné lekce</p>
+                ) : (
+                  classLessons.map((lesson: any) => (
+                    <button
+                      key={lesson.id}
+                      onClick={() => onLessonSelect(selectedLesson === lesson.id ? null : lesson.id)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        selectedLesson === lesson.id
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-accent text-foreground"
+                      }`}
+                    >
+                      {lesson.title}
+                      {lesson.subjects?.name && <span className="text-xs text-muted-foreground ml-2">· {lesson.subjects.name}</span>}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
         {sessionTotal > 0 && (

@@ -37,7 +37,7 @@ describe("vercel.json", () => {
 describe("the single-page rewrite", () => {
   const pattern = new RegExp(sourceToRegex(config.rewrites[0].source).src);
 
-  it.each(["/", "/lessons", "/courses", "/student-profiles", "/goals/abc/edit"])(
+  it.each(["/", "/evaluations", "/courses", "/student-profiles", "/goals/abc/edit"])(
     "sends %s to index.html so React Router can route it",
     (path) => expect(pattern.test(path)).toBe(true),
   );

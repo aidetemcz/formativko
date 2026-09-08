@@ -18,6 +18,7 @@ import {
 import { useSubjects, useDeleteSubject } from "@/hooks/useSubjects";
 import { useGoals } from "@/hooks/useGoals";
 import { useLessons } from "@/hooks/useLessons";
+import { LESSONS_ENABLED } from "@/config/features";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -112,7 +113,9 @@ export default function H01Subjects() {
                       <h3 className="font-medium text-foreground">{subject.name}</h3>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{goalCount} {goalCount === 1 ? "cíl" : goalCount >= 2 && goalCount <= 4 ? "cíle" : "cílů"}</span>
-                        <span>{lessonCount} {lessonCount === 1 ? "lekce" : lessonCount >= 2 && lessonCount <= 4 ? "lekce" : "lekcí"}</span>
+                        {LESSONS_ENABLED && (
+                          <span>{lessonCount} {lessonCount === 1 ? "lekce" : lessonCount >= 2 && lessonCount <= 4 ? "lekce" : "lekcí"}</span>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -134,7 +137,9 @@ export default function H01Subjects() {
             <AlertDialogHeader>
               <AlertDialogTitle>Smazat předmět</AlertDialogTitle>
               <AlertDialogDescription>
-                Opravdu chcete smazat předmět &bdquo;{deleteTarget?.name}&ldquo;? Lekce a cíle s tímto předmětem zůstanou zachovány, ale nebudou mít přiřazený předmět.
+                Opravdu chcete smazat předmět &bdquo;{deleteTarget?.name}&ldquo;?{" "}
+                {LESSONS_ENABLED ? "Lekce a cíle s tímto předmětem" : "Cíle s tímto předmětem"}{" "}
+                zůstanou zachovány, ale nebudou mít přiřazený předmět.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

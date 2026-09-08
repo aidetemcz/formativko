@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { LESSONS_ENABLED } from "@/config/features";
 
 export interface Course {
   id: string;
@@ -62,7 +63,7 @@ export function useCourseLessons(courseId: string | undefined) {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!courseId,
+    enabled: LESSONS_ENABLED && !!user && !!courseId,
   });
 }
 

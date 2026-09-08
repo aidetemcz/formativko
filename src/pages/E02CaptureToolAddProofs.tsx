@@ -5,6 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useClassStudents } from "@/hooks/useClasses";
 import { useCourse, useCourses, useCourseLessons, useCourseSeating, useSaveCourseSeating } from "@/hooks/useCourses";
 import { useLessonGoals, useLessonStudentOverview } from "@/hooks/useLessons";
+import { useGoalsForCourse } from "@/hooks/useGoals";
+import { LESSONS_ENABLED } from "@/config/features";
 import { useStudentGroups } from "@/hooks/useStudentGroups";
 import { useCustomProofTypes } from "@/hooks/useProofTypes";
 import { PROOF_TYPE_COLORS, ICON_MAP, BUILTIN_PROOF_TYPES, type ProofTypeColor } from "@/constants/proofTypes";
@@ -47,7 +49,9 @@ export default function E02CaptureToolAddProofs() {
   const [activeProofTypeId, setActiveProofTypeId] = useState<string | null>(null);
   const [proofDots, setProofDots] = useState<Record<string, string[]>>(savedSession?.proofDots || {});
   const [lessonOpen, setLessonOpen] = useState(false);
-  const [selectedLesson, setSelectedLesson] = useState<string | null>(savedSession?.selectedLesson || null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(
+    LESSONS_ENABLED ? savedSession?.selectedLesson || null : null
+  );
 
   // Persist key state on change
   const persistSession = useCallback(() => {
@@ -74,33 +78,45 @@ export default function E02CaptureToolAddProofs() {
   const saveSeating = useSaveCourseSeating();
   const [showSeatingEditor, setShowSeatingEditor] = useState(false);
 
-  // Auto-select lesson from URL param
+  // Auto-select lesson from URL param. Ignored while lessons are off, so an
+  // old ?lesson= link cannot stamp a lesson onto newly captured proofs.
   useEffect(() => {
+    if (!LESSONS_ENABLED) return;
     const lessonParam = searchParams.get("lesson");
     if (lessonParam) setSelectedLesson(lessonParam);
   }, [searchParams]);
 
-  // Fetch goals for selected lesson (for coverage coloring only)
+  // Goals the student grid colours coverage against.
+  //
+  // A selected lesson narrows this to the lesson's own goals; without lesson
+  // planning the course's goals take over, so the colouring keeps working
+  // rather than quietly switching itself off.
   const { data: lessonGoals = [] } = useLessonGoals(selectedLesson || undefined);
-  const lessonGoalIds = useMemo(() => lessonGoals.map((g) => g.id), [lessonGoals]);
+  const { data: courseGoals = [] } = useGoalsForCourse(courseId);
+  const coverageGoalIds = useMemo(() => {
+    if (LESSONS_ENABLED && selectedLesson && lessonGoals.length > 0) {
+      return lessonGoals.map((g) => g.id);
+    }
+    return courseGoals.map((g) => g.id);
+  }, [selectedLesson, lessonGoals, courseGoals]);
 
   const { data: studentOverview = [] } = useLessonStudentOverview(
-    lessonGoalIds.length > 0 ? classId : undefined,
-    lessonGoalIds
+    coverageGoalIds.length > 0 ? classId : undefined,
+    coverageGoalIds
   );
 
   const coverageMap = useMemo(() => {
-    if (lessonGoalIds.length === 0) return {};
+    if (coverageGoalIds.length === 0) return {};
     const map: Record<string, "all" | "some" | "none"> = {};
     for (const so of studentOverview) {
       const counts = Object.values(so.goalCounts);
       const covered = counts.filter((c) => c > 0).length;
       if (covered === 0 || counts.length === 0) map[so.student.id] = "none";
-      else if (covered >= lessonGoalIds.length) map[so.student.id] = "all";
+      else if (covered >= coverageGoalIds.length) map[so.student.id] = "all";
       else map[so.student.id] = "some";
     }
     return map;
-  }, [studentOverview, lessonGoalIds]);
+  }, [studentOverview, coverageGoalIds]);
 
   useEffect(() => {
     setSelectedGoalIds([]);
@@ -316,7 +332,7 @@ export default function E02CaptureToolAddProofs() {
           proofTypeMap={proofTypeMap}
           coverageMap={coverageMap}
           seatingData={seatingData}
-          lessonGoalIds={lessonGoalIds}
+          coverageGoalIds={coverageGoalIds}
           onToggleStudent={toggleStudent}
         />
 
