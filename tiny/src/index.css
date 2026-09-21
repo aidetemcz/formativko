@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
-/* Inter je hostovaný lokálně (public/fonts), aby prototyp nezávisel na Figma CDN.
+/* Inter je hostovaný lokálně (src/fonts, Vite je zabalí do dist/assets),
+   aby prototyp nezávisel na Figma CDN.
    Názvy rodin zůstávají "Inter:Regular" / "Inter:Medium" — tak je používá App.tsx. */
 
 @font-face {
