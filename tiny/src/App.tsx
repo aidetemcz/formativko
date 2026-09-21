@@ -224,38 +224,47 @@ function SparkleIcon() {
   );
 }
 
+// Nenápadné, ale trvale viditelné tlačítko pro přidání kontextu Buddymu.
+// Dřív se objevovalo až při najetí myší — na dotyku se tak nedalo najít vůbec.
+function BuddyButton({ onClick, title, style }: { onClick: (e: React.MouseEvent) => void; title: string; style?: React.CSSProperties }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      style={{
+        width: 24, height: 24, borderRadius: 7, padding: 0, flexShrink: 0, cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#faf5ff", border: "1px solid rgba(124,58,237,0.35)", color: "#7c3aed",
+        opacity: 0.6, transition: "opacity 0.14s, background 0.14s, border-color 0.14s",
+        ...style,
+      }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = "0.6"; e.currentTarget.style.background = "#faf5ff"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.35)"; }}
+    >
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 1.5l1.6 4.9 4.9 1.6-4.9 1.6L8 14.5l-1.6-4.9L1.5 8l4.9-1.6z" fill="currentColor"/>
+      </svg>
+    </button>
+  );
+}
+
 function AIHint({ children, message, inline }: { children: React.ReactNode; message: string; inline?: boolean }) {
-  const [hovered, setHovered] = useState(false);
   const openBuddy = useContext(BuddyContext);
-  // Extend left edge 38px so moving mouse toward the icon stays inside the hover zone
   return (
     <div
       style={{
         position: "relative",
         display: inline ? "inline-block" : "block",
-        marginLeft: -38,
-        paddingLeft: 38,
+        marginLeft: -34,
+        paddingLeft: 34,
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      <button
-        onClick={() => openBuddy(message)}
-        title="Otevřít Buddy AI"
-        style={{
-          position: "absolute", left: 6, top: "50%",
-          transform: `translateY(-50%) scale(${hovered ? 1 : 0.75})`,
-          width: 26, height: 26, borderRadius: "50%", border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg, #a855f7, #7c3aed)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 10px rgba(124,58,237,0.4)",
-          opacity: hovered ? 1 : 0,
-          transition: "opacity 0.14s ease, transform 0.14s ease",
-          zIndex: 20,
-        }}
-      >
-        <SparkleIcon />
-      </button>
+      <BuddyButton
+        onClick={e => { e.stopPropagation(); openBuddy(message); }}
+        title="Přidat do kontextu Buddyho"
+        style={{ position: "absolute", left: 2, top: "50%", transform: "translateY(-50%)", zIndex: 20 }}
+      />
       {children}
     </div>
   );
@@ -5382,21 +5391,22 @@ function TematickyPlanView() {
     const activeCols = colOrder.filter(id => cols.has(id));
 
     const selectStyle: React.CSSProperties = {
-      padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+      padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(0,0,0,0.10)",
       fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
-      background: "#fff", outline: "none", cursor: "pointer",
+      background: "#fcfcfd", boxShadow: "0 1px 1px rgba(0,0,0,0.03)", outline: "none", cursor: "pointer",
     };
     const thStyle: React.CSSProperties = {
       padding: "11px 14px", textAlign: "left",
       fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
       color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em",
       background: "#fafafa", borderBottom: "1px solid rgba(0,0,0,0.08)",
+      borderRight: "1px solid rgba(0,0,0,0.05)",
       whiteSpace: "nowrap", userSelect: "none",
     };
     const tdStyle: React.CSSProperties = {
       padding: "11px 14px", verticalAlign: "top",
       fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
-      borderBottom: "1px solid rgba(0,0,0,0.05)", lineHeight: 1.55,
+      borderBottom: "1px solid rgba(0,0,0,0.05)", borderRight: "1px solid rgba(0,0,0,0.05)", lineHeight: 1.55,
     };
 
     function onDragStart(idx: number) { setDragFrom(idx); }
@@ -5503,7 +5513,8 @@ function TematickyPlanView() {
               const locked = col.id === "cile";
               return (
                 <button key={col.id} onClick={() => !locked && toggleCol(col.id)} style={{
-                  padding: "5px 12px", borderRadius: 20, border: "1.5px solid",
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  padding: "5px 12px", borderRadius: 20, border: "1px solid",
                   borderColor: on ? "#7c4dbd" : "rgba(0,0,0,0.12)",
                   background: on ? "rgba(124,77,189,0.08)" : "#fafafa",
                   fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
@@ -5513,7 +5524,7 @@ function TematickyPlanView() {
                   opacity: locked ? 1 : undefined,
                 }}>
                   {on && (
-                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ marginRight: 5, verticalAlign: "-1px" }} aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
                       <path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
@@ -5573,27 +5584,15 @@ function TematickyPlanView() {
                         borderLeft: isDragTarget ? "2px solid #7c4dbd" : undefined,
                         opacity: dragFrom === i ? 0.45 : 1,
                       }}
-                      onMouseEnter={e => { const btn = e.currentTarget.querySelector<HTMLElement>(".tp-ai-btn"); if (btn) { btn.style.opacity = "1"; btn.style.transform = "translateY(-50%) scale(1)"; } }}
-                      onMouseLeave={e => { const btn = e.currentTarget.querySelector<HTMLElement>(".tp-ai-btn"); if (btn) { btn.style.opacity = "0"; btn.style.transform = "translateY(-50%) scale(0.75)"; } }}
                     >
-                      <button
-                        className="tp-ai-btn"
-                        onClick={e => { e.stopPropagation(); openBuddy(`Chci upravit sloupec: ${col.label}`); }}
-                        style={{
-                          position: "absolute", left: -30, top: "50%",
-                          transform: "translateY(-50%) scale(0.75)",
-                          width: 22, height: 22, borderRadius: "50%", border: "none",
-                          background: "linear-gradient(135deg, #a855f7, #7c3aed)",
-                          opacity: 0, transition: "opacity 0.14s ease, transform 0.14s ease",
-                          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                          zIndex: 10, padding: 0,
-                        }}
-                      >
-                        <SparkleIcon />
-                      </button>
                       <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <DragGrip size={13} opacity={0.35} />
                         {col.label}
+                        <BuddyButton
+                          onClick={e => { e.stopPropagation(); openBuddy(`Sloupec: ${col.label}`); }}
+                          title="Přidat sloupec do kontextu Buddyho"
+                          style={{ width: 20, height: 20 }}
+                        />
                         {colId === "cile" && (
                           <button
                             onClick={e => { e.stopPropagation(); handleGenerateCriteria(); }}
@@ -5710,22 +5709,6 @@ function TematickyPlanView() {
                           <span style={{ color: "#0a0a0a", opacity: isMonthHovered ? 1 : 0.55, transition: "opacity 0.14s", display: "flex" }}>
                             <DragGrip size={14} opacity={isMonthHovered ? 0.4 : 0.18} />
                           </span>
-                          <button
-                            onClick={() => openBuddy(`Chci upravit měsíc: ${row.cas}`)}
-                            title="Otevřít Buddy AI"
-                            style={{
-                              width: 24, height: 24, borderRadius: "50%", border: "none",
-                              background: "linear-gradient(135deg, #a855f7, #7c3aed)",
-                              opacity: isMonthHovered ? 1 : 0,
-                              transform: `scale(${isMonthHovered ? 1 : 0.7})`,
-                              transition: "opacity 0.14s ease, transform 0.14s ease",
-                              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                              boxShadow: "0 2px 8px rgba(124,58,237,0.35)",
-                              padding: 0, flexShrink: 0,
-                            }}
-                          >
-                            <SparkleIcon />
-                          </button>
                           <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
                             {row.cas}
                           </span>
@@ -5892,7 +5875,10 @@ function TematickyPlanView() {
 }
 
 // buddy chat component
-function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => void; trigger: { msg: string; key: number } | null }) {
+function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearContext }: {
+  open: boolean; onClose: () => void; trigger: { msg: string; key: number } | null;
+  context: string[]; onRemoveContext: (label: string) => void; onClearContext: () => void;
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "init", role: "buddy", text: "Ahoj! Jsem Buddy 👋 Jsem tu, abych ti pomohl s formativním hodnocením. Na co se chceš zeptat?" },
   ]);
@@ -6066,8 +6052,47 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
           <div ref={bottomRef} />
         </div>
 
+        {/* nasbíraný kontext */}
+        {context.length > 0 && (
+          <div style={{ padding: "10px 14px 0", background: "#fff", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Kontext
+              </span>
+              <button
+                onClick={onClearContext}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a" }}
+              >
+                Vyprázdnit
+              </button>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {context.map(label => (
+                <span key={label} style={{
+                  display: "inline-flex", alignItems: "center", gap: 5, maxWidth: "100%",
+                  padding: "3px 6px 3px 8px", borderRadius: 7,
+                  background: "#f3e8ff", color: "#6b21a8",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 11,
+                }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 190 }}>{label}</span>
+                  <button
+                    onClick={() => onRemoveContext(label)}
+                    title="Odebrat z kontextu"
+                    aria-label={`Odebrat z kontextu: ${label}`}
+                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "#6b21a8", display: "flex", flexShrink: 0 }}
+                  >
+                    <svg width="8" height="8" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                      <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* input */}
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0 }}>
+        <div style={{ padding: "12px 14px", borderTop: context.length > 0 ? "none" : "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0 }}>
           {recording ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 14, background: "#fdf4ff", border: "1.5px solid #c084fc" }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e11d48", display: "block", flexShrink: 0, animation: "recPulse 1s ease-in-out infinite" }} />
@@ -6351,6 +6376,7 @@ export default function App() {
   const [buddyOpen, setBuddyOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [buddyTrigger, setBuddyTrigger] = useState<{ msg: string; key: number } | null>(null);
+  const [buddyContext, setBuddyContext] = useState<string[]>([]);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [tpGoals, setTpGoals] = useState<TpGoal[]>([]);
   // Řádky tématického plánu žijí tady, aby je viděl plán i seznam hodin —
@@ -6440,9 +6466,12 @@ export default function App() {
     },
   };
 
+  // Klik na hvězdičku kontext přidá, neodešle rovnou zprávu — učitel vidí,
+  // s čím Buddy pracuje, a může toho nasbírat víc.
   const openBuddyWith = useCallback((msg: string) => {
     setBuddyOpen(true);
-    setBuddyTrigger(prev => ({ msg, key: (prev?.key ?? 0) + 1 }));
+    const label = msg.replace(/^Chci upravit\s+/i, "");
+    setBuddyContext(prev => prev.includes(label) ? prev : [...prev, label]);
   }, []);
 
   return (
@@ -6598,7 +6627,14 @@ export default function App() {
       </main>
 
       {/* buddy chat panel — inline, part of the flex row */}
-      <BuddyChat open={buddyOpen} onClose={() => setBuddyOpen(false)} trigger={buddyTrigger} />
+      <BuddyChat
+        open={buddyOpen}
+        onClose={() => setBuddyOpen(false)}
+        trigger={buddyTrigger}
+        context={buddyContext}
+        onRemoveContext={label => setBuddyContext(prev => prev.filter(x => x !== label))}
+        onClearContext={() => setBuddyContext([])}
+      />
       {onboardingOpen && <OnboardingModal onClose={() => setOnboardingOpen(false)} />}
 
       {/* buddy button — hidden when chat is open */}
@@ -6609,9 +6645,9 @@ export default function App() {
           style={{
             position: "fixed", top: 12, right: 16, zIndex: 200,
             width: 44, height: 44, borderRadius: "50%",
-            background: "#fff",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.07)",
-            border: "1.5px solid rgba(120,80,180,0.15)",
+            background: "#5b21b6",
+            boxShadow: "0 2px 10px rgba(91,33,182,0.3), 0 1px 3px rgba(0,0,0,0.12)",
+            border: "none",
             cursor: "pointer", padding: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
             transition: "transform 0.18s ease",
@@ -6619,7 +6655,7 @@ export default function App() {
           onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         >
-          <img src={buddyImg} alt="Buddy" style={{ width: 30, height: 30, objectFit: "contain" }} />
+          <img src={buddyImg} alt="Buddy" style={{ width: 28, height: 28, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
         </button>
       )}
     </div>
