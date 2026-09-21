@@ -14,10 +14,12 @@ na výsledku nejde nic vidět (refaktor, propojení dat, výkon).
 Nerestartovat produkční build a preview server po každé úpravě; na hraní
 stačí jeden `npm run dev` s hot reloadem.
 
-**Odpovídat velmi stručně.** Krátký seznam zapracovaných úkolů, nic víc —
-žádné vysvětlování, jak to funguje, žádné rozbory příčin ani zdůvodňování
-řešení. Na konec zprávy patří jen věci k rozhodnutí. Podrobnosti jdou do
-commit message, ne do chatu.
+**Odpovídat stručně, ale čitelně.** Seznam zapracovaných úkolů celými větami,
+u každého jedna věta o tom, co se změnilo — ne jen holé odrážky s názvem
+úkolu. Vynechat vysvětlování, jak to funguje vnitřně, rozbory příčin
+a zdůvodňování zvolených řešení; to patří do commit message. Na konec zprávy
+věci k rozhodnutí. Zmínit navíc jen to, co bylo potřeba udělat jinak, než
+znělo zadání, nebo co je rozbité.
 
 Dávkovat změny. Velký balík zadání v jedné zprávě je rychlejší než totéž
 rozdělené do několika — ušetří se opakované čtení kódu a buildy.
