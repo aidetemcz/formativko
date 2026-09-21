@@ -2758,6 +2758,29 @@ function LessonStatus({ printed, uploaded, evidenceCount }: { printed?: boolean;
   );
 }
 
+// Ikonová akce v řádku hodiny
+function LessonActionButton({ title, onClick, path }: { title: string; onClick: () => void; path: string }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      style={{
+        width: 30, height: 30, borderRadius: 8, padding: 0, cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", color: "#5c5c6b",
+        transition: "background 0.12s, border-color 0.12s, color 0.12s",
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(236,236,240,0.7)"; e.currentTarget.style.color = "#0a0a0a"; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#5c5c6b"; }}
+    >
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d={path} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
 // Vysvětlivka schovaná pod otazníkem u nadpisu
 function InfoHint({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
@@ -2799,7 +2822,7 @@ function InfoHint({ text }: { text: string }) {
   );
 }
 
-function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions }: {
+function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions, onLessonAction }: {
   filtered: AnyGoal[];
   animateIn: boolean;
   tpGoals: TpGoal[];
@@ -2812,6 +2835,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
   evidenceCountFor: (id: string) => number;
   statusFor: (id: string) => { printed?: boolean; uploaded?: boolean };
   classOptions: string[];
+  onLessonAction: (goalId: string, isTp: boolean, kind: "print" | "evidence" | "camera") => void;
 }) {
   const [orderedIds, setOrderedIds] = useState<string[]>(() => filtered.map(g => g.id));
   const dragGoalRef = useRef<string | null>(null);
@@ -2965,13 +2989,30 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 
                     <LessonStatus printed={st.printed} uploaded={st.uploaded} evidenceCount={evidenceCountFor(g.id)} />
 
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center", marginTop: 2 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch", marginTop: 2 }}>
                       <button
                         onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
                         style={{ ...btnStyle("ghost"), fontSize: 12, padding: "6px 14px" }}
                       >
                         Detail
                       </button>
+                      <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
+                        <LessonActionButton
+                          title="Vytisknout tabulku hodnocení"
+                          onClick={() => onLessonAction(g.id, isTp, "print")}
+                          path="M4 6V2h8v4M4 12H3a1.333 1.333 0 0 1-1.333-1.333V7.333A1.333 1.333 0 0 1 3 6h10a1.333 1.333 0 0 1 1.333 1.333v3.334A1.333 1.333 0 0 1 13 12h-1M4 9.333h8V14H4z"
+                        />
+                        <LessonActionButton
+                          title="Zaznamenat důkazy o učení"
+                          onClick={() => onLessonAction(g.id, isTp, "evidence")}
+                          path="M2.5 3.5h11v9h-11zM2.5 6.5h11M6 6.5V12.5M9.5 6.5V12.5"
+                        />
+                        <LessonActionButton
+                          title="Nahrát vyplněnou tabulku"
+                          onClick={() => onLessonAction(g.id, isTp, "camera")}
+                          path="M8 10.5V2.8M5.2 5.6L8 2.8l2.8 2.8M2.5 10v2.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V10"
+                        />
+                      </div>
                     </div>
 
                     {isTp && (
@@ -3010,6 +3051,7 @@ function CileView() {
   const { evidenceRecords } = useContext(EvidenceContext);
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
   const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({ g1: { printed: true } });
+  const [listModal, setListModal] = useState<{ kind: "print" | "evidence" | "camera"; goalId: string; isTp: boolean } | null>(null);
   const markLesson = (id: string | null, patch: { printed?: boolean; uploaded?: boolean }) => {
     if (!id) return;
     setLessonStatus(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -3646,6 +3688,7 @@ function CileView() {
           setSelectedGoalId={id => setSelectedGoalId(id)}
           btnStyle={btnStyle}
           classOptions={initialClasses.map(c => c.name)}
+          onLessonAction={(goalId, isTp, kind) => setListModal({ kind, goalId, isTp })}
           evidenceCountFor={id => evidenceRecords.filter(r => r.goalId === id).length}
           statusFor={id => lessonStatus[id] ?? {}}
           onPatch={(id, isTp, patch) => {
@@ -3660,6 +3703,35 @@ function CileView() {
           }}
         />
       )}
+
+      {/* akce ze seznamu hodin — tisk, sběr důkazů, nahrání tabulky */}
+      {listModal && (() => {
+        const lg = allGoals.find(x => x.id === listModal.goalId);
+        if (!lg) return null;
+        const students = initialClasses.find(c => c.name === lg.cls)?.students ?? [];
+        const close = () => setListModal(null);
+        if (listModal.kind === "print") return (
+          <PrintModal
+            onClose={close}
+            students={students}
+            goal={lg.text}
+            onPrinted={() => markLesson(lg.id, { printed: true })}
+          />
+        );
+        if (listModal.kind === "camera") return (
+          <CameraModal onClose={close} onUploaded={() => markLesson(lg.id, { uploaded: true })} />
+        );
+        return (
+          <EvidenceModal
+            onClose={close}
+            students={students}
+            goal={lg.text}
+            goalId={lg.id}
+            subject={lg.subject}
+            className={lg.cls}
+          />
+        );
+      })()}
     </div>
   );
 }
