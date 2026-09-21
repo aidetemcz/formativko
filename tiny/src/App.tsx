@@ -341,7 +341,7 @@ function ModalInput({ label, value, onChange, placeholder }: {
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
-          width: "100%", boxSizing: "border-box", padding: "9px 12px",
+          width: "100%", boxSizing: "border-box", padding: "12px 12px",
           borderRadius: 10, border: "1px solid rgba(0,0,0,0.14)",
           fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
           background: "#fafafa", outline: "none",
@@ -355,7 +355,7 @@ function ModalActions({ onCancel, onConfirm, confirmLabel, danger }: {
   onCancel: () => void; onConfirm: () => void; confirmLabel: string; danger?: boolean;
 }) {
   return (
-    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 24 }}>
+    <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
       <button onClick={onCancel} style={btnStyle("ghost")}>Zrušit</button>
       <button onClick={onConfirm} style={btnStyle(danger ? "danger" : "primary")}>{confirmLabel}</button>
     </div>
@@ -364,7 +364,7 @@ function ModalActions({ onCancel, onConfirm, confirmLabel, danger }: {
 
 function btnStyle(variant: "primary" | "ghost" | "danger"): React.CSSProperties {
   const base: React.CSSProperties = {
-    padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer",
+    padding: "11px 16px", borderRadius: 10, border: "none", cursor: "pointer",
     fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
     transition: "opacity 0.15s",
   };
@@ -377,9 +377,9 @@ function btnStyle(variant: "primary" | "ghost" | "danger"): React.CSSProperties 
 
 function Breadcrumb({ crumbs }: { crumbs: { label: string; onClick?: () => void }[] }) {
   return (
-    <nav style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
+    <nav style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
       {crumbs.map((crumb, i) => (
-        <span key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {i > 0 && (
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, opacity: 0.35 }}>
               <path d="M6 4l4 4-4 4" stroke="#717182" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -582,19 +582,19 @@ function levelBadgeColor(level: string): { bg: string; color: string } {
 function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
   const lc = ev.level ? levelBadgeColor(ev.level) : null;
   return (
-    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "16px 20px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: ev.note || ev.level ? 10 : 0 }}>
+    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "21px 20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: ev.note || ev.level ? 10 : 0 }}>
         <EvidenceIcon type={ev.type} />
         <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
           {evidenceLabel(ev.type)}
         </span>
         {ev.criterion && (
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
+          <span style={{ padding: "3px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
             {ev.criterion}
           </span>
         )}
         {ev.level && lc && (
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+          <span style={{ padding: "3px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
             {ev.level}
           </span>
         )}
@@ -605,9 +605,9 @@ function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
           {ev.goal}
         </p>
       )}
-      {ev.note && <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3a3a4a", lineHeight: 1.6, margin: 0 }}>{ev.note}</p>}
+      {ev.note && <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3a3a4a", lineHeight: 1.7, margin: 0 }}>{ev.note}</p>}
       {ev.duration && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="6.667" stroke="#b0b0bc" strokeWidth="1.2" />
             <path d="M8 5.333V8l1.667 1.667" stroke="#b0b0bc" strokeWidth="1.2" strokeLinecap="round" />
@@ -616,7 +616,7 @@ function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
         </div>
       )}
       {ev.fileName && (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, padding: "5px 10px", borderRadius: 8, background: "rgba(236,236,240,0.5)" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 8, padding: "8px 10px", borderRadius: 8, background: "rgba(236,236,240,0.5)" }}>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <path d="M9.333 1.333H4A1.333 1.333 0 0 0 2.667 2.667v10.666A1.333 1.333 0 0 0 4 14.667h8a1.333 1.333 0 0 0 1.333-1.334V5.333L9.333 1.333z" stroke="#717182" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M9.333 1.333v4h4" stroke="#717182" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -662,7 +662,7 @@ function StudentProfile({
 
       {/* header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div style={{
             width: 48, height: 48, borderRadius: "50%", background: avatarColor(student.lastName),
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -674,20 +674,20 @@ function StudentProfile({
             <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 2px" }}>
               {student.firstName} {student.lastName}
             </h1>
-            <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
+            <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
               {className}
             </span>
           </div>
         </div>
 
         {/* view toggle */}
-        <div style={{ display: "flex", gap: 4, background: "rgba(236,236,240,0.6)", borderRadius: 9, padding: 3 }}>
+        <div style={{ display: "flex", gap: 6, background: "rgba(236,236,240,0.6)", borderRadius: 9, padding: 3 }}>
           {([["all", "Vše"], ["goal", "Podle cíle"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
               style={{
-                padding: "5px 14px", borderRadius: 7, border: "none", cursor: "pointer",
+                padding: "8px 14px", borderRadius: 7, border: "none", cursor: "pointer",
                 fontFamily: view === v ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                 fontWeight: view === v ? 500 : 400, fontSize: 14,
                 background: view === v ? "#fff" : "transparent",
@@ -709,17 +709,17 @@ function StudentProfile({
           Zatím žádné důkazy nebyly zaznamenány.
         </div>
       ) : view === "all" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {studentRecords.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent />)}
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
           {groups.map(([goalText, items]) => (
             <div key={goalText}>
               <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
                 {goalText.length > 80 ? goalText.slice(0, 78) + "…" : goalText}
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {items.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent />)}
               </div>
             </div>
@@ -884,7 +884,7 @@ function ClassesView() {
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
             Třídy
           </h1>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", display: "flex" }}>
                 <IconSearch />
@@ -903,7 +903,7 @@ function ClassesView() {
             </div>
             <button
               onClick={() => { setClassNameInput(""); setAddClassOpen(true); }}
-              style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
+              style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}
             >
               <IconPlus />
               Přidat třídu
@@ -924,7 +924,7 @@ function ClassesView() {
               onClick={() => { setSelectedClassId(cls.id); setStudentSearch(""); }}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", padding: "14px 20px", background: "transparent", border: "none",
+                width: "100%", padding: "19px 20px", background: "transparent", border: "none",
                 borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)",
                 cursor: "pointer", textAlign: "left",
                 transition: "background 0.12s",
@@ -932,7 +932,7 @@ function ClassesView() {
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(236,236,240,0.35)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, background: "rgba(236,236,240,0.7)",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -964,7 +964,7 @@ function ClassesView() {
               <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
                 Nahrát ze školního systému
               </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {[
                   { name: "Bakaláři", color: "#1e40af" },
                   { name: "iSAS", color: "#7c3aed" },
@@ -976,7 +976,7 @@ function ClassesView() {
                   <button
                     key={sys.name}
                     style={{
-                      padding: "7px 14px", borderRadius: 8,
+                      padding: "10px 14px", borderRadius: 8,
                       border: `1.5px solid ${sys.color}22`,
                       background: `${sys.color}0d`,
                       fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
@@ -1016,7 +1016,7 @@ function ClassesView() {
                 }}
               >
                 {addClassDropped ? (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <circle cx="8" cy="8" r="6.667" stroke="#16a34a" strokeWidth="1.33"/>
                       <path d="M5.333 8l1.667 1.667L10.667 6" stroke="#16a34a" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1039,7 +1039,7 @@ function ClassesView() {
                     <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#3a3a4a", margin: "0 0 4px" }}>
                       Přetáhněte screenshot nebo PDF se seznamem žáků
                     </p>
-                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.5 }}>
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.6 }}>
                       AI automaticky rozpozná jména žáků z libovolného formátu nebo systému
                     </p>
                   </>
@@ -1063,7 +1063,7 @@ function ClassesView() {
         { label: `Třída ${selectedClass.name}` },
       ]} />
       {/* title row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
         <button
           onClick={() => setSelectedClassId(null)}
           style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 4, borderRadius: 8 }}
@@ -1079,7 +1079,7 @@ function ClassesView() {
             {selectedClass.students.length} {studentCountLabel(selectedClass.students.length)}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
           <div style={{ position: "relative" }}>
             <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", display: "flex" }}>
               <IconSearch />
@@ -1098,7 +1098,7 @@ function ClassesView() {
           </div>
           <button
             onClick={() => { setStudentFirstName(""); setStudentLastName(""); setAddStudentOpen(true); }}
-            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
+            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}
           >
             <IconPlus />
             Přidat žáka
@@ -1118,14 +1118,14 @@ function ClassesView() {
             key={student.id}
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "11px 20px",
+              padding: "16px 20px",
               borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)",
             }}
           >
             <button
               onClick={() => setSelectedStudentId(student.id)}
               style={{
-                display: "flex", alignItems: "center", gap: 12, flex: 1,
+                display: "flex", alignItems: "center", gap: 14, flex: 1,
                 background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0,
               }}
               onMouseEnter={(e) => ((e.currentTarget.querySelector("span:last-child") as HTMLElement).style.color = "#555")}
@@ -1145,9 +1145,9 @@ function ClassesView() {
                 const ev = studentEvidence[student.id];
                 if (!ev || (ev.audio === 0 && ev.photo === 0)) return null;
                 return (
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 4 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
                     {ev.audio > 0 && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                           <rect x="5" y="1" width="6" height="9" rx="3" stroke="currentColor" strokeWidth="1.5"/>
                           <path d="M2.667 8A5.333 5.333 0 0 0 8 13.333 5.333 5.333 0 0 0 13.333 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -1157,7 +1157,7 @@ function ClassesView() {
                       </span>
                     )}
                     {ev.photo > 0 && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                           <path d="M1.333 5.333A1.333 1.333 0 0 1 2.667 4h1.2L5.2 2h5.6l1.333 2h1.2A1.333 1.333 0 0 1 14.667 5.333v7.334A1.333 1.333 0 0 1 13.333 14H2.667a1.333 1.333 0 0 1-1.334-1.333V5.333z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           <circle cx="8" cy="9" r="2.333" stroke="currentColor" strokeWidth="1.5"/>
@@ -1169,11 +1169,11 @@ function ClassesView() {
                 );
               })()}
             </button>
-            <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ display: "flex", gap: 6 }}>
               <button
                 onClick={() => openEditStudent(student)}
                 title="Upravit"
-                style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.6 }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.6 }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
               >
@@ -1182,7 +1182,7 @@ function ClassesView() {
               <button
                 onClick={() => openDeleteStudent(student)}
                 title="Odstranit"
-                style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.5 }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.5 }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.5")}
               >
@@ -1308,7 +1308,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
 
   const rowContent = (c: CustomLevel, i: number) => (
     <AIHint message={`Chci upravit level: ${c.name}`}>
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px 10px 16px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px 10px 16px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)" }}>
       <input
         value={c.name}
         onChange={e => updateItem(c.id, "name", e.target.value)}
@@ -1316,7 +1316,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
           flexShrink: 0, width: 118, boxSizing: "border-box",
           fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a",
           background: "rgba(236,236,240,0.5)", border: "1px solid rgba(0,0,0,0.09)",
-          borderRadius: 20, outline: "none", padding: "5px 12px",
+          borderRadius: 20, outline: "none", padding: "8px 12px",
           transition: "background 0.12s, border-color 0.12s", cursor: "text",
           textAlign: "center",
         }}
@@ -1333,7 +1333,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
           flex: 1, minWidth: 0, boxSizing: "border-box",
           fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
           background: "transparent", border: "none", borderRadius: 6, outline: "none",
-          padding: "5px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text",
+          padding: "8px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text",
         }}
         onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = inputBg; }}
         onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
@@ -1366,7 +1366,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
       </div>
       <button
         onClick={addItem}
-        style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}
+        style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}
       >
         <IconPlus />
         Přidat úroveň
@@ -1383,11 +1383,11 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
   if (customMode) {
     return (
       <div>
-        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 14px", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 14px", lineHeight: 1.6 }}>
           Upravte názvy a popisy úrovní podle svých potřeb. Úrovně jsou seřazeny od nejnižší po nejvyšší.
         </p>
         <CustomLevelList animateIn initial={draftItems} onItemsChange={setDraftItems} />
-        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => { onSaveCustom?.(draftItems); onDone("vlastní"); setCustomMode(false); }} style={btnStyle("primary")}>Uložit vlastní úrovně</button>
           <button onClick={() => setCustomMode(false)} style={btnStyle("ghost")}>Zpět</button>
         </div>
@@ -1397,7 +1397,7 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
 
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
         {levelOptions.map((opt) => {
           const isSelected = selected === opt.id;
           return (
@@ -1407,9 +1407,9 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
               style={{
                 background: "#fff",
                 border: isSelected ? "1.5px solid #0a0a0a" : "1.5px solid rgba(0,0,0,0.12)",
-                borderRadius: 14, padding: "14px 16px", textAlign: "left",
+                borderRadius: 14, padding: "19px 16px", textAlign: "left",
                 cursor: "pointer", transition: "border-color 0.15s",
-                display: "flex", alignItems: "flex-start", gap: 12,
+                display: "flex", alignItems: "flex-start", gap: 14,
               }}
             >
               <span style={{
@@ -1425,7 +1425,7 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
                 <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>
                   {opt.name}
                 </span>
-                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.65 }}>
                   {opt.desc}
                 </span>
               </span>
@@ -1433,9 +1433,9 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
           );
         })}
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 10 }}>
         <button onClick={() => onDone(selected)} style={btnStyle("primary")}>Uložit výběr</button>
-        <button onClick={() => setCustomMode(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6 }}>
+        <button onClick={() => setCustomMode(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8 }}>
           <IconPlus />
           Vytvořit vlastní hodnocení
         </button>
@@ -1486,8 +1486,8 @@ function PrintModal({ onClose, students, goal }: {
         <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#fff" }}>
           Náhled před tiskem
         </span>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M4 6V2h8v4M4 12H3a1.333 1.333 0 0 1-1.333-1.333V7.333A1.333 1.333 0 0 1 3 6h10a1.333 1.333 0 0 1 1.333 1.333v3.334A1.333 1.333 0 0 1 13 12h-1" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M4 9.333h8V14H4z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
@@ -1513,7 +1513,7 @@ function PrintModal({ onClose, students, goal }: {
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
             Tabulka hodnocení · Čeština · 3.A
           </p>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.55 }}>
             {goal}
           </p>
         </div>
@@ -1528,7 +1528,7 @@ function PrintModal({ onClose, students, goal }: {
             <thead>
               <tr>
                 <th style={{
-                  padding: "8px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
+                  padding: "11px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
                   fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182",
                   textAlign: "left", background: "#fafafa",
                 }}>
@@ -1536,9 +1536,9 @@ function PrintModal({ onClose, students, goal }: {
                 </th>
                 {observationCriteria.map((c) => (
                   <th key={c.short} style={{
-                    padding: "8px 6px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
+                    padding: "11px 6px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
                     fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
-                    textAlign: "center", background: "#fafafa", lineHeight: 1.3,
+                    textAlign: "center", background: "#fafafa", lineHeight: 1.45,
                   }}>
                     {c.short}
                   </th>
@@ -1549,14 +1549,14 @@ function PrintModal({ onClose, students, goal }: {
               {sorted.map((student, i) => (
                 <tr key={student.id} style={{ background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
                   <td style={{
-                    padding: "9px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
+                    padding: "12px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
                     fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
                   }}>
                     {student.lastName}, {student.firstName}
                   </td>
                   {observationCriteria.map((c) => (
                     <td key={c.short} style={{
-                      padding: "9px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
+                      padding: "12px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
                       textAlign: "center", fontSize: 15, color: "#0a0a0a",
                       minWidth: 48,
                     }} />
@@ -1572,9 +1572,9 @@ function PrintModal({ onClose, students, goal }: {
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
             Legenda úrovní hodnocení
           </p>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div style={{ display: "flex", gap: 26 }}>
             {levelLegend.map((l) => (
-              <div key={l.letter} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <div key={l.letter} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                 <span style={{
                   flexShrink: 0, width: 24, height: 24, borderRadius: 6,
                   background: l.bg, color: l.color,
@@ -1588,7 +1588,7 @@ function PrintModal({ onClose, students, goal }: {
                   <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", margin: "0 0 1px" }}>
                     {l.label}
                   </p>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.55 }}>
                     {l.desc}
                   </p>
                 </div>
@@ -1765,23 +1765,23 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         onClick={e => e.stopPropagation()}
       >
         {/* sheet header: title left, action buttons + close right */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 18 }}>
           <div>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
               Důkazy o učení · Tabulka hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.55 }}>
               {goal}
             </p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             {/* audio */}
             <button
               onClick={() => addEvidence("audio")}
               title={anyChecked ? "Přidat audio nahrávku označeným žákům" : "Nejdřív zaškrtněte žáky"}
               style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "7px 13px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "10px 13px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
                 cursor: anyChecked ? "pointer" : "default",
                 background: anyChecked ? "#f3f0ff" : "#fafafa",
                 color: anyChecked ? "#7c3aed" : "#b0b0be",
@@ -1801,8 +1801,8 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
               onClick={() => addEvidence("photo")}
               title={anyChecked ? "Přidat fotografii označeným žákům" : "Nejdřív zaškrtněte žáky"}
               style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "7px 13px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "10px 13px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
                 cursor: anyChecked ? "pointer" : "default",
                 background: anyChecked ? "#ecfeff" : "#fafafa",
                 color: anyChecked ? "#0891b2" : "#b0b0be",
@@ -1872,7 +1872,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
             </colgroup>
             <thead>
               <tr>
-                <th style={{ padding: "8px 8px", borderBottom: "2px solid #0a0a0a", background: "#fafafa", textAlign: "center", verticalAlign: "middle" }}>
+                <th style={{ padding: "11px 8px", borderBottom: "2px solid #0a0a0a", background: "#fafafa", textAlign: "center", verticalAlign: "middle" }}>
                   <input
                     type="checkbox"
                     checked={allChecked}
@@ -1882,13 +1882,13 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     style={{ width: 18, height: 18, cursor: "pointer", accentColor: "#0a0a0a" }}
                   />
                 </th>
-                <th style={{ padding: "8px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "left", background: "#fafafa" }}>
+                <th style={{ padding: "11px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "left", background: "#fafafa" }}>
                   Žák / Žákyně
                 </th>
                 {observationCriteria.map(c => {
                   const colChecked = checkedCriteria.has(c.short);
                   return (
-                    <th key={c.short} style={{ padding: "6px 6px 8px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: colChecked ? "#0a0a0a" : "#717182", textAlign: "center", background: colChecked ? "rgba(10,10,10,0.04)" : "#fafafa", lineHeight: 1.3, cursor: "pointer", transition: "background 0.12s, color 0.12s" }} onClick={() => toggleCriterion(c.short)}>
+                    <th key={c.short} style={{ padding: "6px 6px 8px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: colChecked ? "#0a0a0a" : "#717182", textAlign: "center", background: colChecked ? "rgba(10,10,10,0.04)" : "#fafafa", lineHeight: 1.45, cursor: "pointer", transition: "background 0.12s, color 0.12s" }} onClick={() => toggleCriterion(c.short)}>
                       <div style={{ marginBottom: 5 }}>{c.short}</div>
                       <input
                         type="checkbox"
@@ -1901,7 +1901,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     </th>
                   );
                 })}
-                <th style={{ padding: "8px 6px", borderBottom: "2px solid #0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "center", background: "#fafafa" }}>
+                <th style={{ padding: "11px 6px", borderBottom: "2px solid #0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "center", background: "#fafafa" }}>
                   Důkazy
                 </th>
               </tr>
@@ -1919,7 +1919,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                   >
                     {/* checkbox */}
                     <td
-                      style={{ padding: "9px 8px", borderBottom: "1px solid rgba(0,0,0,0.07)", textAlign: "center", verticalAlign: "middle", cursor: "pointer" }}
+                      style={{ padding: "12px 8px", borderBottom: "1px solid rgba(0,0,0,0.07)", textAlign: "center", verticalAlign: "middle", cursor: "pointer" }}
                       onMouseDown={e => { e.preventDefault(); startDrag(student.id); }}
                       onMouseEnter={() => extendDrag(student.id)}
                     >
@@ -1931,7 +1931,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                       />
                     </td>
                     {/* name */}
-                    <td style={{ padding: "9px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)", verticalAlign: "middle", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a" }}>
+                    <td style={{ padding: "12px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)", verticalAlign: "middle", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a" }}>
                       {student.lastName}, {student.firstName}
                     </td>
                     {/* criterion cells */}
@@ -1961,10 +1961,10 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                       );
                     })}
                     {/* evidence summary */}
-                    <td style={{ padding: "9px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", textAlign: "center", verticalAlign: "middle" }}>
-                      <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
+                    <td style={{ padding: "12px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", textAlign: "center", verticalAlign: "middle" }}>
+                      <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
                         {ev.audio > 0 && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                               <rect x="5" y="1" width="6" height="9" rx="3" stroke="currentColor" strokeWidth="1.5"/>
                               <path d="M2.667 8A5.333 5.333 0 0 0 8 13.333 5.333 5.333 0 0 0 13.333 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -1974,7 +1974,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                           </span>
                         )}
                         {ev.photo > 0 && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                               <path d="M1.333 5.333A1.333 1.333 0 0 1 2.667 4h1.2L5.2 2h5.6l1.333 2h1.2A1.333 1.333 0 0 1 14.667 5.333v7.334A1.333 1.333 0 0 1 13.333 14H2.667a1.333 1.333 0 0 1-1.334-1.333V5.333z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               <circle cx="8" cy="9" r="2.333" stroke="currentColor" strokeWidth="1.5"/>
@@ -1992,26 +1992,26 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         </div>
 
         {/* legend */}
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 18 }}>
           <div>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
               Legenda úrovní hodnocení
             </p>
-            <div style={{ display: "flex", gap: 20 }}>
+            <div style={{ display: "flex", gap: 22 }}>
               {levelLegend.map(l => (
-                <div key={l.letter} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                <div key={l.letter} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 6, background: l.bg, color: l.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${l.color}33` }}>
                     {l.letter}
                   </span>
                   <div>
                     <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", margin: "0 0 1px" }}>{l.label}</p>
-                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.4 }}>{l.desc}</p>
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.55 }}>{l.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div style={{ fontSize: 13, color: "#717182", fontFamily: "'Inter:Regular', sans-serif", lineHeight: 1.5, maxWidth: 260 }}>
+          <div style={{ fontSize: 13, color: "#717182", fontFamily: "'Inter:Regular', sans-serif", lineHeight: 1.6, maxWidth: 260 }}>
             <strong style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, color: "#0a0a0a" }}>Tip:</strong> Klikněte do pole pro přiřazení úrovně. Zaškrtněte žáky a klikněte na ikonu nahoře pro přidání důkazu o učení.
           </div>
         </div>
@@ -2072,7 +2072,7 @@ function CameraModal({ onClose }: { onClose: () => void }) {
 
           {/* loading spinner when cam not yet ready */}
           {!camReady && !camError && (
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14 }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #333", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />
               <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: 0 }}>
                 Spouštím kameru…
@@ -2110,14 +2110,14 @@ function CameraModal({ onClose }: { onClose: () => void }) {
         <div style={{ padding: "20px 24px 24px" }}>
           {/* privacy notice */}
           <div style={{
-            display: "flex", gap: 10, alignItems: "flex-start",
-            background: "rgba(236,236,240,0.5)", borderRadius: 10, padding: "10px 14px", marginBottom: 0,
+            display: "flex", gap: 12, alignItems: "flex-start",
+            background: "rgba(236,236,240,0.5)", borderRadius: 10, padding: "15px 14px", marginBottom: 0,
           }}>
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
               <circle cx="8" cy="8" r="6.667" stroke="#717182" strokeWidth="1.2" />
               <path d="M8 7.333V11M8 5.333v.334" stroke="#717182" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.65 }}>
               <strong style={{ color: "#0a0a0a" }}>Fotografie se neukládá.</strong> Snímek slouží pouze k rozpoznání textu z tabulky hodnocení. Data nejsou sdílena ani archivována.
             </p>
           </div>
@@ -2127,8 +2127,8 @@ function CameraModal({ onClose }: { onClose: () => void }) {
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 10px", textAlign: "center" }}>
               Nejde to?
             </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ ...btnStyle("ghost"), flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button style={{ ...btnStyle("ghost"), flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <rect x="5" y="2" width="14" height="20" rx="2" stroke="#0a0a0a" strokeWidth="1.5" />
                   <path d="M12 18h.01" stroke="#0a0a0a" strokeWidth="2" strokeLinecap="round" />
@@ -2137,7 +2137,7 @@ function CameraModal({ onClose }: { onClose: () => void }) {
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                style={{ ...btnStyle("ghost"), flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                style={{ ...btnStyle("ghost"), flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#0a0a0a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -2181,7 +2181,7 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
 
   const rowContent = (c: CriterionItem, i: number) => (
     <AIHint message={`Chci upravit criterion: ${c.label}`}>
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "11px 14px 11px 18px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 16, padding: "11px 14px 11px 18px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)" }}>
       <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 7, background: "rgba(236,236,240,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", marginTop: 6 }}>
         {i + 1}
       </span>
@@ -2189,7 +2189,7 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
         <input
           value={c.label}
           onChange={e => updateItem(c.id, "label", e.target.value)}
-          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 0 2px -6px", transition: "background 0.12s", cursor: "text" }}
+          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "3px 6px", margin: "0 0 2px -6px", transition: "background 0.12s", cursor: "text" }}
           onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = inputBg; }}
           onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
           onFocus={e => (e.currentTarget.style.background = inputBg)}
@@ -2199,7 +2199,7 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
           value={c.desc}
           onChange={e => updateItem(c.id, "desc", e.target.value)}
           placeholder="Popis..."
-          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text" }}
+          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "3px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text" }}
           onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = inputBg; }}
           onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
           onFocus={e => (e.currentTarget.style.background = inputBg)}
@@ -2232,7 +2232,7 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
       </div>
       <button
         onClick={addItem}
-        style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}
+        style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}
       >
         <IconPlus />
         Přidat kritérium
@@ -2294,24 +2294,24 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
             Výzkumný cíl
           </p>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.4, margin: "0 0 12px" }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.55, margin: "0 0 12px" }}>
             {goalText}
           </h1>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 14 }}>
-            <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 14 }}>
+            <span style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
               Nový cíl
             </span>
             <select
               value={subject}
               onChange={e => setSubject(e.target.value)}
-              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
+              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "5px 10px", outline: "none", cursor: "pointer" }}
             >
               {subjectOptions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select
               value={classId}
               onChange={e => setClassId(e.target.value)}
-              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
+              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "5px 10px", outline: "none", cursor: "pointer" }}
             >
               {initialClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -2319,14 +2319,14 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         </div>
       </FadeIn>
 
-      <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 28 }}>
+      <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 30 }}>
         {/* criteria */}
         <FadeIn delay={500}>
           <section>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
               Kritéria hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.7, margin: "0 0 16px" }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
             </p>
             <CriteriaList initial={generatedCriteria.map((c) => ({ id: String(c.n), label: c.label, desc: c.desc }))} animateIn />
@@ -2339,24 +2339,24 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
               Úrovně hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.7, margin: "0 0 16px" }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {levelOptions.map((opt, i) => {
                 const isSelected = selectedLevelId === opt.id;
                 return (
                   <FadeIn key={opt.id} delay={2100 + i * 120}>
                     <button
                       onClick={() => setSelectedLevelId(isSelected ? null : opt.id)}
-                      style={{ background: "#fff", border: isSelected ? "1.5px solid #0a0a0a" : "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: 12, width: "100%", textAlign: "left", cursor: "pointer", transition: "border-color 0.15s" }}
+                      style={{ background: "#fff", border: isSelected ? "1.5px solid #0a0a0a" : "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "19px 16px", display: "flex", alignItems: "flex-start", gap: 14, width: "100%", textAlign: "left", cursor: "pointer", transition: "border-color 0.15s" }}
                     >
                       <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2, background: isSelected ? "#0a0a0a" : "transparent", border: isSelected ? "none" : "1.5px solid rgba(0,0,0,0.25)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}>
                         {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />}
                       </span>
                       <span>
                         <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>{opt.name}</span>
-                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>{opt.desc}</span>
+                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.65 }}>{opt.desc}</span>
                       </span>
                     </button>
                   </FadeIn>
@@ -2374,7 +2374,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
               onSave({ text: goalText, subject, className });
             }}
             style={{
-              width: "100%", padding: "14px 24px",
+              width: "100%", padding: "19px 24px",
               background: "#0a0a0a", color: "#fff", border: "none",
               borderRadius: 14, cursor: "pointer",
               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18,
@@ -2463,7 +2463,7 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
   );
   return (
     <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, border: "1.5px dashed rgba(0,0,0,0.18)", background: "transparent", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#b0b0be", cursor: "pointer", transition: "border-color 0.12s, color 0.12s" }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: "1.5px dashed rgba(0,0,0,0.18)", background: "transparent", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#b0b0be", cursor: "pointer", transition: "border-color 0.12s, color 0.12s" }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.3)"; e.currentTarget.style.color = "#717182"; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.18)"; e.currentTarget.style.color = "#b0b0be"; }}
     >
@@ -2518,7 +2518,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
               {month}
             </p>
           )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {items.map(g => {
               const num = globalNumMap.get(g.id);
               const isTp = g.isTp;
@@ -2549,7 +2549,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       borderLeft: isDragOver ? "4px solid #7c4dbd" : "4px solid #3b82f6",
                       borderTop: isDragOver ? "2px solid #7c4dbd" : undefined,
                       display: "flex", alignItems: "flex-start", gap: 0,
-                      padding: "14px 20px", cursor: "grab", transition: "background 0.12s, border-color 0.1s",
+                      padding: "19px 20px", cursor: "grab", transition: "background 0.12s, border-color 0.1s",
                       opacity: dragGoalRef.current === g.id ? 0.45 : 1,
                     }}
                     onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
@@ -2564,29 +2564,29 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       </svg>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8, alignItems: "center" }}>
                         {num && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 10px 2px 7px", borderRadius: 20, background: "linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "2px 10px 2px 7px", borderRadius: 20, background: "linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
                               <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                             Vyučovací hodina {num}
                           </span>
                         )}
-                        <span style={{ padding: "2px 9px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>{g.subject}</span>
-                        {g.cls && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{g.cls}</span>}
-                        {tpGoal && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{tpGoal.rozsah} {parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}</span>}
+                        <span style={{ padding: "3px 9px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>{g.subject}</span>
+                        {g.cls && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{g.cls}</span>}
+                        {tpGoal && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{tpGoal.rozsah} {parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}</span>}
                         <span onClick={e => e.stopPropagation()}><LessonDatePicker goalId={g.id} compact /></span>
-                        {tpGoal?.vystupy && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>{tpGoal.vystupy}</span>}
+                        {tpGoal?.vystupy && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>{tpGoal.vystupy}</span>}
                       </div>
-                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", lineHeight: 1.5, margin: 0 }}>{g.text}</p>
+                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", lineHeight: 1.6, margin: 0 }}>{g.text}</p>
                     </div>
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center", paddingTop: 2, marginLeft: 16 }}>
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0, alignItems: "center", paddingTop: 2, marginLeft: 16 }}>
                       {isTp ? (
                         <>
-                          <button onClick={e => { e.stopPropagation(); setSelectedTpGoalId(g.id); setTpEditingLevels(false); }} style={{ ...btnStyle("ghost"), fontSize: 14, padding: "5px 12px" }}>Detail</button>
+                          <button onClick={e => { e.stopPropagation(); setSelectedTpGoalId(g.id); setTpEditingLevels(false); }} style={{ ...btnStyle("ghost"), fontSize: 14, padding: "8px 12px" }}>Detail</button>
                           <button onClick={e => { e.stopPropagation(); removeTpGoal(g.id); }} title="Odstranit"
-                            style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
+                            style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
                             onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
                             onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
                           >
@@ -2665,7 +2665,7 @@ function CileView() {
           { label: selectedTpGoal.subject + " · " + selectedTpGoal.trida + " · " + selectedTpGoal.month },
         ]} />
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 26, marginBottom: 36 }}>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
               Výukový cíl
@@ -2676,8 +2676,8 @@ function CileView() {
                 onChange={e => updateTpGoalText(selectedTpGoal.id, e.target.value)}
                 style={{
                   display: "block", width: "100%", maxWidth: 560, boxSizing: "border-box",
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.4,
-                  margin: "0 0 14px", padding: "2px 8px", marginLeft: -8,
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.55,
+                  margin: "0 0 14px", padding: "3px 8px", marginLeft: -8,
                   background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
                   outline: "none", transition: "background 0.12s, border-color 0.12s",
                 }}
@@ -2687,28 +2687,28 @@ function CileView() {
                 onBlur={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
               />
             </AIHint>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ padding: "4px 10px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14 }}>
                 {selectedTpGoal.subject}
               </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
+              <span style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
                 {selectedTpGoal.trida}
               </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
+              <span style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
                 {selectedTpGoal.rozsah} {parseInt(selectedTpGoal.rozsah) === 1 ? "hodina" : parseInt(selectedTpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}
               </span>
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 4 }}>
-            <button onClick={() => setTpPrintOpen(true)} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0, paddingTop: 4 }}>
+            <button onClick={() => setTpPrintOpen(true)} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap" }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M4 6V2h8v4M4 12H3a1.333 1.333 0 0 1-1.333-1.333V7.333A1.333 1.333 0 0 1 3 6h10a1.333 1.333 0 0 1 1.333 1.333v3.334A1.333 1.333 0 0 1 13 12h-1" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M4 9.333h8V14H4z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Tisknout tabulku hodnocení
             </button>
-            <button onClick={() => setTpEvidenceOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+            <button onClick={() => setTpEvidenceOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap" }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M2 12.667C2 11.194 4.686 10 8 10s6 1.194 6 2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
                 <circle cx="8" cy="5.333" r="3.333" stroke="currentColor" strokeWidth="1.33"/>
@@ -2716,7 +2716,7 @@ function CileView() {
               </svg>
               Zaznamenat důkazy o učení
             </button>
-            <button onClick={() => setTpCameraOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+            <button onClick={() => setTpCameraOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap" }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M15.333 5.333L10.667 8l4.666 2.667V5.333zM1.333 4h8a1.333 1.333 0 0 1 1.334 1.333v5.334A1.333 1.333 0 0 1 9.333 12h-8A1.333 1.333 0 0 1 0 10.667V5.333A1.333 1.333 0 0 1 1.333 4z" stroke="#0a0a0a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -2725,7 +2725,7 @@ function CileView() {
           </div>
         </div>
 
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 28 }}>
+        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 30 }}>
           <section>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
               Datum hodiny
@@ -2738,7 +2738,7 @@ function CileView() {
                 Kritéria hodnocení
               </p>
             </AIHint>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.7, margin: "0 0 16px" }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
             </p>
             <CriteriaList initial={selectedTpGoal.criteria} />
@@ -2750,7 +2750,7 @@ function CileView() {
                 Úrovně hodnocení
               </p>
             </AIHint>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.7, margin: "0 0 16px" }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
             </p>
             {tpEditingLevels ? (
@@ -2760,36 +2760,36 @@ function CileView() {
                 savedCustomLevels={savedCustomLevels}
               />
             ) : tpSelectedLevelId === "vlastní" ? (
-              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "19px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>Vlastní úrovně</span>
-                  <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <IconEdit />Upravit
                   </button>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {savedCustomLevels.map((lv, i) => (
-                    <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                      <span style={{ flexShrink: 0, padding: "2px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", whiteSpace: "nowrap" }}>
+                    <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+                      <span style={{ flexShrink: 0, padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", whiteSpace: "nowrap" }}>
                         {lv.name || `Úroveň ${i + 1}`}
                       </span>
-                      {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.5 }}>{lv.desc}</span>}
+                      {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.6 }}>{lv.desc}</span>}
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "19px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                   <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2, background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
                   </span>
                   <span>
                     <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>{tpOpt.name}</span>
-                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>{tpOpt.desc}</span>
+                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.65 }}>{tpOpt.desc}</span>
                   </span>
                 </div>
-                <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <IconEdit />Upravit
                 </button>
               </div>
@@ -2816,13 +2816,13 @@ function CileView() {
         <div style={{ maxWidth: 560, marginTop: 48 }}>
           <h1 style={{
             fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-            fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25,
+            fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.45,
           }}>
             Co chcete učit?
           </h1>
           <p style={{
             fontFamily: "'Inter:Regular', sans-serif", fontSize: 16,
-            color: "#717182", margin: "0 0 24px", lineHeight: 1.6,
+            color: "#717182", margin: "0 0 24px", lineHeight: 1.7,
           }}>
             Např. Počítání do pěti nebo obojživelníky…
           </p>
@@ -2834,10 +2834,10 @@ function CileView() {
             autoFocus
             style={{
               width: "100%", boxSizing: "border-box",
-              padding: "11px 14px", borderRadius: 12,
+              padding: "16px 14px", borderRadius: 12,
               border: "1.5px solid rgba(0,0,0,0.15)",
               fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
-              lineHeight: 1.6, resize: "none", outline: "none",
+              lineHeight: 1.7, resize: "none", outline: "none",
               background: "#fff", transition: "border-color 0.15s",
             }}
             onFocus={(e) => (e.currentTarget.style.borderColor = "#0a0a0a")}
@@ -2848,7 +2848,7 @@ function CileView() {
             disabled={!newGoalText.trim()}
             style={{
               ...btnStyle("primary"),
-              marginTop: 14, display: "flex", alignItems: "center", gap: 7,
+              marginTop: 14, display: "flex", alignItems: "center", gap: 9,
               opacity: newGoalText.trim() ? 1 : 0.4,
               cursor: newGoalText.trim() ? "pointer" : "default",
             }}
@@ -2874,7 +2874,7 @@ function CileView() {
         ]} />
 
         {/* header row: goal + action buttons */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 26, marginBottom: 36 }}>
           <div style={{ flex: 1 }}>
             <p style={{
               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
@@ -2886,22 +2886,22 @@ function CileView() {
             <AIHint message="Chci upravit tento výzkumný goal">
               <h1 style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 26, color: "#0a0a0a", lineHeight: 1.4,
+                fontSize: 26, color: "#0a0a0a", lineHeight: 1.55,
                 margin: "0 0 12px", maxWidth: 560,
               }}>
                 {selectedGoal.text}
               </h1>
             </AIHint>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 10 }}>
               <span style={{
-                padding: "3px 10px", borderRadius: 20,
+                padding: "4px 10px", borderRadius: 20,
                 background: "#f3e8ff", color: "#8200db",
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14,
               }}>
                 {selectedGoal.subject}
               </span>
               <span style={{
-                padding: "3px 10px", borderRadius: 20,
+                padding: "4px 10px", borderRadius: 20,
                 background: "rgba(236,236,240,0.9)", color: "#717182",
                 fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
               }}>
@@ -2911,12 +2911,12 @@ function CileView() {
           </div>
 
           {/* action buttons */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0, paddingTop: 4 }}>
             <button
               onClick={() => setPrintOpen(true)}
               style={{
                 ...btnStyle("primary"),
-                display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap",
               }}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -2929,7 +2929,7 @@ function CileView() {
               onClick={() => setEvidenceOpen(true)}
               style={{
                 ...btnStyle("ghost"),
-                display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap",
               }}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -2943,7 +2943,7 @@ function CileView() {
               onClick={() => setCameraOpen(true)}
               style={{
                 ...btnStyle("ghost"),
-                display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap",
               }}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -2954,7 +2954,7 @@ function CileView() {
           </div>
         </div>
 
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 28 }}>
+        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 30 }}>
           {/* criteria */}
           <section>
             <AIHint message="Chci upravit kritéria hodnocení">
@@ -2968,7 +2968,7 @@ function CileView() {
             </AIHint>
             <p style={{
               fontFamily: "'Inter:Regular', sans-serif", fontSize: 15,
-              color: "#717182", lineHeight: 1.6, margin: "0 0 16px",
+              color: "#717182", lineHeight: 1.7, margin: "0 0 16px",
             }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
             </p>
@@ -2995,7 +2995,7 @@ function CileView() {
             </AIHint>
             <p style={{
               fontFamily: "'Inter:Regular', sans-serif", fontSize: 15,
-              color: "#717182", lineHeight: 1.6, margin: "0 0 16px",
+              color: "#717182", lineHeight: 1.7, margin: "0 0 16px",
             }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
             </p>
@@ -3007,24 +3007,24 @@ function CileView() {
                 savedCustomLevels={savedCustomLevels}
               />
             ) : selectedLevelId === "vlastní" ? (
-              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "19px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
                     Vlastní úrovně
                   </span>
                   <button
                     onClick={() => setEditingLevels(true)}
-                    style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
+                    style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
                   >
                     <IconEdit />
                     Upravit
                   </button>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {savedCustomLevels.map((lv, i) => (
-                    <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                    <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
                       <span style={{
-                        flexShrink: 0, padding: "2px 10px", borderRadius: 20,
+                        flexShrink: 0, padding: "3px 10px", borderRadius: 20,
                         background: "rgba(236,236,240,0.7)",
                         fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a",
                         whiteSpace: "nowrap",
@@ -3032,7 +3032,7 @@ function CileView() {
                         {lv.name || `Úroveň ${i + 1}`}
                       </span>
                       {lv.desc && (
-                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.5 }}>
+                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.6 }}>
                           {lv.desc}
                         </span>
                       )}
@@ -3045,10 +3045,10 @@ function CileView() {
               return (
                 <div style={{
                   background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)",
-                  borderRadius: 14, padding: "14px 16px",
-                  display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12,
+                  borderRadius: 14, padding: "19px 16px",
+                  display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14,
                 }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                     <span style={{
                       flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2,
                       background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center",
@@ -3059,14 +3059,14 @@ function CileView() {
                       <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>
                         {opt.name}
                       </span>
-                      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>
+                      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.65 }}>
                         {opt.desc}
                       </span>
                     </span>
                   </div>
                   <button
                     onClick={() => setEditingLevels(true)}
-                    style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}
+                    style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
                   >
                     <IconEdit />
                     Upravit
@@ -3138,7 +3138,7 @@ function CileView() {
   });
 
   const selectStyle: React.CSSProperties = {
-    padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+    padding: "10px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
     background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
@@ -3156,7 +3156,7 @@ function CileView() {
         </h1>
         <button
           onClick={() => { setNewGoalText(""); setCreatingGoal(true); }}
-          style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
+          style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}
         >
           <IconPlus />
           Vytvořit hodinu
@@ -3164,8 +3164,8 @@ function CileView() {
       </div>
 
       {/* filter bar */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "16px 20px", marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+      <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "21px 20px", marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: "1 1 180px", minWidth: 160 }}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#b0b0be", pointerEvents: "none" }}>
               <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.4"/>
@@ -3187,7 +3187,7 @@ function CileView() {
             {classes.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <select value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={selectStyle}>
             {goalPeriodOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
@@ -3213,7 +3213,7 @@ function CileView() {
           {(filterSubject || filterClass || filterPeriod !== "vse" || search) && (
             <button
               onClick={() => { setFilterSubject(""); setFilterClass(""); setFilterPeriod("vse"); setFilterDateFrom(""); setFilterDateTo(""); setSearch(""); }}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(254,242,242,0.6)", color: "#dc2626", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, cursor: "pointer" }}
+              style={{ padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(254,242,242,0.6)", color: "#dc2626", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, cursor: "pointer" }}
             >
               Zrušit filtry
             </button>
@@ -3257,7 +3257,7 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
   const iconBg    = r.type === "audio" ? "#f3f0ff" : "#ecfeff";
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "19px 18px", display: "flex", alignItems: "center", gap: 18 }}>
       {/* type icon */}
       <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 10, background: r.criterion ? "#f0fdf4" : iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: r.criterion ? "#16a34a" : iconColor }}>
         {r.criterion ? (
@@ -3284,17 +3284,17 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
       {/* main info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* row 1: (jméno ·) předmět · třída · datum */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 5 }}>
           {!hideStudent && (
             <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a" }}>
               {r.studentName}
             </span>
           )}
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#8200db" }}>
+          <span style={{ padding: "3px 8px", borderRadius: 20, background: "#f3e8ff", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#8200db" }}>
             {r.subject}
           </span>
           {!hideStudent && (
-            <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>
+            <span style={{ padding: "3px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>
               {r.className}
             </span>
           )}
@@ -3303,9 +3303,9 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
           </span>
         </div>
         {/* row 2: Cíl N + text cíle */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: r.criterion ? 5 : 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: r.criterion ? 5 : 0 }}>
           {goalNums.get(r.goalId) && (
-            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 8px 1px 6px", borderRadius: 20, background: "linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)", color: "#92400e", border: "1px solid rgba(245,158,11,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "1px 8px 1px 6px", borderRadius: 20, background: "linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)", color: "#92400e", border: "1px solid rgba(245,158,11,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                 <path d="M6 2h12v8a6 6 0 0 1-12 0V2z" stroke="#d97706" strokeWidth="2" strokeLinejoin="round"/>
                 <path d="M6 6H3a2 2 0 0 0 0 4h3M18 6h3a2 2 0 0 1 0 4h-3" stroke="#d97706" strokeWidth="2" strokeLinecap="round"/>
@@ -3320,12 +3320,12 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
         </div>
         {/* row 3: kritérium + úroveň */}
         {r.criterion && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ padding: "1px 8px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#374151" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#374151" }}>
               {r.criterion}
             </span>
             {r.level && lc && (
-              <span style={{ padding: "1px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+              <span style={{ padding: "2px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                 {r.level}
               </span>
             )}
@@ -3334,11 +3334,11 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
       </div>
 
       {/* actions */}
-      <div style={{ flexShrink: 0, display: "flex", gap: 4, alignItems: "center" }}>
+      <div style={{ flexShrink: 0, display: "flex", gap: 6, alignItems: "center" }}>
         {!r.criterion && (
           <button
             title={r.type === "audio" ? "Přehrát nahrávku" : "Zobrazit fotografii"}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color: iconColor, display: "flex", opacity: 0.7, transition: "opacity 0.12s" }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, color: iconColor, display: "flex", opacity: 0.7, transition: "opacity 0.12s" }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "0.7")}
           >
@@ -3356,7 +3356,7 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
         )}
         <button
           title="Upravit důkaz"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color: "#717182", display: "flex", opacity: 0.6, transition: "opacity 0.12s" }}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, color: "#717182", display: "flex", opacity: 0.6, transition: "opacity 0.12s" }}
           onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
           onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
         >
@@ -3366,7 +3366,7 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
         </button>
         <button
           title="Odstranit důkaz"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.45, transition: "opacity 0.12s" }}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.45, transition: "opacity 0.12s" }}
           onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
           onMouseLeave={e => (e.currentTarget.style.opacity = "0.45")}
         >
@@ -3474,7 +3474,7 @@ function DukazyView() {
   }
 
   const selStyle: React.CSSProperties = {
-    padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+    padding: "10px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
     background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
@@ -3494,7 +3494,7 @@ function DukazyView() {
     <div style={{ padding: "32px 40px", minHeight: "100%" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Důkazy o učení" }]} />
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 18 }}>
         <div>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 2px" }}>
             Důkazy o učení
@@ -3503,10 +3503,10 @@ function DukazyView() {
             {filtered.length} {filtered.length === 1 ? "záznam" : filtered.length < 5 ? "záznamy" : "záznamů"}
           </span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
           <button
             onClick={openEvidenceModal}
-            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
+            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap" }}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M2 12.667C2 11.194 4.686 10 8 10s6 1.194 6 2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
@@ -3517,7 +3517,7 @@ function DukazyView() {
           </button>
           <button
             onClick={() => setCameraOpen(true)}
-            style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
+            style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 9, whiteSpace: "nowrap" }}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M15.333 5.333L10.667 8l4.666 2.667V5.333zM1.333 4h8a1.333 1.333 0 0 1 1.334 1.333v5.334A1.333 1.333 0 0 1 9.333 12h-8A1.333 1.333 0 0 1 0 10.667V5.333A1.333 1.333 0 0 1 1.333 4z" stroke="#0a0a0a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -3528,9 +3528,9 @@ function DukazyView() {
       </div>
 
       {/* filter bar */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "16px 20px", marginBottom: 24 }}>
+      <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "21px 20px", marginBottom: 24 }}>
         {/* row 1: Předmět · Třída · Cíl */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
           <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} style={selStyle}>
             <option value="vse">Všechny předměty</option>
             {allSubjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -3553,7 +3553,7 @@ function DukazyView() {
         </div>
 
         {/* row 2: Žáci · Časové období · (vlastní datumový rozsah) · Zrušit filtry */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <select value={filterStudentId} onChange={e => setFilterStudentId(e.target.value)} style={selStyle}>
             <option value="vse">{filterClass === "vse" ? "Všichni žáci" : "Všichni žáci třídy"}</option>
             {studentsOfClass.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -3587,7 +3587,7 @@ function DukazyView() {
             <button
               onClick={resetFilters}
               style={{
-                padding: "7px 14px", borderRadius: 8,
+                padding: "10px 14px", borderRadius: 8,
                 border: "1.5px solid rgba(220,38,38,0.3)",
                 background: "rgba(254,226,226,0.5)",
                 cursor: "pointer",
@@ -3607,7 +3607,7 @@ function DukazyView() {
           Žádné záznamy neodpovídají vybraným filtrům.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} />)}
         </div>
       )}
@@ -3681,11 +3681,11 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
         <h2 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 20, color: "#0a0a0a", margin: "0 0 6px" }}>
           Zaznamenat důkazy o učení
         </h2>
-        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 24px", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 24px", lineHeight: 1.6 }}>
           Vyberte třídu a cíl, ke kterému chcete zaznamenat důkazy.
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
               Třída
@@ -3719,18 +3719,18 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
           </div>
 
           {selectedGoal && (
-            <div style={{ background: "#fafafa", borderRadius: 10, padding: "10px 14px", display: "flex", gap: 8 }}>
-              <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+            <div style={{ background: "#fafafa", borderRadius: 10, padding: "15px 14px", display: "flex", gap: 10 }}>
+              <span style={{ padding: "3px 8px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                 {selectedGoal.subject}
               </span>
-              <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
+              <span style={{ padding: "3px 8px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
                 {selectedClass} · {students.length} žáků
               </span>
             </div>
           )}
         </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
           <button
             onClick={handleConfirm}
             disabled={!selectedGoal || students.length === 0}
@@ -3856,7 +3856,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   const selectStyle: React.CSSProperties = {
     fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 9,
-    padding: "8px 12px", outline: "none", cursor: "pointer", width: "100%",
+    padding: "11px 12px", outline: "none", cursor: "pointer", width: "100%",
   };
 
   return (
@@ -3869,11 +3869,11 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
       <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 6px" }}>
         Vygenerovat hodnocení
       </h1>
-      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.5 }}>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.6 }}>
         AI navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
         {/* class picker */}
         <div>
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 8 }}>
@@ -3907,8 +3907,8 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                   key={st.id}
                   onClick={() => toggleStudent(st.id)}
                   style={{
-                    display: "flex", alignItems: "center", gap: 12, width: "100%",
-                    padding: "10px 16px", background: checked ? "rgba(10,10,10,0.03)" : "transparent",
+                    display: "flex", alignItems: "center", gap: 14, width: "100%",
+                    padding: "15px 16px", background: checked ? "rgba(10,10,10,0.03)" : "transparent",
                     border: "none", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.06)",
                     cursor: "pointer", textAlign: "left", transition: "background 0.1s",
                   }}
@@ -3936,13 +3936,13 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 10 }}>
             Časové období
           </label>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
             {(["mesic", "ctvrtleti", "pololeti", "vlastni"] as HodnoceniPeriod[]).map(p => (
               <button
                 key={p}
                 onClick={() => handlePeriodChange(p)}
                 style={{
-                  padding: "6px 14px", borderRadius: 20, border: "1.5px solid",
+                  padding: "9px 14px", borderRadius: 20, border: "1.5px solid",
                   borderColor: period === p ? "#0a0a0a" : "rgba(0,0,0,0.13)",
                   background: period === p ? "#0a0a0a" : "#fff",
                   color: period === p ? "#fff" : "#717182",
@@ -3955,7 +3955,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             ))}
           </div>
           {period === "vlastni" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", marginBottom: 4 }}>Od</label>
                 <input
@@ -3997,10 +3997,10 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             placeholder="Např. Zaměř se na pokrok žáka, piš přátelsky a povzbudivě..."
             rows={3}
             style={{
-              width: "100%", resize: "vertical", padding: "10px 14px", boxSizing: "border-box",
+              width: "100%", resize: "vertical", padding: "15px 14px", boxSizing: "border-box",
               fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
               background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 9,
-              outline: "none", lineHeight: 1.6,
+              outline: "none", lineHeight: 1.7,
             }}
           />
         </div>
@@ -4010,7 +4010,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           onClick={handleGenerate}
           disabled={selectedStudents.size === 0 || generating}
           style={{
-            width: "100%", padding: "14px 24px",
+            width: "100%", padding: "19px 24px",
             background: selectedStudents.size === 0 ? "rgba(10,10,10,0.3)" : "#0a0a0a",
             color: "#fff", border: "none", borderRadius: 14, cursor: selectedStudents.size === 0 ? "default" : "pointer",
             fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18,
@@ -4049,7 +4049,7 @@ function HodnoceniResultPage({
         { label: title },
       ]} />
 
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 18, marginBottom: 28 }}>
         <div>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 4px" }}>
             {title}
@@ -4061,14 +4061,14 @@ function HodnoceniResultPage({
         {!readOnly && onSave && (
           <button
             onClick={() => onSave(students)}
-            style={{ ...btnStyle("primary"), padding: "9px 20px", borderRadius: 10, fontSize: 16, flexShrink: 0 }}
+            style={{ ...btnStyle("primary"), padding: "12px 20px", borderRadius: 10, fontSize: 16, flexShrink: 0 }}
           >
             Uložit hodnocení
           </button>
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: 22, alignItems: "flex-start" }}>
         {/* student list sidebar */}
         <div style={{ width: 200, flexShrink: 0, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
           {students.map((s, i) => (
@@ -4077,7 +4077,7 @@ function HodnoceniResultPage({
               onClick={() => setActiveId(s.studentId)}
               style={{
                 display: "block", width: "100%", textAlign: "left",
-                padding: "10px 14px", border: "none",
+                padding: "15px 14px", border: "none",
                 borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.06)",
                 background: s.studentId === activeId ? "rgba(10,10,10,0.05)" : "transparent",
                 fontFamily: s.studentId === activeId ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
@@ -4184,7 +4184,7 @@ function HodnoceniView() {
         </h1>
         <button
           onClick={() => setView("generating")}
-          style={{ ...btnStyle("primary"), padding: "8px 16px", borderRadius: 10, fontSize: 15.5, display: "flex", alignItems: "center", gap: 7 }}
+          style={{ ...btnStyle("primary"), padding: "11px 16px", borderRadius: 10, fontSize: 15.5, display: "flex", alignItems: "center", gap: 9 }}
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 1.333L9.857 5.1l4.143.6-3 2.924.708 4.109L8 10.667l-3.708 1.966L5 8.624 2 5.7l4.143-.6L8 1.333z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -4203,12 +4203,12 @@ function HodnoceniView() {
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "0 0 6px" }}>
             Zatím žádná hodnocení
           </p>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 20px", lineHeight: 1.5 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 20px", lineHeight: 1.6 }}>
             Vygenerujte první hodnocení na základě zaznamenaných důkazů o učení.
           </p>
           <button
             onClick={() => setView("generating")}
-            style={{ ...btnStyle("ghost"), padding: "8px 18px", borderRadius: 10, fontSize: 15.5 }}
+            style={{ ...btnStyle("ghost"), padding: "11px 18px", borderRadius: 10, fontSize: 15.5 }}
           >
             Vygenerovat hodnocení
           </button>
@@ -4220,8 +4220,8 @@ function HodnoceniView() {
               key={h.id}
               onClick={() => { setSelectedId(h.id); setView("detail"); }}
               style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-                width: "100%", padding: "16px 20px", background: "transparent", border: "none",
+                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18,
+                width: "100%", padding: "21px 20px", background: "transparent", border: "none",
                 borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)",
                 cursor: "pointer", textAlign: "left", transition: "background 0.12s",
               }}
@@ -4461,8 +4461,8 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
       onChange={e => onChange(e.target.value)}
       style={{
         width: "100%", display: "block", boxSizing: "border-box",
-        padding: "4px 7px", borderRadius: 6, border: "1.5px solid transparent",
-        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.55,
+        padding: "5px 7px", borderRadius: 6, border: "1.5px solid transparent",
+        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.65,
         color: color ?? "#0a0a0a",
         background: "transparent", outline: "none", resize: "none", overflow: "hidden",
         whiteSpace: "pre-wrap", wordBreak: "break-word",
@@ -4645,7 +4645,7 @@ function TematickyPlanView() {
           </h1>
           <button
             onClick={() => { setText(""); setSelectedPlanId(null); setView("form"); }}
-            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
+            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}
           >
             <IconPlus />
             Vytvořit nový plán
@@ -4677,7 +4677,7 @@ function TematickyPlanView() {
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
             {plans.map((plan) => (
               <button
                 key={plan.id}
@@ -4702,9 +4702,9 @@ function TematickyPlanView() {
                 <div style={{
                   background: "#f5f5f7", padding: "14px 16px 12px",
                   borderBottom: "1.5px solid rgba(0,0,0,0.08)",
-                  display: "flex", flexDirection: "column", gap: 10,
+                  display: "flex", flexDirection: "column", gap: 12,
                 }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                     <div style={{
                       width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1,
                       background: "rgba(0,0,0,0.08)",
@@ -4715,20 +4715,20 @@ function TematickyPlanView() {
                         <path d="M8 7h8M8 11h8M8 15h5" stroke="#0a0a0a" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                         Tématický plán
                       </span>
-                      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.3 }}>
+                      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.45 }}>
                         {plan.name}
                       </p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.08)", color: "#0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(0,0,0,0.08)", color: "#0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                       {plan.predmet}
                     </span>
-                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.05)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
+                    <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(0,0,0,0.05)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
                       {plan.trida}
                     </span>
                   </div>
@@ -4762,7 +4762,7 @@ function TematickyPlanView() {
     return (
       <div style={{ padding: "32px 40px", maxWidth: 600 }}>
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán" }]} />
-        <div style={{ marginTop: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 28 }}>
+        <div style={{ marginTop: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 30 }}>
           <div style={{ position: "relative", width: 72, height: 72 }}>
             <svg width="72" height="72" viewBox="0 0 72 72" style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }}>
               <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5"/>
@@ -4813,20 +4813,20 @@ function TematickyPlanView() {
     const activeCols = colOrder.filter(id => cols.has(id));
 
     const selectStyle: React.CSSProperties = {
-      padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+      padding: "9px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
       fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
       background: "#fff", outline: "none", cursor: "pointer",
     };
     const thStyle: React.CSSProperties = {
-      padding: "10px 14px", textAlign: "left",
+      padding: "15px 14px", textAlign: "left",
       fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14,
       color: "#717182", background: "#f5f5f7", borderBottom: "1.5px solid rgba(0,0,0,0.1)",
       whiteSpace: "nowrap", userSelect: "none",
     };
     const tdStyle: React.CSSProperties = {
-      padding: "11px 14px", verticalAlign: "top",
+      padding: "16px 14px", verticalAlign: "top",
       fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
-      borderBottom: "1px solid rgba(0,0,0,0.07)", lineHeight: 1.55,
+      borderBottom: "1px solid rgba(0,0,0,0.07)", lineHeight: 1.65,
     };
 
     function onDragStart(idx: number) { setDragFrom(idx); }
@@ -4849,7 +4849,7 @@ function TematickyPlanView() {
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán", onClick: () => setView("list") }, { label: selectedPlanId ? "Upravit plán" : "Výsledek" }]} />
 
         {/* header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginTop: 28, marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 26, marginTop: 28, marginBottom: 28 }}>
           <div>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#9b72d0", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
             <input
@@ -4859,7 +4859,7 @@ function TematickyPlanView() {
               style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 28, color: "#0a0a0a",
                 background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
-                outline: "none", padding: "2px 8px", margin: "0 -8px",
+                outline: "none", padding: "3px 8px", margin: "0 -8px",
                 width: "calc(100% + 16px)", boxSizing: "border-box",
                 transition: "background 0.12s, border-color 0.12s",
               }}
@@ -4869,12 +4869,12 @@ function TematickyPlanView() {
               onBlur={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
             />
           </div>
-          <div style={{ display: "flex", gap: 10, flexShrink: 0, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, flexShrink: 0, alignItems: "center" }}>
             {/* export dropdown */}
             <div style={{ position: "relative" }}>
               <button
                 onClick={e => { e.stopPropagation(); setExportOpen(o => !o); }}
-                style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6 }}
+                style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 8 }}
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.667 12h10.666M8 2.667v8M5.333 8l2.667 2.667L10.667 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Exportovat
@@ -4888,8 +4888,8 @@ function TematickyPlanView() {
                 }} onClick={e => e.stopPropagation()}>
                   {[["PDF", "📄"], ["CSV", "📊"], ["XLS", "📋"]].map(([fmt, ico]) => (
                     <button key={fmt} onClick={() => setExportOpen(false)} style={{
-                      display: "flex", alignItems: "center", gap: 10, width: "100%",
-                      padding: "10px 16px", border: "none", background: "none", cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: 12, width: "100%",
+                      padding: "15px 16px", border: "none", background: "none", cursor: "pointer",
                       fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", textAlign: "left",
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f7")}
@@ -4901,7 +4901,7 @@ function TematickyPlanView() {
                 </div>
               )}
             </div>
-            <button onClick={savePlan} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}>
+            <button onClick={savePlan} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.333 10v2.667A1.333 1.333 0 0112 14H4a1.333 1.333 0 01-1.333-1.333V10M5.333 6.667L8 9.333l2.667-2.666M8 9.333V2" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {selectedPlanId ? "Uložit změny" : "Uložit plán"}
             </button>
@@ -4909,15 +4909,15 @@ function TematickyPlanView() {
         </div>
 
         {/* controls panel */}
-        <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.08)", padding: "18px 20px", marginBottom: 20 }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.08)", padding: "23px 20px", marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             {[
               { label: "Předmět", val: predmet, set: setPredmet, opts: ["Český jazyk", "Matematika", "Prvouka", "Anglický jazyk", "Výtvarná výchova"] },
               { label: "Třída", val: trida, set: setTrida, opts: ["1.A", "2.A", "3.A", "4.A", "5.A"] },
               { label: "Časová jednotka", val: unit, set: setUnit, opts: ["týden", "14 dní", "měsíc"] },
               { label: "Období", val: period, set: setPeriod, opts: ["3 měsíce", "1. pololetí", "2. pololetí", "celý rok"] },
             ].map(({ label, val, set, opts }) => (
-              <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <div key={label} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
                 <select value={val} onChange={e => set(e.target.value)} style={selectStyle}>
                   {opts.map(s => <option key={s}>{s}</option>)}
@@ -4926,14 +4926,14 @@ function TematickyPlanView() {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
             {tpColumns.map(col => {
               const on = cols.has(col.id);
               const locked = col.id === "cile";
               return (
                 <button key={col.id} onClick={() => !locked && toggleCol(col.id)} style={{
-                  padding: "5px 12px", borderRadius: 20, border: "1.5px solid",
+                  padding: "8px 12px", borderRadius: 20, border: "1.5px solid",
                   borderColor: on ? "#7c4dbd" : "rgba(0,0,0,0.12)",
                   background: on ? "rgba(124,77,189,0.08)" : "#fafafa",
                   fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
@@ -4951,15 +4951,15 @@ function TematickyPlanView() {
           </div>
 
           {(showSkola || showVyucujici) && (
-            <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 18, marginTop: 14, flexWrap: "wrap" }}>
               {showSkola && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Název školy</span>
                   <input value={nazevSkoly} onChange={e => setNazevSkoly(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
               {showVyucujici && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Vyučující</span>
                   <input value={vyucujici} onChange={e => setVyucujici(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
@@ -4969,7 +4969,7 @@ function TematickyPlanView() {
         </div>
 
         {(showSkola || showVyucujici) && (
-          <div style={{ display: "flex", gap: 24, marginBottom: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 26, marginBottom: 12, flexWrap: "wrap" }}>
             {showSkola && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Škola:</strong> {nazevSkoly}</span>}
             {showVyucujici && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Vyučující:</strong> {vyucujici}</span>}
           </div>
@@ -5016,7 +5016,7 @@ function TematickyPlanView() {
                       >
                         <SparkleIcon />
                       </button>
-                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
                           <circle cx="3" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="3" r="1" fill="currentColor"/>
                           <circle cx="3" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/>
@@ -5027,7 +5027,7 @@ function TematickyPlanView() {
                             onClick={e => { e.stopPropagation(); handleGenerateCriteria(); }}
                             title="Generovat plán hodin"
                             style={{
-                              display: "inline-flex", alignItems: "center", gap: 5,
+                              display: "inline-flex", alignItems: "center", gap: 7,
                               padding: "3px 9px 3px 7px", borderRadius: 20, border: "none",
                               background: "linear-gradient(135deg, #a855f7, #7c3aed)",
                               color: "#fff", cursor: "pointer",
@@ -5062,8 +5062,8 @@ function TematickyPlanView() {
                       value={val}
                       onChange={e => updateCell(ri, field, e.target.value)}
                       style={{
-                        width: 52, padding: "4px 7px", borderRadius: 6, border: "1.5px solid transparent",
-                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.5,
+                        width: 52, padding: "5px 7px", borderRadius: 6, border: "1.5px solid transparent",
+                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.6,
                         color: "#0a0a0a", background: "transparent", outline: "none",
                         transition: "background 0.12s, border-color 0.12s", textAlign: "center", boxSizing: "border-box",
                       }}
@@ -5126,7 +5126,7 @@ function TematickyPlanView() {
                         onDrop={e => { e.stopPropagation(); if (rowDragRef.current?.kind === "month") { reorderMonths(rowDragRef.current.fromMonth, monthKey); } rowDragRef.current = null; setRowDragOverMonth(null); }}
                         onDragEnd={() => { rowDragRef.current = null; setRowDragOverMonth(null); }}
                         style={{
-                          ...tdStyle, padding: "10px 12px", position: "relative",
+                          ...tdStyle, padding: "15px 12px", position: "relative",
                           borderTop: isDragOverMonth ? "2px solid #7c4dbd" : topBorder,
                           verticalAlign: "middle", textAlign: "center",
                           background: isDragOverMonth ? "rgba(124,77,189,0.07)" : "#f5f5f7",
@@ -5135,7 +5135,7 @@ function TematickyPlanView() {
                           transition: "background 0.1s",
                         }}
                       >
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                           {/* drag handle for month */}
                           <svg width="12" height="10" viewBox="0 0 12 10" fill="none" style={{ opacity: isMonthHovered ? 0.35 : 0.15, transition: "opacity 0.14s", flexShrink: 0 }}>
                             <rect y="0" width="12" height="1.5" rx="0.75" fill="#0a0a0a"/>
@@ -5201,10 +5201,10 @@ function TematickyPlanView() {
 
       <div style={{ maxWidth: 580, marginTop: 48 }}>
         <FadeIn delay={0}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.45 }}>
             Co chcete plánovat?
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.6 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.7 }}>
             Popište téma, předmět nebo vzdělávací oblast. AI vytvoří tématický plán výuky.
           </p>
         </FadeIn>
@@ -5221,7 +5221,7 @@ function TematickyPlanView() {
             autoFocus
             style={{
               width: "100%", boxSizing: "border-box",
-              padding: "12px 14px", borderRadius: 12,
+              padding: "17px 14px", borderRadius: 12,
               border: "1.5px solid rgba(0,0,0,0.15)",
               fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
               lineHeight: 1.65, resize: "none", outline: "none",
@@ -5245,7 +5245,7 @@ function TematickyPlanView() {
               onChange={e => setFile(e.target.files?.[0] ?? null)}
             />
             {file ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.12)", background: "#fafafa" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "17px 16px", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.12)", background: "#fafafa" }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(124,77,189,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M10.667 2H5.333A1.333 1.333 0 0 0 4 3.333v9.334A1.333 1.333 0 0 0 5.333 14h5.334A1.333 1.333 0 0 0 12 12.667V3.333A1.333 1.333 0 0 0 10.667 2z" stroke="#7c4dbd" strokeWidth="1.33" strokeLinejoin="round"/>
@@ -5263,7 +5263,7 @@ function TematickyPlanView() {
                 style={{
                   width: "100%", padding: "20px 16px", borderRadius: 12,
                   border: "1.5px dashed rgba(0,0,0,0.18)", background: "#fafafa",
-                  cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                  cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
                   transition: "border-color 0.15s, background 0.15s",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "#7c4dbd"; e.currentTarget.style.background = "#faf5ff"; }}
@@ -5288,10 +5288,10 @@ function TematickyPlanView() {
             disabled={!text.trim() && !file}
             style={{
               ...btnStyle("primary"),
-              marginTop: 28, display: "flex", alignItems: "center", gap: 8,
+              marginTop: 28, display: "flex", alignItems: "center", gap: 10,
               opacity: (text.trim() || file) ? 1 : 0.4,
               cursor: (text.trim() || file) ? "pointer" : "default",
-              fontSize: 17, padding: "13px 28px",
+              fontSize: 17, padding: "18px 28px",
             }}
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -5389,7 +5389,7 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
       }}>
         {/* header */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+          display: "flex", alignItems: "center", gap: 12, padding: "17px 16px",
           borderBottom: "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0,
         }}>
           <div style={{
@@ -5411,13 +5411,13 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
         </div>
 
         {/* messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "21px 14px", display: "flex", flexDirection: "column", gap: 14 }}>
           {messages.map(m => {
             const isAudio = m.text.startsWith("__audio__");
             const audioDur = isAudio ? parseInt(m.text.replace("__audio__", "")) : 0;
             const fmtDur = `${Math.floor(audioDur / 60)}:${String(audioDur % 60).padStart(2, "0")}`;
             return (
-              <div key={m.id} style={{ display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", alignItems: "flex-end", gap: 8 }}>
+              <div key={m.id} style={{ display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", alignItems: "flex-end", gap: 10 }}>
                 {m.role === "buddy" && (
                   <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
@@ -5425,7 +5425,7 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                 )}
                 {isAudio ? (
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "9px 14px",
+                    display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
                     borderRadius: "16px 16px 4px 16px",
                     background: "#7c4dbd",
                     boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
@@ -5436,11 +5436,11 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                         <path d="M3 2.5l6 3.5-6 3.5V2.5z" fill="#fff"/>
                       </svg>
                     </button>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
                       <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.25)", position: "relative", overflow: "hidden" }}>
                         <div style={{ position: "absolute", left: 0, top: 0, width: "35%", height: "100%", background: "rgba(255,255,255,0.85)", borderRadius: 2 }} />
                       </div>
-                      <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 16 }}>
+                      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 16 }}>
                         {Array.from({ length: 22 }, (_, i) => (
                           <div key={i} style={{ width: 2, borderRadius: 2, background: i < 8 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)", height: `${4 + Math.abs(Math.sin(i * 1.3) * 10)}px` }} />
                         ))}
@@ -5450,10 +5450,10 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                   </div>
                 ) : (
                   <div style={{
-                    maxWidth: "78%", padding: "9px 13px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                    maxWidth: "78%", padding: "12px 13px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                     background: m.role === "user" ? "#7c4dbd" : "#fff",
                     color: m.role === "user" ? "#fff" : "#0a0a0a",
-                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.55,
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.65,
                     boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
                   }}>
                     {m.text}
@@ -5463,11 +5463,11 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
             );
           })}
           {typing && (
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 10 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
               </div>
-              <div style={{ padding: "10px 14px", borderRadius: "16px 16px 16px 4px", background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", display: "flex", gap: 4, alignItems: "center" }}>
+              <div style={{ padding: "15px 14px", borderRadius: "16px 16px 16px 4px", background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", display: "flex", gap: 6, alignItems: "center" }}>
                 {[0, 1, 2].map(i => (
                   <span key={i} style={{
                     width: 6, height: 6, borderRadius: "50%", background: "#c4a8e8", display: "block",
@@ -5481,22 +5481,22 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
         </div>
 
         {/* input */}
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0 }}>
+        <div style={{ padding: "17px 14px", borderTop: "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0 }}>
           {recording ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 14, background: "#fdf4ff", border: "1.5px solid #c084fc" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 14px", borderRadius: 14, background: "#fdf4ff", border: "1.5px solid #c084fc" }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e11d48", display: "block", flexShrink: 0, animation: "recPulse 1s ease-in-out infinite" }} />
               <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#7c4dbd", flex: 1 }}>
                 Nahrávám… {Math.floor(recSeconds / 60)}:{String(recSeconds % 60).padStart(2, "0")}
               </span>
               <button
                 onClick={stopRecording}
-                style={{ padding: "6px 14px", borderRadius: 20, background: "#7c4dbd", border: "none", cursor: "pointer", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}
+                style={{ padding: "9px 14px", borderRadius: 20, background: "#7c4dbd", border: "none", cursor: "pointer", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}
               >
                 Odeslat
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
               <button
                 onMouseDown={startRecording}
                 title="Nahrát audio zprávu"
@@ -5522,10 +5522,10 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                 placeholder="Napiš zprávu..."
                 rows={1}
                 style={{
-                  flex: 1, resize: "none", padding: "9px 12px", borderRadius: 12,
+                  flex: 1, resize: "none", padding: "12px 12px", borderRadius: 12,
                   border: "1.5px solid rgba(0,0,0,0.12)", outline: "none",
                   fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
-                  lineHeight: 1.5, background: "#faf9fc",
+                  lineHeight: 1.6, background: "#faf9fc",
                 }}
                 onFocus={e => (e.currentTarget.style.borderColor = "#9b72d0")}
                 onBlur={e => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)")}
@@ -5577,7 +5577,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
             Jak to funguje?
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 26, maxWidth: 900, margin: "0 auto" }}>
             {[
               {
                 num: 1,
@@ -5637,24 +5637,24 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
                 ),
               },
             ].map(({ num, title, illustration }) => (
-              <div key={num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#f9f9fb", border: "1.5px solid rgba(0,0,0,0.07)", padding: "16px 12px" }}>
+              <div key={num} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+                <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#f9f9fb", border: "1.5px solid rgba(0,0,0,0.07)", padding: "21px 12px" }}>
                   {illustration}
                 </div>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", background: "#0a0a0a", marginBottom: 8 }}>
                     <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}>{num}</span>
                   </div>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", lineHeight: 1.55, margin: 0 }}>{title}</p>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", lineHeight: 1.65, margin: 0 }}>{title}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* buddy intro */}
-          <div style={{ marginTop: 32, display: "inline-flex", alignItems: "flex-end", gap: 10, background: "#faf9ff", border: "1.5px solid rgba(124,77,189,0.12)", borderRadius: 14, padding: "10px 14px 10px 14px" }}>
+          <div style={{ marginTop: 32, display: "inline-flex", alignItems: "flex-end", gap: 12, background: "#faf9ff", border: "1.5px solid rgba(124,77,189,0.12)", borderRadius: 14, padding: "10px 14px 10px 14px" }}>
             <img src={buddyImg} alt="Buddy" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3d3d52", lineHeight: 1.5, margin: 0, maxWidth: 380 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3d3d52", lineHeight: 1.6, margin: 0, maxWidth: 380 }}>
               <span style={{ fontWeight: 600, color: "#7c4dbd" }}>Buddy</span> je tu vždy pro vás — pomůže s cíli, kritérii i hodnocením a vaši práci zjednoduší na minimum.
             </p>
           </div>
@@ -5665,7 +5665,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       title: "Co chcete učit tento akademický rok?",
       subtitle: "např. třicetiletou válku, obojživelníky nebo vyjmenovaná slova",
       content: (
-        <div style={{ marginTop: 40, display: "flex", gap: 10, justifyContent: "center", maxWidth: 600, margin: "40px auto 0" }}>
+        <div style={{ marginTop: 40, display: "flex", gap: 12, justifyContent: "center", maxWidth: 600, margin: "40px auto 0" }}>
           <input
             placeholder="Vyjmenovaná slova, třicetiletá válka…"
             style={{
@@ -5721,7 +5721,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       </button>
 
       {/* progress dots */}
-      <div style={{ position: "absolute", top: 28, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
+      <div style={{ position: "absolute", top: 28, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8 }}>
         {steps.map((_, i) => (
           <div key={i} style={{ width: i === step ? 20 : 6, height: 6, borderRadius: 3, background: i === step ? "#0a0a0a" : "rgba(0,0,0,0.15)", transition: "width 0.2s, background 0.2s" }} />
         ))}
@@ -5730,7 +5730,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       {/* content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 48px 120px", overflowY: "auto" }}>
         <div style={{ maxWidth: 960, width: "100%", textAlign: "center" }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 38, color: "#0a0a0a", margin: "0 0 16px", lineHeight: 1.2 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 38, color: "#0a0a0a", margin: "0 0 16px", lineHeight: 1.4 }}>
             {current.title}
           </h1>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 18, color: "#717182", lineHeight: 1.65, margin: "0 auto", maxWidth: 560 }}>
@@ -5744,13 +5744,13 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(0,0,0,0.07)" }}>
         <button
           onClick={() => step > 0 ? setStep(s => s - 1) : onClose()}
-          style={{ background: "none", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 10, padding: "9px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", cursor: "pointer" }}
+          style={{ background: "none", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 10, padding: "12px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", cursor: "pointer" }}
         >
           {step === 0 ? "Přeskočit" : "Zpět"}
         </button>
         <button
           onClick={() => step < totalSteps - 1 ? setStep(s => s + 1) : onClose()}
-          style={{ background: "#0a0a0a", border: "none", borderRadius: 10, padding: "9px 24px", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#fff", cursor: "pointer" }}
+          style={{ background: "#0a0a0a", border: "none", borderRadius: 10, padding: "12px 24px", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#fff", cursor: "pointer" }}
         >
           {step < totalSteps - 1 ? "Pokračovat" : "Začít"}
         </button>
@@ -5918,12 +5918,12 @@ export default function App() {
             return (
               <>
                 {sectionLabel("Vaše výuka")}
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {vaseVyuka.map(navBtn)}
                 </div>
 
                 {sectionLabel("Formativní hodnocení")}
-                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   {formativni.map(navBtn)}
                 </div>
 
@@ -5934,7 +5934,7 @@ export default function App() {
                     onClick={() => setOnboardingOpen(true)}
                     style={{
                       display: "flex", alignItems: "center",
-                      padding: "7px 8px", borderRadius: 9, border: "none",
+                      padding: "10px 8px", borderRadius: 9, border: "none",
                       background: "transparent", color: "#b0b0be",
                       fontFamily: "'Inter:Regular', sans-serif", fontSize: 14.5,
                       cursor: "pointer", width: "100%", textAlign: "left",
@@ -5952,7 +5952,7 @@ export default function App() {
         </nav>
 
         {/* user */}
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", padding: collapsed ? "12px 8px" : "12px 16px", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10 }}>
+        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", padding: collapsed ? "12px 8px" : "12px 16px", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 12 }}>
           <div style={{
             width: 28, height: 28, borderRadius: "50%", background: "rgba(236,236,240,0.85)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
