@@ -2417,9 +2417,137 @@ function buildGoalNumbers(tpGoals: TpGoal[]): Map<string, number> {
   return m;
 }
 
+// ─── datumy hodiny ────────────────────────────────────────────────────────────
+// Hodina může mít víc datumů (probírá se ve víc vyučovacích hodinách).
+// Uloženo jako pole; starý klíč s jedním datem se drží v souladu kvůli detailu.
+function readLessonDates(goalId: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(`lesson-dates-${goalId}`);
+    if (raw) { const a = JSON.parse(raw); return Array.isArray(a) ? a.filter(Boolean) : []; }
+    const old = localStorage.getItem(`lesson-date-${goalId}`);
+    return old ? [old] : [];
+  } catch { return []; }
+}
+function writeLessonDates(goalId: string, dates: string[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`lesson-dates-${goalId}`, JSON.stringify(dates));
+    if (dates[0]) localStorage.setItem(`lesson-date-${goalId}`, dates[0]);
+    else localStorage.removeItem(`lesson-date-${goalId}`);
+  } catch { /* soukromé okno, zablokované úložiště */ }
+}
+// Nativní kalendář otevřít hned, bez mezikroku
+function openDatePicker(el: HTMLInputElement | null) {
+  if (!el) return;
+  const anyEl = el as any;
+  if (typeof anyEl.showPicker === "function") {
+    try { anyEl.showPicker(); return; } catch { /* showPicker může vyhodit mimo gesto */ }
+  }
+  el.focus();
+  el.click();
+}
+const fmtDateShort = (d: string) => d ? new Date(d).toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric" }) : "";
+const fmtDateLong = (d: string) => d ? new Date(d).toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric" }) : "";
+
+const CAL_PATH = "M1.333 6.667h13.333M5.333 1.333v2.667M10.667 1.333v2.667";
+
+function LessonDates({ goalId }: { goalId: string }) {
+  const [dates, setDates] = useState<string[]>(() => readLessonDates(goalId));
+  const addRef = useRef<HTMLInputElement>(null);
+  const editRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => { setDates(readLessonDates(goalId)); }, [goalId]);
+
+  const save = (next: string[]) => {
+    const clean = Array.from(new Set(next.filter(Boolean))).sort();
+    setDates(clean);
+    writeLessonDates(goalId, clean);
+  };
+
+  return (
+    <>
+      {dates.map((d, i) => (
+        <span
+          key={d}
+          onClick={e => e.stopPropagation()}
+          title={fmtDateLong(d)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 4px 3px 9px", borderRadius: 20,
+            background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 13,
+            transition: "box-shadow 0.12s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
+          onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
+        >
+          <button
+            onClick={() => openDatePicker(editRefs.current[i])}
+            title="Změnit datum"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: 0, margin: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, opacity: 0.75 }} aria-hidden="true">
+              <rect x="1.333" y="2.667" width="13.333" height="12" rx="1.333" stroke="currentColor" strokeWidth="1.3"/>
+              <path d={CAL_PATH} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+            {fmtDateShort(d)}
+          </button>
+          <input
+            ref={el => { editRefs.current[i] = el; }}
+            type="date"
+            value={d}
+            aria-label="Datum vyučovací hodiny"
+            onChange={e => save(dates.map((x, j) => j === i ? e.target.value : x))}
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+          />
+          <button
+            onClick={() => save(dates.filter((_, j) => j !== i))}
+            title="Odebrat datum"
+            aria-label={`Odebrat datum ${fmtDateLong(d)}`}
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: "50%", border: "none", background: "none", color: CHIP_FG, cursor: "pointer", padding: 0, opacity: 0.55, transition: "opacity 0.12s, color 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "#c81e1e"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "0.55"; e.currentTarget.style.color = CHIP_FG; }}
+          >
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+              <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </span>
+      ))}
+      <span onClick={e => e.stopPropagation()} style={{ display: "inline-flex" }}>
+        <button
+          onClick={() => openDatePicker(addRef.current)}
+          title={dates.length ? "Přidat další datum" : "Přidat datum"}
+          aria-label={dates.length ? "Přidat další datum" : "Přidat datum"}
+          style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
+            height: 25, padding: "0 9px", borderRadius: 20,
+            border: "1.5px dashed rgba(0,0,0,0.22)", background: "transparent", color: "#6b6b7a",
+            cursor: "pointer", transition: "border-color 0.12s, color 0.12s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.4)"; e.currentTarget.style.color = "#0a0a0a"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.22)"; e.currentTarget.style.color = "#6b6b7a"; }}
+        >
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1.333" y="2.667" width="13.333" height="12" rx="1.333" stroke="currentColor" strokeWidth="1.4"/>
+            <path d={CAL_PATH} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M8 9v2.667M6.667 10.333h2.666" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+        </button>
+        <input
+          ref={addRef}
+          type="date"
+          value=""
+          aria-label="Přidat datum vyučovací hodiny"
+          onChange={e => save([...dates, e.target.value])}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+        />
+      </span>
+    </>
+  );
+}
+
 function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boolean }) {
-  const dateKey = `lesson-date-${goalId}`;
-  const [lessonDate, setLessonDate] = useState(() => typeof window !== "undefined" ? localStorage.getItem(dateKey) ?? "" : "");
+  const [lessonDate, setLessonDate] = useState(() => readLessonDates(goalId)[0] ?? "");
   const [editingDate, setEditingDate] = useState(false);
   const fmt = (d: string, short?: boolean) => {
     if (!d) return "";
@@ -2430,7 +2558,11 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
   };
   if (editingDate) return (
     <input type="date" value={lessonDate} autoFocus
-      onChange={e => { setLessonDate(e.target.value); localStorage.setItem(dateKey, e.target.value); }}
+      onChange={e => {
+        setLessonDate(e.target.value);
+        const rest = readLessonDates(goalId).slice(1);
+        writeLessonDates(goalId, [e.target.value, ...rest]);
+      }}
       onBlur={() => setEditingDate(false)}
       style={{ padding: compact ? "2px 8px" : "7px 12px", borderRadius: compact ? 20 : 8, border: "1.5px solid rgba(0,0,0,0.18)", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 13 : 16, color: "#0a0a0a", outline: "none", background: "#fff", width: compact ? 110 : undefined }}
     />
@@ -2484,8 +2616,15 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
 type AnyGoal = { id: string; text: string; subject: string; cls: string; period: string; isTp: boolean };
 
 const LESSON_MONTHS = ["Září", "Říjen", "Listopad", "Prosinec", "Leden", "Únor", "Březen", "Duben", "Květen", "Červen"];
+const LESSON_MONTH_YEAR: Record<string, string> = {
+  "Září": "2025", "Říjen": "2025", "Listopad": "2025", "Prosinec": "2025",
+  "Leden": "2026", "Únor": "2026", "Březen": "2026", "Duben": "2026", "Květen": "2026", "Červen": "2026",
+};
+const monthLabel = (m: string) => m ? `${m} ${LESSON_MONTH_YEAR[m] ?? ""}`.trim() : "";
 
 const CHIP_BG = "rgba(236,236,240,0.9)";
+// #717182 na šedém chipu vychází pod 4.5:1 — pro text na chipu tmavší odstín
+const CHIP_FG = "#5c5c6b";
 const CHIP_CARET = `url("data:image/svg+xml,%3Csvg width='9' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
 // Ikony do chipsů v náhledovém řádku hodiny
@@ -2498,15 +2637,14 @@ function ChipIcon({ d, circle }: { d: string; circle?: [number, number, number] 
   );
 }
 const ICON_SUBJECT = "M2.5 3.2h4a2 2 0 0 1 1.5.7 2 2 0 0 1 1.5-.7h4v9.6h-4a2 2 0 0 0-1.5.7 2 2 0 0 0-1.5-.7h-4zM8 3.9v9.6";
-const ICON_CLASS = "M11 13.5v-1a2.5 2.5 0 0 0-2.5-2.5h-3A2.5 2.5 0 0 0 3 12.5v1M13.5 13.5v-1a2.5 2.5 0 0 0-1.9-2.4M10.4 2.7a2.5 2.5 0 0 1 0 4.8";
+const ICON_CLASS = "M6.2 7.6a2.3 2.3 0 1 0 0-4.6 2.3 2.3 0 0 0 0 4.6zM11.3 7.9a1.9 1.9 0 1 0 0-3.8M2 13.4c0-2 1.9-3.4 4.2-3.4s4.2 1.4 4.2 3.4M11.6 9.9c1.5.3 2.4 1.3 2.4 2.9";
 const ICON_MONTH = "M2.5 6.2h11M4.5 2.5v1.8M11.5 2.5v1.8M3.2 4.3h9.6a.7.7 0 0 1 .7.7v7.8a.7.7 0 0 1-.7.7H3.2a.7.7 0 0 1-.7-.7V5a.7.7 0 0 1 .7-.7z";
 const ICON_HOURS = "M8 4.6V8l2.2 1.4";
-const ICON_OUTCOME = "M8 2.5v3M8 10.5v3M2.5 8h3M10.5 8h3";
 
 // Chip, ve kterém se vybírá z možností
-function ChipSelect({ iconPath, value, options, onChange, title, bg, color }: {
+function ChipSelect({ iconPath, value, options, onChange, title, labelFor }: {
   iconPath: string; value: string; options: string[]; onChange: (v: string) => void;
-  title: string; bg?: string; color?: string;
+  title: string; labelFor?: (v: string) => string;
 }) {
   const opts = options.includes(value) || !value ? options : [value, ...options];
   return (
@@ -2515,7 +2653,7 @@ function ChipSelect({ iconPath, value, options, onChange, title, bg, color }: {
       onClick={e => e.stopPropagation()}
       style={{
         display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 5px 3px 9px", borderRadius: 20,
-        background: bg ?? CHIP_BG, color: color ?? "#717182",
+        background: CHIP_BG, color: CHIP_FG,
         fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, transition: "box-shadow 0.12s",
       }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
@@ -2534,7 +2672,7 @@ function ChipSelect({ iconPath, value, options, onChange, title, bg, color }: {
           backgroundImage: CHIP_CARET, backgroundRepeat: "no-repeat", backgroundPosition: "right 1px center",
         }}
       >
-        {opts.map(o => <option key={o} value={o}>{o}</option>)}
+        {opts.map(o => <option key={o} value={o}>{labelFor ? labelFor(o) : o}</option>)}
       </select>
     </span>
   );
@@ -2552,7 +2690,7 @@ function ChipInput({ iconPath, value, onChange, title, placeholder, suffix, minC
       onClick={e => e.stopPropagation()}
       style={{
         display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 9px", borderRadius: 20,
-        background: CHIP_BG, color: "#717182",
+        background: CHIP_BG, color: CHIP_FG,
         fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, transition: "box-shadow 0.12s",
       }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
@@ -2689,8 +2827,8 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
       {grouped.map(({ month, items }, gi) => (
         <div key={`${month || "__none"}-${gi}`} style={{ marginBottom: 24 }}>
           {month && (
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
-              {month}
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
+              {monthLabel(month)}
             </p>
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -2720,8 +2858,9 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                     style={{
                       background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)",
                       borderTop: isDragOver ? "2px solid #7c4dbd" : undefined,
-                      display: "flex", alignItems: "flex-start", gap: 14,
-                      padding: "18px 20px", transition: "background 0.12s, border-color 0.1s",
+                      position: "relative",
+                      display: "flex", alignItems: "flex-start", gap: 12,
+                      padding: "18px 52px 18px 12px", transition: "background 0.12s, border-color 0.1s",
                       opacity: dragGoalRef.current === g.id ? 0.45 : 1,
                     }}
                   >
@@ -2746,15 +2885,15 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                     <div
                       title={num ? `Vyučovací hodina ${num}` : "Vyučovací hodina"}
                       style={{
-                        flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", gap: 6,
-                        padding: "6px 10px 6px 8px", borderRadius: 10,
+                        flexShrink: 0, marginTop: 2, width: 46, height: 46, borderRadius: 11,
+                        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                         background: "#eff6ff", border: "1px solid rgba(59,130,246,0.25)", color: "#1e40af",
                       }}
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, lineHeight: 1 }}>{num}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15 }}>{num}</span>
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -2772,8 +2911,6 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                           value={g.subject}
                           options={subjectOptions}
                           onChange={v => onPatch(g.id, isTp, { subject: v })}
-                          bg="#f3e8ff"
-                          color="#8200db"
                         />
                         <ChipSelect
                           iconPath={ICON_CLASS}
@@ -2788,10 +2925,10 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                             title="Měsíc v tématickém plánu"
                             value={g.period}
                             options={LESSON_MONTHS}
+                            labelFor={monthLabel}
                             onChange={v => onPatch(g.id, isTp, { month: v })}
                           />
                         )}
-                        <span onClick={e => e.stopPropagation()}><LessonDatePicker goalId={g.id} compact /></span>
                         {tpGoal && (
                           <ChipInput
                             iconPath={ICON_HOURS}
@@ -2802,16 +2939,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                             onChange={v => onPatch(g.id, isTp, { rozsah: v })}
                           />
                         )}
-                        {tpGoal && (
-                          <ChipInput
-                            iconPath={ICON_OUTCOME}
-                            title="Výstup"
-                            value={tpGoal.vystupy ?? ""}
-                            placeholder="Doplnit výstup"
-                            minCh={12}
-                            onChange={v => onPatch(g.id, isTp, { vystupy: v })}
-                          />
-                        )}
+                        <LessonDates goalId={g.id} />
                       </div>
                     </div>
 
@@ -2824,18 +2952,28 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       >
                         Detail
                       </button>
-                      {isTp && (
-                        <button onClick={() => removeTpGoal(g.id)} title="Odstranit hodinu"
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
-                          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <path d="M2 4h12M5.333 4V2.667a.667.667 0 0 1 .667-.667h4a.667.667 0 0 1 .667.667V4M12.667 4l-.667 9.333A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 13.333L3.333 4" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
-                      )}
                     </div>
+
+                    {isTp && (
+                      <button
+                        onClick={() => removeTpGoal(g.id)}
+                        title="Odstranit hodinu"
+                        aria-label="Odstranit hodinu"
+                        style={{
+                          position: "absolute", top: 12, right: 12,
+                          width: 30, height: 30, borderRadius: 9,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: "#fff", border: "1.5px solid rgba(200,30,30,0.28)", color: "#c81e1e",
+                          cursor: "pointer", padding: 0, transition: "background 0.12s, border-color 0.12s",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.borderColor = "#c81e1e"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(200,30,30,0.28)"; }}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M2 4h12M5.333 4V2.667a.667.667 0 0 1 .667-.667h4a.667.667 0 0 1 .667.667V4M12.667 4l-.667 9.333A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 13.333L3.333 4M6.667 7v4M9.333 7v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </FadeIn>
               );
