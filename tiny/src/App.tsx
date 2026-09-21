@@ -5382,15 +5382,16 @@ function TematickyPlanView() {
       background: "#fff", outline: "none", cursor: "pointer",
     };
     const thStyle: React.CSSProperties = {
-      padding: "10px 14px", textAlign: "left",
-      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12,
-      color: "#717182", background: "#f5f5f7", borderBottom: "1.5px solid rgba(0,0,0,0.1)",
+      padding: "11px 14px", textAlign: "left",
+      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
+      color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em",
+      background: "#fafafa", borderBottom: "1px solid rgba(0,0,0,0.08)",
       whiteSpace: "nowrap", userSelect: "none",
     };
     const tdStyle: React.CSSProperties = {
       padding: "11px 14px", verticalAlign: "top",
       fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
-      borderBottom: "1px solid rgba(0,0,0,0.07)", lineHeight: 1.55,
+      borderBottom: "1px solid rgba(0,0,0,0.05)", lineHeight: 1.55,
     };
 
     function onDragStart(idx: number) { setDragFrom(idx); }
@@ -5540,7 +5541,8 @@ function TematickyPlanView() {
         )}
 
         {/* table with draggable columns */}
-        <div style={{ overflowX: "auto", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.08)", background: "#fff" }}>
+        <style>{`.tp-row:hover > td { background: rgba(0,0,0,0.018); }`}</style>
+        <div style={{ overflowX: "auto", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", background: "#fff" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 400 }}>
             <thead>
               <tr>
@@ -5580,7 +5582,7 @@ function TematickyPlanView() {
                       >
                         <SparkleIcon />
                       </button>
-                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
                           <circle cx="3" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="3" r="1" fill="currentColor"/>
                           <circle cx="3" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/>
@@ -5596,8 +5598,9 @@ function TematickyPlanView() {
                               background: "linear-gradient(135deg, #a855f7, #7c3aed)",
                               color: "#fff", cursor: "pointer",
                               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
-                              boxShadow: "0 2px 8px rgba(124,58,237,0.3)",
-                              whiteSpace: "nowrap", flexShrink: 0,
+                              boxShadow: "0 1px 4px rgba(124,58,237,0.22)",
+                              whiteSpace: "nowrap", flexShrink: 0, marginLeft: "auto",
+                              textTransform: "none", letterSpacing: "normal",
                             }}
                           >
                             <SparkleIcon />
@@ -5650,6 +5653,7 @@ function TematickyPlanView() {
                 return (
                   <tr
                     key={ri}
+                    className="tp-row"
                     draggable
                     onDragStart={() => {
                       rowDragRef.current = { kind: "sub", fromMonth: monthKey, fromSubIdx: subIdx };
@@ -5693,8 +5697,8 @@ function TematickyPlanView() {
                           ...tdStyle, padding: "10px 12px", position: "relative",
                           borderTop: isDragOverMonth ? "2px solid #7c4dbd" : topBorder,
                           verticalAlign: "middle", textAlign: "center",
-                          background: isDragOverMonth ? "rgba(124,77,189,0.07)" : "#f5f5f7",
-                          borderRight: "1.5px solid rgba(0,0,0,0.1)",
+                          background: isDragOverMonth ? "rgba(124,77,189,0.07)" : "#fafafa",
+                          borderRight: "1px solid rgba(0,0,0,0.06)",
                           whiteSpace: "nowrap", cursor: "grab",
                           transition: "background 0.1s",
                         }}
