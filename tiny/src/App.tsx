@@ -319,7 +319,7 @@ function Modal({
         style={{ width, padding: "28px 28px 24px", border: "1px solid rgba(0,0,0,0.09)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a", marginBottom: 20 }}>
+        <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18, color: "#0a0a0a", marginBottom: 20 }}>
           {title}
         </p>
         {children}
@@ -333,7 +333,7 @@ function ModalInput({ label, value, onChange, placeholder }: {
 }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", marginBottom: 6, letterSpacing: "0.02em" }}>
+      <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", marginBottom: 6, letterSpacing: "0.02em" }}>
         {label}
       </label>
       <input
@@ -343,7 +343,7 @@ function ModalInput({ label, value, onChange, placeholder }: {
         style={{
           width: "100%", boxSizing: "border-box", padding: "9px 12px",
           borderRadius: 10, border: "1px solid rgba(0,0,0,0.14)",
-          fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
+          fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
           background: "#fafafa", outline: "none",
         }}
       />
@@ -365,7 +365,7 @@ function ModalActions({ onCancel, onConfirm, confirmLabel, danger }: {
 function btnStyle(variant: "primary" | "ghost" | "danger"): React.CSSProperties {
   const base: React.CSSProperties = {
     padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer",
-    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
     transition: "opacity 0.15s",
   };
   if (variant === "primary") return { ...base, background: "#0a0a0a", color: "#fff" };
@@ -390,7 +390,7 @@ function Breadcrumb({ crumbs }: { crumbs: { label: string; onClick?: () => void 
               onClick={crumb.onClick}
               style={{
                 background: "none", border: "none", padding: 0, cursor: "pointer",
-                fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182",
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182",
                 letterSpacing: "0.01em",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#0a0a0a")}
@@ -399,7 +399,7 @@ function Breadcrumb({ crumbs }: { crumbs: { label: string; onClick?: () => void 
               {crumb.label}
             </button>
           ) : (
-            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a" }}>
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a" }}>
               {crumb.label}
             </span>
           )}
@@ -585,34 +585,34 @@ function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
     <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "16px 20px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: ev.note || ev.level ? 10 : 0 }}>
         <EvidenceIcon type={ev.type} />
-        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
+        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
           {evidenceLabel(ev.type)}
         </span>
         {ev.criterion && (
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11 }}>
+          <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
             {ev.criterion}
           </span>
         )}
         {ev.level && lc && (
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+          <span style={{ padding: "2px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
             {ev.level}
           </span>
         )}
-        <span style={{ marginLeft: "auto", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0bc" }}>{ev.date}</span>
+        <span style={{ marginLeft: "auto", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0bc" }}>{ev.date}</span>
       </div>
       {!hideGoal && (
-        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#a0a0b0", margin: "0 0 6px", fontStyle: "italic" }}>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#a0a0b0", margin: "0 0 6px", fontStyle: "italic" }}>
           {ev.goal}
         </p>
       )}
-      {ev.note && <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#3a3a4a", lineHeight: 1.6, margin: 0 }}>{ev.note}</p>}
+      {ev.note && <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3a3a4a", lineHeight: 1.6, margin: 0 }}>{ev.note}</p>}
       {ev.duration && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="6.667" stroke="#b0b0bc" strokeWidth="1.2" />
             <path d="M8 5.333V8l1.667 1.667" stroke="#b0b0bc" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0bc" }}>{ev.duration}</span>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0bc" }}>{ev.duration}</span>
         </div>
       )}
       {ev.fileName && (
@@ -621,7 +621,7 @@ function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
             <path d="M9.333 1.333H4A1.333 1.333 0 0 0 2.667 2.667v10.666A1.333 1.333 0 0 0 4 14.667h8a1.333 1.333 0 0 0 1.333-1.334V5.333L9.333 1.333z" stroke="#717182" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M9.333 1.333v4h4" stroke="#717182" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182" }}>{ev.fileName}</span>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>{ev.fileName}</span>
         </div>
       )}
     </div>
@@ -666,15 +666,15 @@ function StudentProfile({
           <div style={{
             width: 48, height: 48, borderRadius: "50%", background: avatarColor(student.lastName),
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#fff", flexShrink: 0,
+            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 19, color: "#fff", flexShrink: 0,
           }}>
             {student.firstName[0]}{student.lastName[0]}
           </div>
           <div>
-            <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 2px" }}>
+            <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 2px" }}>
               {student.firstName} {student.lastName}
             </h1>
-            <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
+            <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
               {className}
             </span>
           </div>
@@ -689,7 +689,7 @@ function StudentProfile({
               style={{
                 padding: "5px 14px", borderRadius: 7, border: "none", cursor: "pointer",
                 fontFamily: view === v ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                fontWeight: view === v ? 500 : 400, fontSize: 12,
+                fontWeight: view === v ? 500 : 400, fontSize: 14,
                 background: view === v ? "#fff" : "transparent",
                 color: view === v ? "#0a0a0a" : "#717182",
                 boxShadow: view === v ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
@@ -705,7 +705,7 @@ function StudentProfile({
 
       {/* evidence */}
       {studentRecords.length === 0 ? (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
+        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182" }}>
           Zatím žádné důkazy nebyly zaznamenány.
         </div>
       ) : view === "all" ? (
@@ -716,7 +716,7 @@ function StudentProfile({
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {groups.map(([goalText, items]) => (
             <div key={goalText}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
                 {goalText.length > 80 ? goalText.slice(0, 78) + "…" : goalText}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -881,7 +881,7 @@ function ClassesView() {
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Třídy" }]} />
         {/* header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
             Třídy
           </h1>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -896,7 +896,7 @@ function ClassesView() {
                 style={{
                   paddingLeft: 30, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
                   borderRadius: 10, border: "1px solid rgba(0,0,0,0.13)",
-                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
                   background: "#fff", width: 200, outline: "none",
                 }}
               />
@@ -914,7 +914,7 @@ function ClassesView() {
         {/* list */}
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
           {filtered.length === 0 && (
-            <p style={{ padding: "24px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
+            <p style={{ padding: "24px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182" }}>
               Žádná třída nebyla nalezena.
             </p>
           )}
@@ -936,15 +936,15 @@ function ClassesView() {
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, background: "rgba(236,236,240,0.7)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a",
                 }}>
                   {cls.name}
                 </div>
                 <div>
-                  <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>
+                  <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a", margin: 0 }}>
                     Třída {cls.name}
                   </p>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: "2px 0 0" }}>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "2px 0 0" }}>
                     {cls.students.length} {studentCountLabel(cls.students.length)}
                   </p>
                 </div>
@@ -961,7 +961,7 @@ function ClassesView() {
 
             {/* school systems */}
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
                 Nahrát ze školního systému
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -979,7 +979,7 @@ function ClassesView() {
                       padding: "7px 14px", borderRadius: 8,
                       border: `1.5px solid ${sys.color}22`,
                       background: `${sys.color}0d`,
-                      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
                       color: sys.color, cursor: "pointer", transition: "background 0.12s",
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = `${sys.color}1a`)}
@@ -993,7 +993,7 @@ function ClassesView() {
 
             {/* drag & drop zone */}
             <div style={{ marginBottom: 8 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
                 Nebo nahrát soubor
               </p>
               <div
@@ -1021,12 +1021,12 @@ function ClassesView() {
                       <circle cx="8" cy="8" r="6.667" stroke="#16a34a" strokeWidth="1.33"/>
                       <path d="M5.333 8l1.667 1.667L10.667 6" stroke="#16a34a" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#16a34a" }}>
+                    <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#16a34a" }}>
                       {addClassDropped}
                     </span>
                     <button
                       onClick={() => setAddClassDropped(null)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: "#717182", fontSize: 14, padding: 0, lineHeight: 1 }}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#717182", fontSize: 16, padding: 0, lineHeight: 1 }}
                     >×</button>
                   </div>
                 ) : (
@@ -1036,10 +1036,10 @@ function ClassesView() {
                       <polyline points="17 8 12 3 7 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#3a3a4a", margin: "0 0 4px" }}>
+                    <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#3a3a4a", margin: "0 0 4px" }}>
                       Přetáhněte screenshot nebo PDF se seznamem žáků
                     </p>
-                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0, lineHeight: 1.5 }}>
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.5 }}>
                       AI automaticky rozpozná jména žáků z libovolného formátu nebo systému
                     </p>
                   </>
@@ -1072,10 +1072,10 @@ function ClassesView() {
           <IconBack />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 1px" }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 1px" }}>
             Třída {selectedClass.name}
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: 0 }}>
             {selectedClass.students.length} {studentCountLabel(selectedClass.students.length)}
           </p>
         </div>
@@ -1091,7 +1091,7 @@ function ClassesView() {
               style={{
                 paddingLeft: 30, paddingRight: 12, paddingTop: 8, paddingBottom: 8,
                 borderRadius: 10, border: "1px solid rgba(0,0,0,0.13)",
-                fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
                 background: "#fff", width: 190, outline: "none",
               }}
             />
@@ -1109,7 +1109,7 @@ function ClassesView() {
       {/* student list */}
       <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
         {filteredStudents.length === 0 && (
-          <p style={{ padding: "24px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
+          <p style={{ padding: "24px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182" }}>
             Žádný žák nebyl nalezen.
           </p>
         )}
@@ -1134,11 +1134,11 @@ function ClassesView() {
               <div style={{
                 width: 30, height: 30, borderRadius: "50%", background: avatarColor(student.lastName),
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#fff", flexShrink: 0,
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#fff", flexShrink: 0,
               }}>
                 {student.firstName[0]}{student.lastName[0]}
               </div>
-              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a", transition: "color 0.12s" }}>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", transition: "color 0.12s" }}>
                 {student.lastName}, {student.firstName}
               </span>
               {(() => {
@@ -1147,7 +1147,7 @@ function ClassesView() {
                 return (
                   <span style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 4 }}>
                     {ev.audio > 0 && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                           <rect x="5" y="1" width="6" height="9" rx="3" stroke="currentColor" strokeWidth="1.5"/>
                           <path d="M2.667 8A5.333 5.333 0 0 0 8 13.333 5.333 5.333 0 0 0 13.333 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -1157,7 +1157,7 @@ function ClassesView() {
                       </span>
                     )}
                     {ev.photo > 0 && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 2, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                         <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                           <path d="M1.333 5.333A1.333 1.333 0 0 1 2.667 4h1.2L5.2 2h5.6l1.333 2h1.2A1.333 1.333 0 0 1 14.667 5.333v7.334A1.333 1.333 0 0 1 13.333 14H2.667a1.333 1.333 0 0 1-1.334-1.333V5.333z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           <circle cx="8" cy="9" r="2.333" stroke="currentColor" strokeWidth="1.5"/>
@@ -1206,10 +1206,10 @@ function ClassesView() {
       {/* delete class modal */}
       {deleteClassOpen && (
         <Modal title="Odstranit třídu" onClose={() => setDeleteClassOpen(false)}>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 4px" }}>
             Opravdu chcete odstranit třídu <strong style={{ color: "#0a0a0a" }}>{selectedClass.name}</strong>?
           </p>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#dc2626", margin: 0 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#dc2626", margin: 0 }}>
             Tato akce je nevratná.
           </p>
           <ModalActions onCancel={() => setDeleteClassOpen(false)} onConfirm={handleDeleteClass} confirmLabel="Odstranit" danger />
@@ -1239,7 +1239,7 @@ function ClassesView() {
         const st = selectedClass.students.find((s) => s.id === targetStudentId);
         return (
           <Modal title="Odstranit žáka" onClose={() => setDeleteStudentOpen(false)}>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 4px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 4px" }}>
               Opravdu chcete odstranit žáka{" "}
               <strong style={{ color: "#0a0a0a" }}>{st?.firstName} {st?.lastName}</strong>?
             </p>
@@ -1314,7 +1314,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
         onChange={e => updateItem(c.id, "name", e.target.value)}
         style={{
           flexShrink: 0, width: 118, boxSizing: "border-box",
-          fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
+          fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a",
           background: "rgba(236,236,240,0.5)", border: "1px solid rgba(0,0,0,0.09)",
           borderRadius: 20, outline: "none", padding: "5px 12px",
           transition: "background 0.12s, border-color 0.12s", cursor: "text",
@@ -1331,7 +1331,7 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
         placeholder="Popis úrovně..."
         style={{
           flex: 1, minWidth: 0, boxSizing: "border-box",
-          fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+          fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
           background: "transparent", border: "none", borderRadius: 6, outline: "none",
           padding: "5px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text",
         }}
@@ -1383,7 +1383,7 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
   if (customMode) {
     return (
       <div>
-        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: "0 0 14px", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 14px", lineHeight: 1.5 }}>
           Upravte názvy a popisy úrovní podle svých potřeb. Úrovně jsou seřazeny od nejnižší po nejvyšší.
         </p>
         <CustomLevelList animateIn initial={draftItems} onItemsChange={setDraftItems} />
@@ -1422,10 +1422,10 @@ function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id:
                 {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />}
               </span>
               <span>
-                <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>
+                <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>
                   {opt.name}
                 </span>
-                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>
                   {opt.desc}
                 </span>
               </span>
@@ -1483,7 +1483,7 @@ function PrintModal({ onClose, students, goal }: {
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", maxWidth: 1040, marginBottom: 16 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}>
+        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#fff" }}>
           Náhled před tiskem
         </span>
         <div style={{ display: "flex", gap: 10 }}>
@@ -1510,10 +1510,10 @@ function PrintModal({ onClose, students, goal }: {
       >
         {/* sheet header */}
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
             Tabulka hodnocení · Čeština · 3.A
           </p>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
             {goal}
           </p>
         </div>
@@ -1529,7 +1529,7 @@ function PrintModal({ onClose, students, goal }: {
               <tr>
                 <th style={{
                   padding: "8px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182",
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182",
                   textAlign: "left", background: "#fafafa",
                 }}>
                   Žák / Žákyně
@@ -1537,7 +1537,7 @@ function PrintModal({ onClose, students, goal }: {
                 {observationCriteria.map((c) => (
                   <th key={c.short} style={{
                     padding: "8px 6px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)",
-                    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#0a0a0a",
+                    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
                     textAlign: "center", background: "#fafafa", lineHeight: 1.3,
                   }}>
                     {c.short}
@@ -1550,14 +1550,14 @@ function PrintModal({ onClose, students, goal }: {
                 <tr key={student.id} style={{ background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
                   <td style={{
                     padding: "9px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
-                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a",
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
                   }}>
                     {student.lastName}, {student.firstName}
                   </td>
                   {observationCriteria.map((c) => (
                     <td key={c.short} style={{
                       padding: "9px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)",
-                      textAlign: "center", fontSize: 13, color: "#0a0a0a",
+                      textAlign: "center", fontSize: 15, color: "#0a0a0a",
                       minWidth: 48,
                     }} />
                   ))}
@@ -1569,7 +1569,7 @@ function PrintModal({ onClose, students, goal }: {
 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)" }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
             Legenda úrovní hodnocení
           </p>
           <div style={{ display: "flex", gap: 24 }}>
@@ -1578,17 +1578,17 @@ function PrintModal({ onClose, students, goal }: {
                 <span style={{
                   flexShrink: 0, width: 24, height: 24, borderRadius: 6,
                   background: l.bg, color: l.color,
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   border: `1px solid ${l.color}33`,
                 }}>
                   {l.letter}
                 </span>
                 <div>
-                  <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#0a0a0a", margin: "0 0 1px" }}>
+                  <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", margin: "0 0 1px" }}>
                     {l.label}
                   </p>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#717182", margin: 0, lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.4 }}>
                     {l.desc}
                   </p>
                 </div>
@@ -1767,10 +1767,10 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* sheet header: title left, action buttons + close right */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
               Důkazy o učení · Tabulka hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
               {goal}
             </p>
           </div>
@@ -1785,7 +1785,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                 cursor: anyChecked ? "pointer" : "default",
                 background: anyChecked ? "#f3f0ff" : "#fafafa",
                 color: anyChecked ? "#7c3aed" : "#b0b0be",
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
                 transition: "background 0.15s, color 0.15s, border-color 0.15s",
               }}
             >
@@ -1806,7 +1806,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                 cursor: anyChecked ? "pointer" : "default",
                 background: anyChecked ? "#ecfeff" : "#fafafa",
                 color: anyChecked ? "#0891b2" : "#b0b0be",
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
                 transition: "background 0.15s, color 0.15s, border-color 0.15s",
               }}
             >
@@ -1831,7 +1831,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     border: `1.5px solid ${anyChecked ? ls.border.replace("1px solid ", "") : "rgba(0,0,0,0.12)"}`,
                     background: anyChecked ? ls.background : "#fafafa",
                     color: anyChecked ? ls.color : "#b0b0be",
-                    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 600, fontSize: 14,
+                    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 600, fontSize: 16,
                     cursor: anyChecked ? "pointer" : "default",
                     transition: "background 0.15s, color 0.15s, border-color 0.15s",
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -1882,13 +1882,13 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     style={{ width: 18, height: 18, cursor: "pointer", accentColor: "#0a0a0a" }}
                   />
                 </th>
-                <th style={{ padding: "8px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textAlign: "left", background: "#fafafa" }}>
+                <th style={{ padding: "8px 10px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "left", background: "#fafafa" }}>
                   Žák / Žákyně
                 </th>
                 {observationCriteria.map(c => {
                   const colChecked = checkedCriteria.has(c.short);
                   return (
-                    <th key={c.short} style={{ padding: "6px 6px 8px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: colChecked ? "#0a0a0a" : "#717182", textAlign: "center", background: colChecked ? "rgba(10,10,10,0.04)" : "#fafafa", lineHeight: 1.3, cursor: "pointer", transition: "background 0.12s, color 0.12s" }} onClick={() => toggleCriterion(c.short)}>
+                    <th key={c.short} style={{ padding: "6px 6px 8px", borderBottom: "2px solid #0a0a0a", borderRight: "1px solid rgba(0,0,0,0.1)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: colChecked ? "#0a0a0a" : "#717182", textAlign: "center", background: colChecked ? "rgba(10,10,10,0.04)" : "#fafafa", lineHeight: 1.3, cursor: "pointer", transition: "background 0.12s, color 0.12s" }} onClick={() => toggleCriterion(c.short)}>
                       <div style={{ marginBottom: 5 }}>{c.short}</div>
                       <input
                         type="checkbox"
@@ -1901,7 +1901,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     </th>
                   );
                 })}
-                <th style={{ padding: "8px 6px", borderBottom: "2px solid #0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textAlign: "center", background: "#fafafa" }}>
+                <th style={{ padding: "8px 6px", borderBottom: "2px solid #0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textAlign: "center", background: "#fafafa" }}>
                   Důkazy
                 </th>
               </tr>
@@ -1931,7 +1931,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                       />
                     </td>
                     {/* name */}
-                    <td style={{ padding: "9px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)", verticalAlign: "middle", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a" }}>
+                    <td style={{ padding: "9px 10px", borderBottom: "1px solid rgba(0,0,0,0.07)", borderRight: "1px solid rgba(0,0,0,0.1)", verticalAlign: "middle", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a" }}>
                       {student.lastName}, {student.firstName}
                     </td>
                     {/* criterion cells */}
@@ -1951,7 +1951,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                           <span style={{
                             display: "inline-flex", alignItems: "center", justifyContent: "center",
                             width: 28, height: 28, borderRadius: 7,
-                            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15,
                             transition: "background 0.12s, color 0.12s",
                             ...ls,
                           }}>
@@ -1964,7 +1964,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                     <td style={{ padding: "9px 6px", borderBottom: "1px solid rgba(0,0,0,0.07)", textAlign: "center", verticalAlign: "middle" }}>
                       <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
                         {ev.audio > 0 && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#7c3aed", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                               <rect x="5" y="1" width="6" height="9" rx="3" stroke="currentColor" strokeWidth="1.5"/>
                               <path d="M2.667 8A5.333 5.333 0 0 0 8 13.333 5.333 5.333 0 0 0 13.333 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -1974,7 +1974,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
                           </span>
                         )}
                         {ev.photo > 0 && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#0891b2", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                               <path d="M1.333 5.333A1.333 1.333 0 0 1 2.667 4h1.2L5.2 2h5.6l1.333 2h1.2A1.333 1.333 0 0 1 14.667 5.333v7.334A1.333 1.333 0 0 1 13.333 14H2.667a1.333 1.333 0 0 1-1.334-1.333V5.333z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               <circle cx="8" cy="9" r="2.333" stroke="currentColor" strokeWidth="1.5"/>
@@ -1994,24 +1994,24 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
               Legenda úrovní hodnocení
             </p>
             <div style={{ display: "flex", gap: 20 }}>
               {levelLegend.map(l => (
                 <div key={l.letter} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 6, background: l.bg, color: l.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${l.color}33` }}>
+                  <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: 6, background: l.bg, color: l.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${l.color}33` }}>
                     {l.letter}
                   </span>
                   <div>
-                    <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#0a0a0a", margin: "0 0 1px" }}>{l.label}</p>
-                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#717182", margin: 0, lineHeight: 1.4 }}>{l.desc}</p>
+                    <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", margin: "0 0 1px" }}>{l.label}</p>
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.4 }}>{l.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div style={{ fontSize: 11, color: "#717182", fontFamily: "'Inter:Regular', sans-serif", lineHeight: 1.5, maxWidth: 260 }}>
+          <div style={{ fontSize: 13, color: "#717182", fontFamily: "'Inter:Regular', sans-serif", lineHeight: 1.5, maxWidth: 260 }}>
             <strong style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, color: "#0a0a0a" }}>Tip:</strong> Klikněte do pole pro přiřazení úrovně. Zaškrtněte žáky a klikněte na ikonu nahoře pro přidání důkazu o učení.
           </div>
         </div>
@@ -2074,7 +2074,7 @@ function CameraModal({ onClose }: { onClose: () => void }) {
           {!camReady && !camError && (
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #333", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />
-              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0 }}>
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: 0 }}>
                 Spouštím kameru…
               </p>
             </div>
@@ -2097,10 +2097,10 @@ function CameraModal({ onClose }: { onClose: () => void }) {
             background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)",
             padding: "32px 20px 16px",
           }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff", margin: "0 0 4px", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#fff", margin: "0 0 4px", textAlign: "center" }}>
               Ukažte tabulku hodnocení do kamery
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.7)", margin: 0, textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.7)", margin: 0, textAlign: "center" }}>
               Přidržte arch rovně, aby byl celý viditelný
             </p>
           </div>
@@ -2117,14 +2117,14 @@ function CameraModal({ onClose }: { onClose: () => void }) {
               <circle cx="8" cy="8" r="6.667" stroke="#717182" strokeWidth="1.2" />
               <path d="M8 7.333V11M8 5.333v.334" stroke="#717182" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0, lineHeight: 1.55 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, lineHeight: 1.55 }}>
               <strong style={{ color: "#0a0a0a" }}>Fotografie se neukládá.</strong> Snímek slouží pouze k rozpoznání textu z tabulky hodnocení. Data nejsou sdílena ani archivována.
             </p>
           </div>
 
           {/* fallback */}
           <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.08)" }}>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: "0 0 10px", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 10px", textAlign: "center" }}>
               Nejde to?
             </p>
             <div style={{ display: "flex", gap: 8 }}>
@@ -2182,14 +2182,14 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
   const rowContent = (c: CriterionItem, i: number) => (
     <AIHint message={`Chci upravit criterion: ${c.label}`}>
     <div style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "11px 14px 11px 18px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)" }}>
-      <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 7, background: "rgba(236,236,240,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", marginTop: 6 }}>
+      <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 7, background: "rgba(236,236,240,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", marginTop: 6 }}>
         {i + 1}
       </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <input
           value={c.label}
           onChange={e => updateItem(c.id, "label", e.target.value)}
-          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 0 2px -6px", transition: "background 0.12s", cursor: "text" }}
+          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 0 2px -6px", transition: "background 0.12s", cursor: "text" }}
           onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = inputBg; }}
           onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
           onFocus={e => (e.currentTarget.style.background = inputBg)}
@@ -2199,7 +2199,7 @@ function CriteriaList({ initial, animateIn }: { initial: CriterionItem[]; animat
           value={c.desc}
           onChange={e => updateItem(c.id, "desc", e.target.value)}
           placeholder="Popis..."
-          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text" }}
+          style={{ width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", background: "transparent", border: "none", borderRadius: 6, outline: "none", padding: "2px 6px", margin: "0 -6px", transition: "background 0.12s", cursor: "text" }}
           onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = inputBg; }}
           onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
           onFocus={e => (e.currentTarget.style.background = inputBg)}
@@ -2291,27 +2291,27 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
       {/* goal header */}
       <FadeIn delay={100}>
         <div style={{ marginBottom: 36 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
             Výzkumný cíl
           </p>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", lineHeight: 1.4, margin: "0 0 12px" }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.4, margin: "0 0 12px" }}>
             {goalText}
           </h1>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 14 }}>
-            <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
+            <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
               Nový cíl
             </span>
             <select
               value={subject}
               onChange={e => setSubject(e.target.value)}
-              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
+              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
             >
               {subjectOptions.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select
               value={classId}
               onChange={e => setClassId(e.target.value)}
-              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
+              style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 8, padding: "4px 10px", outline: "none", cursor: "pointer" }}
             >
               {initialClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -2323,10 +2323,10 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* criteria */}
         <FadeIn delay={500}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
               Kritéria hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
             </p>
             <CriteriaList initial={generatedCriteria.map((c) => ({ id: String(c.n), label: c.label, desc: c.desc }))} animateIn />
@@ -2336,10 +2336,10 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* levels */}
         <FadeIn delay={1900}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
               Úrovně hodnocení
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -2355,8 +2355,8 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
                         {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />}
                       </span>
                       <span>
-                        <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>{opt.name}</span>
-                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>{opt.desc}</span>
+                        <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>{opt.name}</span>
+                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>{opt.desc}</span>
                       </span>
                     </button>
                   </FadeIn>
@@ -2377,7 +2377,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
               width: "100%", padding: "14px 24px",
               background: "#0a0a0a", color: "#fff", border: "none",
               borderRadius: 14, cursor: "pointer",
-              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16,
+              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18,
               transition: "opacity 0.15s",
             }}>
             Uložit cíl
@@ -2429,12 +2429,12 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
     <input type="date" value={lessonDate} autoFocus
       onChange={e => { setLessonDate(e.target.value); localStorage.setItem(dateKey, e.target.value); }}
       onBlur={() => setEditingDate(false)}
-      style={{ padding: compact ? "2px 8px" : "7px 12px", borderRadius: compact ? 20 : 8, border: "1.5px solid rgba(0,0,0,0.18)", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 11 : 14, color: "#0a0a0a", outline: "none", background: "#fff", width: compact ? 110 : undefined }}
+      style={{ padding: compact ? "2px 8px" : "7px 12px", borderRadius: compact ? 20 : 8, border: "1.5px solid rgba(0,0,0,0.18)", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 13 : 16, color: "#0a0a0a", outline: "none", background: "#fff", width: compact ? 110 : undefined }}
     />
   );
   if (lessonDate) return (
     <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", gap: compact ? 4 : 8, padding: compact ? "2px 7px" : "7px 14px", borderRadius: compact ? 20 : 8, border: compact ? "none" : "1.5px solid rgba(0,0,0,0.12)", background: compact ? "transparent" : "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 10 : 14, color: "#717182", cursor: "pointer", transition: "color 0.12s" }}
+      style={{ display: "inline-flex", alignItems: "center", gap: compact ? 4 : 8, padding: compact ? "2px 7px" : "7px 14px", borderRadius: compact ? 20 : 8, border: compact ? "none" : "1.5px solid rgba(0,0,0,0.12)", background: compact ? "transparent" : "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 12 : 16, color: "#717182", cursor: "pointer", transition: "color 0.12s" }}
       onMouseEnter={e => (e.currentTarget.style.color = compact ? "#0a0a0a" : "#0a0a0a")}
       onMouseLeave={e => (e.currentTarget.style.color = "#717182")}
     >
@@ -2463,7 +2463,7 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
   );
   return (
     <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, border: "1.5px dashed rgba(0,0,0,0.18)", background: "transparent", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", cursor: "pointer", transition: "border-color 0.12s, color 0.12s" }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, border: "1.5px dashed rgba(0,0,0,0.18)", background: "transparent", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#b0b0be", cursor: "pointer", transition: "border-color 0.12s, color 0.12s" }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.3)"; e.currentTarget.style.color = "#717182"; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.18)"; e.currentTarget.style.color = "#b0b0be"; }}
     >
@@ -2514,7 +2514,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
       {grouped.map(({ month, items }, gi) => (
         <div key={`${month || "__none"}-${gi}`} style={{ marginBottom: 24 }}>
           {month && (
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
               {month}
             </p>
           )}
@@ -2566,25 +2566,25 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, alignItems: "center" }}>
                         {num && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 10px 2px 7px", borderRadius: 20, background: "linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 10px 2px 7px", borderRadius: 20, background: "linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
                               <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                             Vyučovací hodina {num}
                           </span>
                         )}
-                        <span style={{ padding: "2px 9px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>{g.subject}</span>
-                        {g.cls && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11 }}>{g.cls}</span>}
-                        {tpGoal && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11 }}>{tpGoal.rozsah} {parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}</span>}
+                        <span style={{ padding: "2px 9px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>{g.subject}</span>
+                        {g.cls && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{g.cls}</span>}
+                        {tpGoal && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{tpGoal.rozsah} {parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}</span>}
                         <span onClick={e => e.stopPropagation()}><LessonDatePicker goalId={g.id} compact /></span>
-                        {tpGoal?.vystupy && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>{tpGoal.vystupy}</span>}
+                        {tpGoal?.vystupy && <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>{tpGoal.vystupy}</span>}
                       </div>
-                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a", lineHeight: 1.5, margin: 0 }}>{g.text}</p>
+                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", lineHeight: 1.5, margin: 0 }}>{g.text}</p>
                     </div>
                     <div style={{ display: "flex", gap: 6, flexShrink: 0, alignItems: "center", paddingTop: 2, marginLeft: 16 }}>
                       {isTp ? (
                         <>
-                          <button onClick={e => { e.stopPropagation(); setSelectedTpGoalId(g.id); setTpEditingLevels(false); }} style={{ ...btnStyle("ghost"), fontSize: 12, padding: "5px 12px" }}>Detail</button>
+                          <button onClick={e => { e.stopPropagation(); setSelectedTpGoalId(g.id); setTpEditingLevels(false); }} style={{ ...btnStyle("ghost"), fontSize: 14, padding: "5px 12px" }}>Detail</button>
                           <button onClick={e => { e.stopPropagation(); removeTpGoal(g.id); }} title="Odstranit"
                             style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
                             onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
@@ -2667,7 +2667,7 @@ function CileView() {
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
               Výukový cíl
             </p>
             <AIHint message={`Chci upravit cíl: ${selectedTpGoal.text}`}>
@@ -2676,7 +2676,7 @@ function CileView() {
                 onChange={e => updateTpGoalText(selectedTpGoal.id, e.target.value)}
                 style={{
                   display: "block", width: "100%", maxWidth: 560, boxSizing: "border-box",
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", lineHeight: 1.4,
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.4,
                   margin: "0 0 14px", padding: "2px 8px", marginLeft: -8,
                   background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
                   outline: "none", transition: "background 0.12s, border-color 0.12s",
@@ -2688,13 +2688,13 @@ function CileView() {
               />
             </AIHint>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12 }}>
+              <span style={{ padding: "3px 10px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14 }}>
                 {selectedTpGoal.subject}
               </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
+              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
                 {selectedTpGoal.trida}
               </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
+              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
                 {selectedTpGoal.rozsah} {parseInt(selectedTpGoal.rozsah) === 1 ? "hodina" : parseInt(selectedTpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}
               </span>
             </div>
@@ -2727,18 +2727,18 @@ function CileView() {
 
         <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 28 }}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
               Datum hodiny
             </p>
             <LessonDatePicker goalId={selectedTpGoal.id} />
           </section>
           <section>
             <AIHint message="Chci upravit kritéria hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
                 Kritéria hodnocení
               </p>
             </AIHint>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
             </p>
             <CriteriaList initial={selectedTpGoal.criteria} />
@@ -2746,11 +2746,11 @@ function CileView() {
 
           <section>
             <AIHint message="Chci upravit úrovně hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 12px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 12px" }}>
                 Úrovně hodnocení
               </p>
             </AIHint>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
             </p>
             {tpEditingLevels ? (
@@ -2762,7 +2762,7 @@ function CileView() {
             ) : tpSelectedLevelId === "vlastní" ? (
               <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Vlastní úrovně</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>Vlastní úrovně</span>
                   <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                     <IconEdit />Upravit
                   </button>
@@ -2770,10 +2770,10 @@ function CileView() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {savedCustomLevels.map((lv, i) => (
                     <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                      <span style={{ flexShrink: 0, padding: "2px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#0a0a0a", whiteSpace: "nowrap" }}>
+                      <span style={{ flexShrink: 0, padding: "2px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", whiteSpace: "nowrap" }}>
                         {lv.name || `Úroveň ${i + 1}`}
                       </span>
-                      {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.5 }}>{lv.desc}</span>}
+                      {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.5 }}>{lv.desc}</span>}
                     </div>
                   ))}
                 </div>
@@ -2785,8 +2785,8 @@ function CileView() {
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
                   </span>
                   <span>
-                    <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>{tpOpt.name}</span>
-                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>{tpOpt.desc}</span>
+                    <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>{tpOpt.name}</span>
+                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>{tpOpt.desc}</span>
                   </span>
                 </div>
                 <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -2816,12 +2816,12 @@ function CileView() {
         <div style={{ maxWidth: 560, marginTop: 48 }}>
           <h1 style={{
             fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-            fontSize: 32, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25,
+            fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25,
           }}>
             Co chcete učit?
           </h1>
           <p style={{
-            fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
+            fontFamily: "'Inter:Regular', sans-serif", fontSize: 16,
             color: "#717182", margin: "0 0 24px", lineHeight: 1.6,
           }}>
             Např. Počítání do pěti nebo obojživelníky…
@@ -2836,7 +2836,7 @@ function CileView() {
               width: "100%", boxSizing: "border-box",
               padding: "11px 14px", borderRadius: 12,
               border: "1.5px solid rgba(0,0,0,0.15)",
-              fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
               lineHeight: 1.6, resize: "none", outline: "none",
               background: "#fff", transition: "border-color 0.15s",
             }}
@@ -2878,7 +2878,7 @@ function CileView() {
           <div style={{ flex: 1 }}>
             <p style={{
               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-              fontSize: 11, color: "#717182", letterSpacing: "0.06em",
+              fontSize: 13, color: "#717182", letterSpacing: "0.06em",
               textTransform: "uppercase", margin: "0 0 8px",
             }}>
               Výzkumný cíl
@@ -2886,7 +2886,7 @@ function CileView() {
             <AIHint message="Chci upravit tento výzkumný goal">
               <h1 style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 24, color: "#0a0a0a", lineHeight: 1.4,
+                fontSize: 26, color: "#0a0a0a", lineHeight: 1.4,
                 margin: "0 0 12px", maxWidth: 560,
               }}>
                 {selectedGoal.text}
@@ -2896,14 +2896,14 @@ function CileView() {
               <span style={{
                 padding: "3px 10px", borderRadius: 20,
                 background: "#f3e8ff", color: "#8200db",
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12,
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14,
               }}>
                 {selectedGoal.subject}
               </span>
               <span style={{
                 padding: "3px 10px", borderRadius: 20,
                 background: "rgba(236,236,240,0.9)", color: "#717182",
-                fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
               }}>
                 {selectedGoal.className}
               </span>
@@ -2960,14 +2960,14 @@ function CileView() {
             <AIHint message="Chci upravit kritéria hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em",
+                fontSize: 15, color: "#717182", letterSpacing: "0.04em",
                 textTransform: "uppercase", margin: "0 0 6px",
               }}>
                 Kritéria hodnocení
               </p>
             </AIHint>
             <p style={{
-              fontFamily: "'Inter:Regular', sans-serif", fontSize: 13,
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 15,
               color: "#717182", lineHeight: 1.6, margin: "0 0 16px",
             }}>
               Kritéria hodnocení určují, co konkrétně pozorujete za aktivity a chování, které se snažíte vyhodnotit.
@@ -2987,14 +2987,14 @@ function CileView() {
             <AIHint message="Chci upravit úrovně hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em",
+                fontSize: 15, color: "#717182", letterSpacing: "0.04em",
                 textTransform: "uppercase", margin: "0 0 12px",
               }}>
                 Úrovně hodnocení
               </p>
             </AIHint>
             <p style={{
-              fontFamily: "'Inter:Regular', sans-serif", fontSize: 13,
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 15,
               color: "#717182", lineHeight: 1.6, margin: "0 0 16px",
             }}>
               Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
@@ -3009,7 +3009,7 @@ function CileView() {
             ) : selectedLevelId === "vlastní" ? (
               <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
                     Vlastní úrovně
                   </span>
                   <button
@@ -3026,13 +3026,13 @@ function CileView() {
                       <span style={{
                         flexShrink: 0, padding: "2px 10px", borderRadius: 20,
                         background: "rgba(236,236,240,0.7)",
-                        fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#0a0a0a",
+                        fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a",
                         whiteSpace: "nowrap",
                       }}>
                         {lv.name || `Úroveň ${i + 1}`}
                       </span>
                       {lv.desc && (
-                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.5 }}>
+                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.5 }}>
                           {lv.desc}
                         </span>
                       )}
@@ -3056,10 +3056,10 @@ function CileView() {
                       <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
                     </span>
                     <span>
-                      <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>
+                      <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 4 }}>
                         {opt.name}
                       </span>
-                      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>
+                      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", lineHeight: 1.55 }}>
                         {opt.desc}
                       </span>
                     </span>
@@ -3139,7 +3139,7 @@ function CileView() {
 
   const selectStyle: React.CSSProperties = {
     padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
-    background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+    background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", paddingRight: 30,
@@ -3151,7 +3151,7 @@ function CileView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Vyučovací hodiny" }]} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
           Vyučovací hodiny
         </h1>
         <button
@@ -3200,7 +3200,7 @@ function CileView() {
                 style={{ ...selectStyle, paddingRight: 12, backgroundImage: "none" }}
                 title="Od"
               />
-              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>–</span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}>–</span>
               <input
                 type="date"
                 value={filterDateTo}
@@ -3213,7 +3213,7 @@ function CileView() {
           {(filterSubject || filterClass || filterPeriod !== "vse" || search) && (
             <button
               onClick={() => { setFilterSubject(""); setFilterClass(""); setFilterPeriod("vse"); setFilterDateFrom(""); setFilterDateTo(""); setSearch(""); }}
-              style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(254,242,242,0.6)", color: "#dc2626", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, cursor: "pointer" }}
+              style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)", background: "rgba(254,242,242,0.6)", color: "#dc2626", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, cursor: "pointer" }}
             >
               Zrušit filtry
             </button>
@@ -3223,7 +3223,7 @@ function CileView() {
 
       {filtered.length === 0 ? (
         <div style={{ padding: "60px 0", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0be", margin: 0 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#b0b0be", margin: 0 }}>
             {allGoals.length === 0 ? "Zatím žádné hodiny. Vytvořte první nebo vygenerujte z tématického plánu." : "Žádné hodiny neodpovídají filtru."}
           </p>
         </div>
@@ -3286,26 +3286,26 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
         {/* row 1: (jméno ·) předmět · třída · datum */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 5 }}>
           {!hideStudent && (
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a" }}>
+            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a" }}>
               {r.studentName}
             </span>
           )}
-          <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8200db" }}>
+          <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#8200db" }}>
             {r.subject}
           </span>
           {!hideStudent && (
-            <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#717182" }}>
+            <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.8)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>
               {r.className}
             </span>
           )}
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#b0b0be" }}>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be" }}>
             {formatDate(r.date)}
           </span>
         </div>
         {/* row 2: Cíl N + text cíle */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: r.criterion ? 5 : 0 }}>
           {goalNums.get(r.goalId) && (
-            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 8px 1px 6px", borderRadius: 20, background: "linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)", color: "#92400e", border: "1px solid rgba(245,158,11,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 8px 1px 6px", borderRadius: 20, background: "linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)", color: "#92400e", border: "1px solid rgba(245,158,11,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                 <path d="M6 2h12v8a6 6 0 0 1-12 0V2z" stroke="#d97706" strokeWidth="2" strokeLinejoin="round"/>
                 <path d="M6 6H3a2 2 0 0 0 0 4h3M18 6h3a2 2 0 0 1 0 4h-3" stroke="#d97706" strokeWidth="2" strokeLinecap="round"/>
@@ -3314,18 +3314,18 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
               Cíl {goalNums.get(r.goalId)}
             </span>
           )}
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {r.goalText}
           </span>
         </div>
         {/* row 3: kritérium + úroveň */}
         {r.criterion && (
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ padding: "1px 8px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#374151" }}>
+            <span style={{ padding: "1px 8px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#374151" }}>
               {r.criterion}
             </span>
             {r.level && lc && (
-              <span style={{ padding: "1px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+              <span style={{ padding: "1px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                 {r.level}
               </span>
             )}
@@ -3475,7 +3475,7 @@ function DukazyView() {
 
   const selStyle: React.CSSProperties = {
     padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
-    background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+    background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", paddingRight: 30,
@@ -3496,10 +3496,10 @@ function DukazyView() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 16 }}>
         <div>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 2px" }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 2px" }}>
             Důkazy o učení
           </h1>
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}>
             {filtered.length} {filtered.length === 1 ? "záznam" : filtered.length < 5 ? "záznamy" : "záznamů"}
           </span>
         </div>
@@ -3572,7 +3572,7 @@ function DukazyView() {
                 style={{ ...selStyle, paddingRight: 12, backgroundImage: "none" }}
                 title="Od"
               />
-              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>–</span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}>–</span>
               <input
                 type="date"
                 value={filterDateTo}
@@ -3591,7 +3591,7 @@ function DukazyView() {
                 border: "1.5px solid rgba(220,38,38,0.3)",
                 background: "rgba(254,226,226,0.5)",
                 cursor: "pointer",
-                fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
                 color: "#dc2626", whiteSpace: "nowrap",
               }}
             >
@@ -3603,7 +3603,7 @@ function DukazyView() {
 
       {/* evidence list */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "64px 0", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
+        <div style={{ textAlign: "center", padding: "64px 0", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16 }}>
           Žádné záznamy neodpovídají vybraným filtrům.
         </div>
       ) : (
@@ -3651,7 +3651,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
   const selStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "9px 32px 9px 12px",
     borderRadius: 9, border: "1.5px solid rgba(0,0,0,0.14)",
-    fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+    fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     background: "#fff", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
     backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center",
@@ -3678,16 +3678,16 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
         style={{ background: "#fff", borderRadius: 18, padding: "32px 32px 28px", width: 480, boxShadow: "0 16px 48px rgba(0,0,0,0.22)" }}
         onClick={e => e.stopPropagation()}
       >
-        <h2 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18, color: "#0a0a0a", margin: "0 0 6px" }}>
+        <h2 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 20, color: "#0a0a0a", margin: "0 0 6px" }}>
           Zaznamenat důkazy o učení
         </h2>
-        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: "0 0 24px", lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 24px", lineHeight: 1.5 }}>
           Vyberte třídu a cíl, ke kterému chcete zaznamenat důkazy.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
               Třída
             </label>
             <select
@@ -3701,7 +3701,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
           </div>
 
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
               Výukový cíl
             </label>
             <select
@@ -3720,10 +3720,10 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
 
           {selectedGoal && (
             <div style={{ background: "#fafafa", borderRadius: 10, padding: "10px 14px", display: "flex", gap: 8 }}>
-              <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+              <span style={{ padding: "2px 8px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                 {selectedGoal.subject}
               </span>
-              <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11 }}>
+              <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
                 {selectedClass} · {students.length} žáků
               </span>
             </div>
@@ -3749,7 +3749,7 @@ function PlaceholderView({ label }: { label: string }) {
   return (
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label }]} />
-      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
         {label}
       </h1>
     </div>
@@ -3854,7 +3854,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   }
 
   const selectStyle: React.CSSProperties = {
-    fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+    fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
     background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 9,
     padding: "8px 12px", outline: "none", cursor: "pointer", width: "100%",
   };
@@ -3866,17 +3866,17 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         { label: "Hodnocení", onClick: onBack },
         { label: "Nové hodnocení" },
       ]} />
-      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 6px" }}>
+      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 6px" }}>
         Vygenerovat hodnocení
       </h1>
-      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.5 }}>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.5 }}>
         AI navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         {/* class picker */}
         <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 8 }}>
             Třída
           </label>
           <select value={selectedClassId} onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents(new Set()); }} style={selectStyle}>
@@ -3887,15 +3887,15 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         {/* student list */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <label style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
+            <label style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
               Žáci
               {selectedStudents.size > 0 && (
-                <span style={{ marginLeft: 8, fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, fontSize: 12, color: "#717182" }}>
+                <span style={{ marginLeft: 8, fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, fontSize: 14, color: "#717182" }}>
                   {selectedStudents.size} vybráno
                 </span>
               )}
             </label>
-            <button onClick={toggleAll} style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+            <button onClick={toggleAll} style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}>
               {allSelected ? "Zrušit výběr" : "Vybrat všechny"}
             </button>
           </div>
@@ -3922,7 +3922,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                   }}>
                     {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </span>
-                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a" }}>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a" }}>
                     {st.firstName} {st.lastName}
                   </span>
                 </button>
@@ -3933,7 +3933,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
 
         {/* period */}
         <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 10 }}>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 10 }}>
             Časové období
           </label>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
@@ -3947,7 +3947,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                   background: period === p ? "#0a0a0a" : "#fff",
                   color: period === p ? "#fff" : "#717182",
                   fontFamily: period === p ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                  fontSize: 13, cursor: "pointer", transition: "all 0.12s",
+                  fontSize: 15, cursor: "pointer", transition: "all 0.12s",
                 }}
               >
                 {periodLabels[p]}
@@ -3957,7 +3957,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           {period === "vlastni" ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Od</label>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", marginBottom: 4 }}>Od</label>
                 <input
                   type="date"
                   value={customFrom}
@@ -3966,9 +3966,9 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                   style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
                 />
               </div>
-              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, paddingTop: 20 }}>—</div>
+              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, paddingTop: 20 }}>—</div>
               <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Do</label>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", marginBottom: 4 }}>Do</label>
                 <input
                   type="date"
                   value={customTo}
@@ -3987,7 +3987,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
 
         {/* ai instruction */}
         <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 8 }}>
             Pokyn pro AI
             <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, color: "#717182", marginLeft: 6 }}>(volitelné)</span>
           </label>
@@ -3998,7 +3998,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             rows={3}
             style={{
               width: "100%", resize: "vertical", padding: "10px 14px", boxSizing: "border-box",
-              fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
               background: "#fff", border: "1px solid rgba(0,0,0,0.13)", borderRadius: 9,
               outline: "none", lineHeight: 1.6,
             }}
@@ -4013,7 +4013,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             width: "100%", padding: "14px 24px",
             background: selectedStudents.size === 0 ? "rgba(10,10,10,0.3)" : "#0a0a0a",
             color: "#fff", border: "none", borderRadius: 14, cursor: selectedStudents.size === 0 ? "default" : "pointer",
-            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16,
+            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18,
             transition: "background 0.15s", opacity: generating ? 0.6 : 1,
           }}
         >
@@ -4051,17 +4051,17 @@ function HodnoceniResultPage({
 
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 4px" }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: "0 0 4px" }}>
             {title}
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: 0 }}>
             {className} · {period} · {createdAt}
           </p>
         </div>
         {!readOnly && onSave && (
           <button
             onClick={() => onSave(students)}
-            style={{ ...btnStyle("primary"), padding: "9px 20px", borderRadius: 10, fontSize: 14, flexShrink: 0 }}
+            style={{ ...btnStyle("primary"), padding: "9px 20px", borderRadius: 10, fontSize: 16, flexShrink: 0 }}
           >
             Uložit hodnocení
           </button>
@@ -4082,7 +4082,7 @@ function HodnoceniResultPage({
                 background: s.studentId === activeId ? "rgba(10,10,10,0.05)" : "transparent",
                 fontFamily: s.studentId === activeId ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                 fontWeight: s.studentId === activeId ? 500 : 400,
-                fontSize: 13, color: "#0a0a0a", cursor: "pointer", transition: "background 0.1s",
+                fontSize: 15, color: "#0a0a0a", cursor: "pointer", transition: "background 0.1s",
               }}
             >
               {s.studentName}
@@ -4093,11 +4093,11 @@ function HodnoceniResultPage({
         {/* assessment text */}
         {active && (
           <div style={{ flex: 1, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: 24 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
               {active.studentName}
             </p>
             {readOnly ? (
-              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a", lineHeight: 1.75, margin: 0 }}>
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", lineHeight: 1.75, margin: 0 }}>
                 {active.text}
               </p>
             ) : (
@@ -4108,11 +4108,11 @@ function HodnoceniResultPage({
                   rows={8}
                   style={{
                     width: "100%", resize: "vertical", padding: "0", boxSizing: "border-box",
-                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
                     background: "transparent", border: "none", outline: "none", lineHeight: 1.75,
                   }}
                 />
-                <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0be", margin: "12px 0 0", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 10 }}>
+                <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0be", margin: "12px 0 0", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 10 }}>
                   Text navrhla AI na základě zaznamenaných důkazů o učení. Můžete ho upravit.
                 </p>
               </>
@@ -4179,12 +4179,12 @@ function HodnoceniView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Hodnocení" }]} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
           Hodnocení
         </h1>
         <button
           onClick={() => setView("generating")}
-          style={{ ...btnStyle("primary"), padding: "8px 16px", borderRadius: 10, fontSize: 13.5, display: "flex", alignItems: "center", gap: 7 }}
+          style={{ ...btnStyle("primary"), padding: "8px 16px", borderRadius: 10, fontSize: 15.5, display: "flex", alignItems: "center", gap: 7 }}
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 1.333L9.857 5.1l4.143.6-3 2.924.708 4.109L8 10.667l-3.708 1.966L5 8.624 2 5.7l4.143-.6L8 1.333z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -4200,15 +4200,15 @@ function HodnoceniView() {
               <path d="M8 1.333L9.857 5.1l4.143.6-3 2.924.708 4.109L8 10.667l-3.708 1.966L5 8.624 2 5.7l4.143-.6L8 1.333z" stroke="#717182" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: "0 0 6px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "0 0 6px" }}>
             Zatím žádná hodnocení
           </p>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: "0 0 20px", lineHeight: 1.5 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", margin: "0 0 20px", lineHeight: 1.5 }}>
             Vygenerujte první hodnocení na základě zaznamenaných důkazů o učení.
           </p>
           <button
             onClick={() => setView("generating")}
-            style={{ ...btnStyle("ghost"), padding: "8px 18px", borderRadius: 10, fontSize: 13.5 }}
+            style={{ ...btnStyle("ghost"), padding: "8px 18px", borderRadius: 10, fontSize: 15.5 }}
           >
             Vygenerovat hodnocení
           </button>
@@ -4229,10 +4229,10 @@ function HodnoceniView() {
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
             >
               <div>
-                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 3px" }}>
+                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a", margin: "0 0 3px" }}>
                   {h.title}
                 </p>
-                <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0 }}>
+                <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0 }}>
                   {h.period} · {h.createdAt} · {h.students.length} {h.students.length === 1 ? "žák" : h.students.length < 5 ? "žáci" : "žáků"}
                 </p>
               </div>
@@ -4462,7 +4462,7 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
       style={{
         width: "100%", display: "block", boxSizing: "border-box",
         padding: "4px 7px", borderRadius: 6, border: "1.5px solid transparent",
-        fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.55,
+        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.55,
         color: color ?? "#0a0a0a",
         background: "transparent", outline: "none", resize: "none", overflow: "hidden",
         whiteSpace: "pre-wrap", wordBreak: "break-word",
@@ -4640,7 +4640,7 @@ function TematickyPlanView() {
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán" }]} />
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 28, marginBottom: 28 }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", margin: 0 }}>
             Tématický plán
           </h1>
           <button
@@ -4669,10 +4669,10 @@ function TematickyPlanView() {
                 <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 6, background: "rgba(0,0,0,0.12)", borderRadius: "4px 0 0 4px" }} />
               </div>
             </div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", margin: "0 0 6px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#717182", margin: "0 0 6px" }}>
               Zatím žádný tématický plán
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", margin: 0 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#b0b0be", margin: 0 }}>
               Vytvořte první a AI ho za vás připraví.
             </p>
           </div>
@@ -4716,19 +4716,19 @@ function TematickyPlanView() {
                       </svg>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                         Tématický plán
                       </span>
-                      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.3 }}>
+                      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: 0, lineHeight: 1.3 }}>
                         {plan.name}
                       </p>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.08)", color: "#0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.08)", color: "#0a0a0a", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
                       {plan.predmet}
                     </span>
-                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.05)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11 }}>
+                    <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(0,0,0,0.05)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>
                       {plan.trida}
                     </span>
                   </div>
@@ -4743,10 +4743,10 @@ function TematickyPlanView() {
                       background: "rgba(0,0,0,0.04)",
                     }} />
                   ))}
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0, position: "relative" }}>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0, position: "relative" }}>
                     {plan.period}
                   </p>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#b0b0be", margin: "3px 0 0", position: "relative" }}>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", margin: "3px 0 0", position: "relative" }}>
                     Uloženo {plan.savedAt}
                   </p>
                 </div>
@@ -4773,15 +4773,15 @@ function TematickyPlanView() {
                 strokeLinecap="round"
               />
             </svg>
-            <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a" }}>
+            <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a" }}>
               {progress}%
             </span>
           </div>
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 20, color: "#0a0a0a", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 8px" }}>
               Generuji tématický plán…
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: 0 }}>
               AI analyzuje obsah a vytváří strukturovaný plán výuky.
             </p>
           </div>
@@ -4814,18 +4814,18 @@ function TematickyPlanView() {
 
     const selectStyle: React.CSSProperties = {
       padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
-      fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+      fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
       background: "#fff", outline: "none", cursor: "pointer",
     };
     const thStyle: React.CSSProperties = {
       padding: "10px 14px", textAlign: "left",
-      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12,
+      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14,
       color: "#717182", background: "#f5f5f7", borderBottom: "1.5px solid rgba(0,0,0,0.1)",
       whiteSpace: "nowrap", userSelect: "none",
     };
     const tdStyle: React.CSSProperties = {
       padding: "11px 14px", verticalAlign: "top",
-      fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+      fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
       borderBottom: "1px solid rgba(0,0,0,0.07)", lineHeight: 1.55,
     };
 
@@ -4851,13 +4851,13 @@ function TematickyPlanView() {
         {/* header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginTop: 28, marginBottom: 28 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#9b72d0", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
             <input
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder="Plán výuky"
               style={{
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a",
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 28, color: "#0a0a0a",
                 background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
                 outline: "none", padding: "2px 8px", margin: "0 -8px",
                 width: "calc(100% + 16px)", boxSizing: "border-box",
@@ -4890,12 +4890,12 @@ function TematickyPlanView() {
                     <button key={fmt} onClick={() => setExportOpen(false)} style={{
                       display: "flex", alignItems: "center", gap: 10, width: "100%",
                       padding: "10px 16px", border: "none", background: "none", cursor: "pointer",
-                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", textAlign: "left",
+                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", textAlign: "left",
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f7")}
                     onMouseLeave={e => (e.currentTarget.style.background = "none")}
                     >
-                      <span style={{ fontSize: 14 }}>{ico}</span> {fmt}
+                      <span style={{ fontSize: 16 }}>{ico}</span> {fmt}
                     </button>
                   ))}
                 </div>
@@ -4918,7 +4918,7 @@ function TematickyPlanView() {
               { label: "Období", val: period, set: setPeriod, opts: ["3 měsíce", "1. pololetí", "2. pololetí", "celý rok"] },
             ].map(({ label, val, set, opts }) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
                 <select value={val} onChange={e => set(e.target.value)} style={selectStyle}>
                   {opts.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -4927,7 +4927,7 @@ function TematickyPlanView() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
+            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
             {tpColumns.map(col => {
               const on = cols.has(col.id);
               const locked = col.id === "cile";
@@ -4938,13 +4938,13 @@ function TematickyPlanView() {
                   background: on ? "rgba(124,77,189,0.08)" : "#fafafa",
                   fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                   fontWeight: on ? 500 : 400,
-                  fontSize: 12, color: on ? "#7c4dbd" : "#717182",
+                  fontSize: 14, color: on ? "#7c4dbd" : "#717182",
                   cursor: locked ? "default" : "pointer", transition: "all 0.13s",
                   opacity: locked ? 1 : undefined,
                 }}>
-                  {on && <span style={{ marginRight: 5, fontSize: 10 }}>✓</span>}
+                  {on && <span style={{ marginRight: 5, fontSize: 12 }}>✓</span>}
                   {col.label}
-                  {locked && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>●</span>}
+                  {locked && <span style={{ marginLeft: 4, fontSize: 11, opacity: 0.6 }}>●</span>}
                 </button>
               );
             })}
@@ -4954,13 +4954,13 @@ function TematickyPlanView() {
             <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
               {showSkola && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Název školy</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Název školy</span>
                   <input value={nazevSkoly} onChange={e => setNazevSkoly(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
               {showVyucujici && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Vyučující</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Vyučující</span>
                   <input value={vyucujici} onChange={e => setVyucujici(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
@@ -4970,8 +4970,8 @@ function TematickyPlanView() {
 
         {(showSkola || showVyucujici) && (
           <div style={{ display: "flex", gap: 24, marginBottom: 12, flexWrap: "wrap" }}>
-            {showSkola && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Škola:</strong> {nazevSkoly}</span>}
-            {showVyucujici && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Vyučující:</strong> {vyucujici}</span>}
+            {showSkola && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Škola:</strong> {nazevSkoly}</span>}
+            {showVyucujici && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Vyučující:</strong> {vyucujici}</span>}
           </div>
         )}
 
@@ -5031,7 +5031,7 @@ function TematickyPlanView() {
                               padding: "3px 9px 3px 7px", borderRadius: 20, border: "none",
                               background: "linear-gradient(135deg, #a855f7, #7c3aed)",
                               color: "#fff", cursor: "pointer",
-                              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
+                              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
                               boxShadow: "0 2px 8px rgba(124,58,237,0.3)",
                               whiteSpace: "nowrap", flexShrink: 0,
                             }}
@@ -5063,7 +5063,7 @@ function TematickyPlanView() {
                       onChange={e => updateCell(ri, field, e.target.value)}
                       style={{
                         width: 52, padding: "4px 7px", borderRadius: 6, border: "1.5px solid transparent",
-                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.5,
+                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.5,
                         color: "#0a0a0a", background: "transparent", outline: "none",
                         transition: "background 0.12s, border-color 0.12s", textAlign: "center", boxSizing: "border-box",
                       }}
@@ -5158,7 +5158,7 @@ function TematickyPlanView() {
                           >
                             <SparkleIcon />
                           </button>
-                          <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
+                          <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>
                             {row.cas}
                           </span>
                         </div>
@@ -5201,16 +5201,16 @@ function TematickyPlanView() {
 
       <div style={{ maxWidth: 580, marginTop: 48 }}>
         <FadeIn delay={0}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 32, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 34, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.25 }}>
             Co chcete plánovat?
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.6 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", margin: "0 0 32px", lineHeight: 1.6 }}>
             Popište téma, předmět nebo vzdělávací oblast. AI vytvoří tématický plán výuky.
           </p>
         </FadeIn>
 
         <FadeIn delay={60}>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 8 }}>
             Popis tématu nebo cíle výuky
           </label>
           <textarea
@@ -5223,7 +5223,7 @@ function TematickyPlanView() {
               width: "100%", boxSizing: "border-box",
               padding: "12px 14px", borderRadius: 12,
               border: "1.5px solid rgba(0,0,0,0.15)",
-              fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a",
               lineHeight: 1.65, resize: "none", outline: "none",
               background: "#fff", transition: "border-color 0.15s",
             }}
@@ -5234,7 +5234,7 @@ function TematickyPlanView() {
 
         <FadeIn delay={120}>
           <div style={{ marginTop: 20 }}>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", marginBottom: 8 }}>
               Nahrát podkladový soubor <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, color: "#717182" }}>(volitelně)</span>
             </label>
             <input
@@ -5252,7 +5252,7 @@ function TematickyPlanView() {
                     <path d="M6.667 5.333h2.666M6.667 8h2.666" stroke="#7c4dbd" strokeWidth="1.33" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</span>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</span>
                 <button onClick={() => setFile(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#b0b0be", padding: 2, borderRadius: 4, lineHeight: 1 }}>
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 </button>
@@ -5275,8 +5275,8 @@ function TematickyPlanView() {
                     <path d="M3 15h14" stroke="#7c4dbd" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Nahrát soubor</span>
-                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182" }}>PDF, Word nebo TXT · max. 3 MB</span>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a" }}>Nahrát soubor</span>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>PDF, Word nebo TXT · max. 3 MB</span>
               </button>
             )}
           </div>
@@ -5291,7 +5291,7 @@ function TematickyPlanView() {
               marginTop: 28, display: "flex", alignItems: "center", gap: 8,
               opacity: (text.trim() || file) ? 1 : 0.4,
               cursor: (text.trim() || file) ? "pointer" : "default",
-              fontSize: 15, padding: "13px 28px",
+              fontSize: 17, padding: "13px 28px",
             }}
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -5400,8 +5400,8 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
             <img src={buddyImg} alt="Buddy" style={{ width: 24, height: 24, objectFit: "contain" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>Buddy</p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: 0 }}>AI asistent</p>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16, color: "#0a0a0a", margin: 0 }}>Buddy</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#9b72d0", margin: 0 }}>AI asistent</p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#b0b0be", padding: 4, borderRadius: 6 }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5446,14 +5446,14 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                         ))}
                       </div>
                     </div>
-                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.75)", flexShrink: 0 }}>{fmtDur}</span>
+                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "rgba(255,255,255,0.75)", flexShrink: 0 }}>{fmtDur}</span>
                   </div>
                 ) : (
                   <div style={{
                     maxWidth: "78%", padding: "9px 13px", borderRadius: m.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                     background: m.role === "user" ? "#7c4dbd" : "#fff",
                     color: m.role === "user" ? "#fff" : "#0a0a0a",
-                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.55,
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, lineHeight: 1.55,
                     boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
                   }}>
                     {m.text}
@@ -5485,12 +5485,12 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
           {recording ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 14, background: "#fdf4ff", border: "1.5px solid #c084fc" }}>
               <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#e11d48", display: "block", flexShrink: 0, animation: "recPulse 1s ease-in-out infinite" }} />
-              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#7c4dbd", flex: 1 }}>
+              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#7c4dbd", flex: 1 }}>
                 Nahrávám… {Math.floor(recSeconds / 60)}:{String(recSeconds % 60).padStart(2, "0")}
               </span>
               <button
                 onClick={stopRecording}
-                style={{ padding: "6px 14px", borderRadius: 20, background: "#7c4dbd", border: "none", cursor: "pointer", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#fff" }}
+                style={{ padding: "6px 14px", borderRadius: 20, background: "#7c4dbd", border: "none", cursor: "pointer", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}
               >
                 Odeslat
               </button>
@@ -5524,7 +5524,7 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
                 style={{
                   flex: 1, resize: "none", padding: "9px 12px", borderRadius: 12,
                   border: "1.5px solid rgba(0,0,0,0.12)", outline: "none",
-                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a",
                   lineHeight: 1.5, background: "#faf9fc",
                 }}
                 onFocus={e => (e.currentTarget.style.borderColor = "#9b72d0")}
@@ -5548,7 +5548,7 @@ function BuddyChat({ open, onClose, trigger }: { open: boolean; onClose: () => v
             </div>
           )}
           {!recording && (
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#b0b0be", margin: "7px 0 0", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", margin: "7px 0 0", textAlign: "center" }}>
               Enter odešle · Shift+Enter nový řádek
             </p>
           )}
@@ -5574,7 +5574,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       subtitle: "Přístup vede žáka k lásce k učivu – zabývá se jeho motivací se učit, pokroky, které dělá a sebehodnocením svého posunu.",
       content: (
         <div style={{ marginTop: 56 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
             Jak to funguje?
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, maxWidth: 900, margin: "0 auto" }}>
@@ -5643,9 +5643,9 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div style={{ textAlign: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", background: "#0a0a0a", marginBottom: 8 }}>
-                    <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#fff" }}>{num}</span>
+                    <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#fff" }}>{num}</span>
                   </div>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", lineHeight: 1.55, margin: 0 }}>{title}</p>
+                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a", lineHeight: 1.55, margin: 0 }}>{title}</p>
                 </div>
               </div>
             ))}
@@ -5654,7 +5654,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
           {/* buddy intro */}
           <div style={{ marginTop: 32, display: "inline-flex", alignItems: "flex-end", gap: 10, background: "#faf9ff", border: "1.5px solid rgba(124,77,189,0.12)", borderRadius: 14, padding: "10px 14px 10px 14px" }}>
             <img src={buddyImg} alt="Buddy" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#3d3d52", lineHeight: 1.5, margin: 0, maxWidth: 380 }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#3d3d52", lineHeight: 1.5, margin: 0, maxWidth: 380 }}>
               <span style={{ fontWeight: 600, color: "#7c4dbd" }}>Buddy</span> je tu vždy pro vás — pomůže s cíli, kritérii i hodnocením a vaši práci zjednoduší na minimum.
             </p>
           </div>
@@ -5670,7 +5670,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
             placeholder="Vyjmenovaná slova, třicetiletá válka…"
             style={{
               flex: 1, height: 48, borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.14)",
-              padding: "0 16px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
+              padding: "0 16px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 16,
               color: "#0a0a0a", outline: "none", background: "#fff",
             }}
             onFocus={e => (e.currentTarget.style.borderColor = "#7c4dbd")}
@@ -5679,7 +5679,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
           <button style={{
             height: 48, padding: "0 22px", borderRadius: 12, border: "none",
             background: "#0a0a0a", color: "#fff", fontFamily: "'Inter:Medium', sans-serif",
-            fontWeight: 500, fontSize: 14, cursor: "pointer", whiteSpace: "nowrap",
+            fontWeight: 500, fontSize: 16, cursor: "pointer", whiteSpace: "nowrap",
             transition: "background 0.12s",
           }}
             onMouseEnter={e => (e.currentTarget.style.background = "#333")}
@@ -5730,10 +5730,10 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       {/* content */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 48px 120px", overflowY: "auto" }}>
         <div style={{ maxWidth: 960, width: "100%", textAlign: "center" }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 36, color: "#0a0a0a", margin: "0 0 16px", lineHeight: 1.2 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 38, color: "#0a0a0a", margin: "0 0 16px", lineHeight: 1.2 }}>
             {current.title}
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#717182", lineHeight: 1.65, margin: "0 auto", maxWidth: 560 }}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 18, color: "#717182", lineHeight: 1.65, margin: "0 auto", maxWidth: 560 }}>
             {current.subtitle}
           </p>
           {current.content}
@@ -5744,13 +5744,13 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(0,0,0,0.07)" }}>
         <button
           onClick={() => step > 0 ? setStep(s => s - 1) : onClose()}
-          style={{ background: "none", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 10, padding: "9px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", cursor: "pointer" }}
+          style={{ background: "none", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 10, padding: "9px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182", cursor: "pointer" }}
         >
           {step === 0 ? "Přeskočit" : "Zpět"}
         </button>
         <button
           onClick={() => step < totalSteps - 1 ? setStep(s => s + 1) : onClose()}
-          style={{ background: "#0a0a0a", border: "none", borderRadius: 10, padding: "9px 24px", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#fff", cursor: "pointer" }}
+          style={{ background: "#0a0a0a", border: "none", borderRadius: 10, padding: "9px 24px", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#fff", cursor: "pointer" }}
         >
           {step < totalSteps - 1 ? "Pokračovat" : "Začít"}
         </button>
@@ -5842,7 +5842,7 @@ export default function App() {
           style={{ height: 56, borderBottom: "1px solid rgba(0,0,0,0.08)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: collapsed ? "0 10px" : "0 12px 0 20px" }}
         >
           {!collapsed && (
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 18, color: "#0a0a0a" }}>
+            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 20, color: "#0a0a0a" }}>
               Tiny
             </span>
           )}
@@ -5880,7 +5880,7 @@ export default function App() {
               <p style={{
                 padding: "0 8px", margin: "12px 0 4px",
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 10, color: "#b0b0be", letterSpacing: "0.07em", textTransform: "uppercase",
+                fontSize: 12, color: "#b0b0be", letterSpacing: "0.07em", textTransform: "uppercase",
               }}>{label}</p>
             ) : <div style={{ height: 8 }} />;
 
@@ -5899,7 +5899,7 @@ export default function App() {
                     color: isActive ? "#0a0a0a" : "#717182",
                     fontFamily: isActive ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                     fontWeight: isActive ? 500 : 400,
-                    fontSize: 13.5, letterSpacing: "-0.1px",
+                    fontSize: 15.5, letterSpacing: "-0.1px",
                     cursor: "pointer", width: "100%", textAlign: "left",
                     transition: "background 0.12s",
                   }}
@@ -5936,7 +5936,7 @@ export default function App() {
                       display: "flex", alignItems: "center",
                       padding: "7px 8px", borderRadius: 9, border: "none",
                       background: "transparent", color: "#b0b0be",
-                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5,
+                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 14.5,
                       cursor: "pointer", width: "100%", textAlign: "left",
                       transition: "color 0.12s",
                     }}
@@ -5963,7 +5963,7 @@ export default function App() {
             </svg>
           </div>
           {!collapsed && (
-            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a" }}>
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#0a0a0a" }}>
               Můj účet
             </span>
           )}
