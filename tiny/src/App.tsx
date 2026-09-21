@@ -4991,7 +4991,15 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
 
 function TematickyPlanView() {
   const openBuddy = useContext(BuddyContext);
-  const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow } = useContext(GoalsContext);
+  const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow, tpGoals } = useContext(GoalsContext);
+  const { evidenceRecords } = useContext(EvidenceContext);
+
+  // Řádky plánu pro kartu v seznamu: u právě načteného plánu platí sdílený
+  // stav (nese i úpravy ze seznamu hodin), jinak uložená kopie.
+  const rowsOfPlan = (plan: TpPlan) => {
+    const loaded = plan.rows.length > 0 && planRows.some(r => r._id === plan.rows[0]._id);
+    return loaded ? planRows : plan.rows;
+  };
   const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [text, setText] = useState("");
@@ -5227,13 +5235,15 @@ function TematickyPlanView() {
                 }}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                     <div style={{
-                      width: 28, height: 28, borderRadius: 7, flexShrink: 0, marginTop: 1,
+                      width: 30, height: 30, borderRadius: 8, flexShrink: 0, marginTop: 1,
                       background: "rgba(0,0,0,0.08)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <rect x="4" y="2" width="14" height="20" rx="2" stroke="#0a0a0a" strokeWidth="1.8" strokeLinejoin="round"/>
-                        <path d="M8 7h8M8 11h8M8 15h5" stroke="#0a0a0a" strokeWidth="1.5" strokeLinecap="round"/>
+                      {/* list plánu s přehnutým rohem */}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 2.5H6.5A1.5 1.5 0 0 0 5 4v16a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 20V7.5L14 2.5z" stroke="#0a0a0a" strokeWidth="1.7" strokeLinejoin="round"/>
+                        <path d="M14 2.5V7.5h5" stroke="#0a0a0a" strokeWidth="1.7" strokeLinejoin="round"/>
+                        <path d="M8.5 12h7M8.5 15.5h7M8.5 18.5h4" stroke="#0a0a0a" strokeWidth="1.4" strokeLinecap="round"/>
                       </svg>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -5255,23 +5265,55 @@ function TematickyPlanView() {
                   </div>
                 </div>
 
-                {/* bottom: meta */}
-                <div style={{ padding: "12px 16px 14px", flex: 1, position: "relative", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-                  {[0,1,2].map(n => (
-                    <div key={n} style={{
-                      position: "absolute", left: 16, right: 16,
-                      top: 12 + n * 22, height: 1,
-                      background: "rgba(0,0,0,0.04)",
-                    }} />
-                  ))}
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0, position: "relative" }}>
-                    {plan.period}
-                  </p>
-                  <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#b0b0be", margin: "3px 0 0", position: "relative" }}>
-                    Uloženo {plan.savedAt}
-                  </p>
-                </div>
-              </button>
+                {/* bottom: postup školním rokem */}
+                {(() => {
+                  const rows = rowsOfPlan(plan).filter(r => r.cile.trim());
+                  const total = rows.length;
+                  const done = rows.filter(r => evidenceRecords.some(e => e.goalId === r._id)).length;
+                  const firstMonth = rows[0]?.cas ?? "";
+                  const lastMonth = rows[rows.length - 1]?.cas ?? "";
+                  return (
+                    <div style={{ padding: "13px 16px 14px", flex: 1, position: "relative", display: "flex", flexDirection: "column", gap: 8 }}>
+                      {/* slabé linky, aby karta působila jako list plánu */}
+                      {[0, 1].map(n => (
+                        <div key={n} style={{
+                          position: "absolute", left: 16, right: 16,
+                          bottom: 13 + n * 17, height: 1,
+                          background: "rgba(0,0,0,0.04)",
+                        }} />
+                      ))}
+
+                      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#5c5c6b" }}>Probráno</span>
+                        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#0a0a0a" }}>
+                          {total === 0 ? "—" : `${done} z ${total} hodin`}
+                        </span>
+                      </div>
+
+                      <div style={{ position: "relative", display: "flex", gap: 2 }}>
+                        {(total ? rows : [null]).map((r, i) => (
+                          <span key={i} style={{
+                            flex: 1, height: 6, borderRadius: 2,
+                            background: !r ? "#ececf0"
+                              : evidenceRecords.some(e => e.goalId === r._id) ? "#16a34a"
+                              : tpGoals.some(g => g.id === r._id) ? "#93c5fd"
+                              : "#ececf0",
+                          }} />
+                        ))}
+                      </div>
+
+                      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
+                        <span>{firstMonth || plan.period}</span>
+                        <span>{lastMonth && lastMonth !== firstMonth ? lastMonth : ""}</span>
+                      </div>
+
+                      <p style={{ position: "relative", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99", margin: "auto 0 0" }}>
+                        Uloženo {plan.savedAt}
+                      </p>
+                    </div>
+                  );
+                })()}
+                </button>
             ))}
           </div>
         )}
