@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Prototyp Tiny
+
+Podadresář `tiny/` je samostatný prototyp nového produktu (Tiny, formativní
+hodnocení) z Figma Make. Se zbytkem repa nesdílí kód ani závislosti a má
+vlastní `tiny/CLAUDE.md` — při práci v něm se řiďte tím.
+
 ## Commands
 
 ```bash
