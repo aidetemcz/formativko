@@ -19,11 +19,12 @@ interface GoalsCtx {
   addTpGoals: (goals: TpGoal[]) => void;
   removeTpGoal: (id: string) => void;
   updateTpGoalText: (id: string, text: string) => void;
+  updateTpGoal: (id: string, patch: Partial<TpGoal>) => void;
   navigateCile: () => void;
   animateIn: boolean;
 }
 const GoalsContext = createContext<GoalsCtx>({
-  tpGoals: [], addTpGoals: () => {}, removeTpGoal: () => {}, updateTpGoalText: () => {}, navigateCile: () => {}, animateIn: false,
+  tpGoals: [], addTpGoals: () => {}, removeTpGoal: () => {}, updateTpGoalText: () => {}, updateTpGoal: () => {}, navigateCile: () => {}, animateIn: false,
 });
 
 type StudentEvidence = { audio: number; photo: number };
@@ -1461,10 +1462,11 @@ const levelLegend = [
   { letter: "S", label: "Začínám", desc: "Žák s tímto prvkem teprve začíná, potřebuje vedení.", color: "#1d4ed8", bg: "#eff6ff" },
 ];
 
-function PrintModal({ onClose, students, goal }: {
+function PrintModal({ onClose, students, goal, onPrinted }: {
   onClose: () => void;
   students: Student[];
   goal: string;
+  onPrinted?: () => void;
 }) {
   const sorted = [...students].sort((a, b) => a.lastName.localeCompare(b.lastName, "cs"));
 
@@ -1487,7 +1489,7 @@ function PrintModal({ onClose, students, goal }: {
           Náhled před tiskem
         </span>
         <div style={{ display: "flex", gap: 12 }}>
-          <button style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => onPrinted?.()} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 8 }}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M4 6V2h8v4M4 12H3a1.333 1.333 0 0 1-1.333-1.333V7.333A1.333 1.333 0 0 1 3 6h10a1.333 1.333 0 0 1 1.333 1.333v3.334A1.333 1.333 0 0 1 13 12h-1" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M4 9.333h8V14H4z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round" />
@@ -2022,7 +2024,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
 
 // ─── camera modal ─────────────────────────────────────────────────────────────
 
-function CameraModal({ onClose }: { onClose: () => void }) {
+function CameraModal({ onClose, onUploaded }: { onClose: () => void; onUploaded?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [camError, setCamError] = useState(false);
@@ -2145,7 +2147,8 @@ function CameraModal({ onClose }: { onClose: () => void }) {
                 Nahrát fotografii
               </button>
             </div>
-            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} />
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
+              onChange={e => { if (e.target.files && e.target.files.length) onUploaded?.(); }} />
           </div>
         </div>
       </div>
@@ -2480,7 +2483,175 @@ function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boole
 
 type AnyGoal = { id: string; text: string; subject: string; cls: string; period: string; isTp: boolean };
 
-function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle }: {
+const LESSON_MONTHS = ["Září", "Říjen", "Listopad", "Prosinec", "Leden", "Únor", "Březen", "Duben", "Květen", "Červen"];
+
+const CHIP_BG = "rgba(236,236,240,0.9)";
+const CHIP_CARET = `url("data:image/svg+xml,%3Csvg width='9' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
+
+// Ikony do chipsů v náhledovém řádku hodiny
+function ChipIcon({ d, circle }: { d: string; circle?: [number, number, number] }) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, opacity: 0.75 }} aria-hidden="true">
+      {circle && <circle cx={circle[0]} cy={circle[1]} r={circle[2]} stroke="currentColor" strokeWidth="1.3" />}
+      <path d={d} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+const ICON_SUBJECT = "M2.5 3.2h4a2 2 0 0 1 1.5.7 2 2 0 0 1 1.5-.7h4v9.6h-4a2 2 0 0 0-1.5.7 2 2 0 0 0-1.5-.7h-4zM8 3.9v9.6";
+const ICON_CLASS = "M11 13.5v-1a2.5 2.5 0 0 0-2.5-2.5h-3A2.5 2.5 0 0 0 3 12.5v1M13.5 13.5v-1a2.5 2.5 0 0 0-1.9-2.4M10.4 2.7a2.5 2.5 0 0 1 0 4.8";
+const ICON_MONTH = "M2.5 6.2h11M4.5 2.5v1.8M11.5 2.5v1.8M3.2 4.3h9.6a.7.7 0 0 1 .7.7v7.8a.7.7 0 0 1-.7.7H3.2a.7.7 0 0 1-.7-.7V5a.7.7 0 0 1 .7-.7z";
+const ICON_HOURS = "M8 4.6V8l2.2 1.4";
+const ICON_OUTCOME = "M8 2.5v3M8 10.5v3M2.5 8h3M10.5 8h3";
+
+// Chip, ve kterém se vybírá z možností
+function ChipSelect({ iconPath, value, options, onChange, title, bg, color }: {
+  iconPath: string; value: string; options: string[]; onChange: (v: string) => void;
+  title: string; bg?: string; color?: string;
+}) {
+  const opts = options.includes(value) || !value ? options : [value, ...options];
+  return (
+    <span
+      title={title}
+      onClick={e => e.stopPropagation()}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 5px 3px 9px", borderRadius: 20,
+        background: bg ?? CHIP_BG, color: color ?? "#717182",
+        fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, transition: "box-shadow 0.12s",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
+    >
+      <ChipIcon d={iconPath} circle={iconPath === ICON_HOURS ? [8, 8, 5.6] : undefined} />
+      <select
+        value={value}
+        aria-label={title}
+        onChange={e => onChange(e.target.value)}
+        onMouseDown={e => e.stopPropagation()}
+        style={{
+          appearance: "none", WebkitAppearance: "none", background: "transparent", border: "none", outline: "none",
+          fontFamily: "inherit", fontSize: "inherit", color: "inherit", cursor: "pointer",
+          padding: "0 15px 0 0", margin: 0,
+          backgroundImage: CHIP_CARET, backgroundRepeat: "no-repeat", backgroundPosition: "right 1px center",
+        }}
+      >
+        {opts.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </span>
+  );
+}
+
+// Chip, do kterého se píše
+function ChipInput({ iconPath, value, onChange, title, placeholder, suffix, minCh }: {
+  iconPath: string; value: string; onChange: (v: string) => void;
+  title: string; placeholder?: string; suffix?: string; minCh?: number;
+}) {
+  const ch = Math.max(minCh ?? 3, (value || placeholder || "").length + 1);
+  return (
+    <span
+      title={title}
+      onClick={e => e.stopPropagation()}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 9px", borderRadius: 20,
+        background: CHIP_BG, color: "#717182",
+        fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, transition: "box-shadow 0.12s",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
+    >
+      <ChipIcon d={iconPath} circle={iconPath === ICON_HOURS ? [8, 8, 5.6] : undefined} />
+      <input
+        value={value}
+        placeholder={placeholder}
+        aria-label={title}
+        onChange={e => onChange(e.target.value)}
+        onMouseDown={e => e.stopPropagation()}
+        style={{
+          width: ch + "ch", minWidth: 0, background: "transparent", border: "none", outline: "none",
+          fontFamily: "inherit", fontSize: "inherit", color: "inherit", padding: 0, margin: 0, cursor: "text",
+        }}
+      />
+      {suffix && <span style={{ flexShrink: 0 }}>{suffix}</span>}
+    </span>
+  );
+}
+
+// Název hodiny — editovatelný na klik. Textarea, ne input: cíle jsou dlouhé věty
+// a input by je usekl bez jakékoli indikace.
+function EditableLessonTitle({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const resize = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, []);
+  useEffect(resize);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [resize]);
+
+  const bg = "rgba(236,236,240,0.6)";
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      rows={1}
+      aria-label="Cíl vyučovací hodiny"
+      onChange={e => onChange(e.target.value)}
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+      style={{
+        width: "100%", display: "block", boxSizing: "border-box", resize: "none", overflow: "hidden",
+        fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 19, lineHeight: 1.45,
+        color: "#0a0a0a", background: "transparent", border: "none", borderRadius: 7, outline: "none",
+        padding: "3px 7px", margin: "0 0 4px -7px", transition: "background 0.12s", cursor: "text",
+        whiteSpace: "pre-wrap", wordBreak: "break-word",
+      }}
+      onMouseEnter={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = bg; }}
+      onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = "transparent"; }}
+      onFocus={e => (e.currentTarget.style.background = bg)}
+      onBlur={e => (e.currentTarget.style.background = "transparent")}
+    />
+  );
+}
+
+// Stav hodiny vpravo před tlačítkem Detail
+function LessonStatus({ printed, uploaded, evidenceCount }: { printed?: boolean; uploaded?: boolean; evidenceCount: number }) {
+  const W = 214;
+  if (!printed && !uploaded && evidenceCount === 0) return <span style={{ width: W, flexShrink: 0 }} />;
+  return (
+    <div style={{ width: W, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, marginTop: 5 }}>
+      {(printed || uploaded) && (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#15803d", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, whiteSpace: "nowrap" }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
+            <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="1.3" />
+            <path d="M5.4 8.2l1.8 1.8 3.4-3.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {uploaded ? "Tabulka hodnocení nahrána" : "Tabulka hodnocení vytisknuta"}
+        </span>
+      )}
+      {evidenceCount > 0 && (
+        <span
+          title={`${evidenceCount} ${evidenceCount === 1 ? "zaznamenaný důkaz" : evidenceCount >= 2 && evidenceCount <= 4 ? "zaznamenané důkazy" : "zaznamenaných důkazů"} o učení`}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, whiteSpace: "nowrap" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
+            <path d="M9.333 1.333H4A1.333 1.333 0 0 0 2.667 2.667v10.666A1.333 1.333 0 0 0 4 14.667h8a1.333 1.333 0 0 0 1.333-1.334V5.333L9.333 1.333z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9.333 1.333v4h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, color: "#0a0a0a" }}>{evidenceCount}</span>
+          {evidenceCount === 1 ? "důkaz" : evidenceCount >= 2 && evidenceCount <= 4 ? "důkazy" : "důkazů"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions }: {
   filtered: AnyGoal[];
   animateIn: boolean;
   tpGoals: TpGoal[];
@@ -2489,6 +2660,10 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
   setTpEditingLevels: (v: boolean) => void;
   setSelectedGoalId: (id: string) => void;
   btnStyle: (v: "primary" | "ghost" | "danger") => React.CSSProperties;
+  onPatch: (id: string, isTp: boolean, patch: Record<string, string>) => void;
+  evidenceCountFor: (id: string) => number;
+  statusFor: (id: string) => { printed?: boolean; uploaded?: boolean };
+  classOptions: string[];
 }) {
   const [orderedIds, setOrderedIds] = useState<string[]>(() => filtered.map(g => g.id));
   const dragGoalRef = useRef<string | null>(null);
@@ -2524,11 +2699,10 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
               const isTp = g.isTp;
               const tpGoal = isTp ? tpGoals.find(t => t.id === g.id) : null;
               const isDragOver = dragOverId === g.id && dragGoalRef.current !== g.id;
+              const st = statusFor(g.id);
               return (
                 <FadeIn key={g.id} delay={animateIn && isTp ? 80 * (orderedFiltered.indexOf(g)) : 0}>
                   <div
-                    draggable
-                    onDragStart={() => { dragGoalRef.current = g.id; }}
                     onDragEnter={() => setDragOverId(g.id)}
                     onDragOver={e => e.preventDefault()}
                     onDrop={() => {
@@ -2543,59 +2717,124 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       });
                       dragGoalRef.current = null; setDragOverId(null);
                     }}
-                    onDragEnd={() => { dragGoalRef.current = null; setDragOverId(null); }}
                     style={{
                       background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)",
-                      borderLeft: isDragOver ? "4px solid #7c4dbd" : "4px solid #3b82f6",
                       borderTop: isDragOver ? "2px solid #7c4dbd" : undefined,
-                      display: "flex", alignItems: "flex-start", gap: 0,
-                      padding: "19px 20px", cursor: "grab", transition: "background 0.12s, border-color 0.1s",
+                      display: "flex", alignItems: "flex-start", gap: 14,
+                      padding: "18px 20px", transition: "background 0.12s, border-color 0.1s",
                       opacity: dragGoalRef.current === g.id ? 0.45 : 1,
                     }}
-                    onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(59,130,246,0.04)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
                   >
-                    <div style={{ marginRight: 12, marginTop: 2, opacity: 0.25, flexShrink: 0, cursor: "grab" }}>
-                      <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
-                        <circle cx="3" cy="2" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="2" r="1.2" fill="#0a0a0a"/>
-                        <circle cx="3" cy="7" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="7" r="1.2" fill="#0a0a0a"/>
-                        <circle cx="3" cy="12" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="12" r="1.2" fill="#0a0a0a"/>
+                    {/* úchyt pro přetahování — tažení drží jen tato ikona, aby šlo psát do políček */}
+                    <div
+                      draggable
+                      onDragStart={() => { dragGoalRef.current = g.id; }}
+                      onDragEnd={() => { dragGoalRef.current = null; setDragOverId(null); }}
+                      title="Přetažením změníte pořadí hodin"
+                      style={{ flexShrink: 0, marginTop: 11, padding: "2px 2px", opacity: 0.3, cursor: "grab", transition: "opacity 0.12s" }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "0.65")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "0.3")}
+                    >
+                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">
+                        <circle cx="3" cy="3" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="3" r="1.2" fill="#0a0a0a"/>
+                        <circle cx="3" cy="8" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="8" r="1.2" fill="#0a0a0a"/>
+                        <circle cx="3" cy="13" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="13" r="1.2" fill="#0a0a0a"/>
                       </svg>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8, alignItems: "center" }}>
-                        {num && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "2px 10px 2px 7px", borderRadius: 20, background: "linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%)", color: "#1e40af", border: "1px solid rgba(59,130,246,0.3)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                              <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            Vyučovací hodina {num}
-                          </span>
-                        )}
-                        <span style={{ padding: "3px 9px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13 }}>{g.subject}</span>
-                        {g.cls && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{g.cls}</span>}
-                        {tpGoal && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13 }}>{tpGoal.rozsah} {parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}</span>}
-                        <span onClick={e => e.stopPropagation()}><LessonDatePicker goalId={g.id} compact /></span>
-                        {tpGoal?.vystupy && <span style={{ padding: "3px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "inline-block" }}>{tpGoal.vystupy}</span>}
-                      </div>
-                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 16, color: "#0a0a0a", lineHeight: 1.6, margin: 0 }}>{g.text}</p>
+
+                    {/* číslo hodiny s knížkou */}
+                    <div
+                      title={num ? `Vyučovací hodina ${num}` : "Vyučovací hodina"}
+                      style={{
+                        flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", gap: 6,
+                        padding: "6px 10px 6px 8px", borderRadius: 10,
+                        background: "#eff6ff", border: "1px solid rgba(59,130,246,0.25)", color: "#1e40af",
+                      }}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 6C9.5 4 6.5 4 3 5.5v13c3.5-1.5 6.5-1.5 9 0M12 6c2.5-2 5.5-2 9-0.5v13c-3.5-1.5-6.5-1.5-9 0M12 6v13" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15 }}>{num}</span>
                     </div>
-                    <div style={{ display: "flex", gap: 8, flexShrink: 0, alignItems: "center", paddingTop: 2, marginLeft: 16 }}>
-                      {isTp ? (
-                        <>
-                          <button onClick={e => { e.stopPropagation(); setSelectedTpGoalId(g.id); setTpEditingLevels(false); }} style={{ ...btnStyle("ghost"), fontSize: 14, padding: "8px 12px" }}>Detail</button>
-                          <button onClick={e => { e.stopPropagation(); removeTpGoal(g.id); }} title="Odstranit"
-                            style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
-                            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                            onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 4h12M5.333 4V2.667a.667.667 0 0 1 .667-.667h4a.667.667 0 0 1 .667.667V4M12.667 4l-.667 9.333A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 13.333L3.333 4" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        </>
-                      ) : <IconChevronRight />}
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* název hodiny — editovatelný na klik, stejně jako kritéria v detailu */}
+                      <EditableLessonTitle
+                        value={g.text}
+                        onChange={v => onPatch(g.id, isTp, { text: v })}
+                      />
+
+                      {/* podrobnosti jako chipsy — všechny editovatelné rovnou odsud */}
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        <ChipSelect
+                          iconPath={ICON_SUBJECT}
+                          title="Předmět"
+                          value={g.subject}
+                          options={subjectOptions}
+                          onChange={v => onPatch(g.id, isTp, { subject: v })}
+                          bg="#f3e8ff"
+                          color="#8200db"
+                        />
+                        <ChipSelect
+                          iconPath={ICON_CLASS}
+                          title="Třída"
+                          value={g.cls}
+                          options={classOptions}
+                          onChange={v => onPatch(g.id, isTp, { trida: v, className: v })}
+                        />
+                        {isTp && (
+                          <ChipSelect
+                            iconPath={ICON_MONTH}
+                            title="Měsíc v tématickém plánu"
+                            value={g.period}
+                            options={LESSON_MONTHS}
+                            onChange={v => onPatch(g.id, isTp, { month: v })}
+                          />
+                        )}
+                        <span onClick={e => e.stopPropagation()}><LessonDatePicker goalId={g.id} compact /></span>
+                        {tpGoal && (
+                          <ChipInput
+                            iconPath={ICON_HOURS}
+                            title="Rozsah hodin"
+                            value={tpGoal.rozsah}
+                            minCh={2}
+                            suffix={parseInt(tpGoal.rozsah) === 1 ? "hodina" : parseInt(tpGoal.rozsah) >= 2 && parseInt(tpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}
+                            onChange={v => onPatch(g.id, isTp, { rozsah: v })}
+                          />
+                        )}
+                        {tpGoal && (
+                          <ChipInput
+                            iconPath={ICON_OUTCOME}
+                            title="Výstup"
+                            value={tpGoal.vystupy ?? ""}
+                            placeholder="Doplnit výstup"
+                            minCh={12}
+                            onChange={v => onPatch(g.id, isTp, { vystupy: v })}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <LessonStatus printed={st.printed} uploaded={st.uploaded} evidenceCount={evidenceCountFor(g.id)} />
+
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0, alignItems: "center", marginTop: 2 }}>
+                      <button
+                        onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
+                        style={{ ...btnStyle("ghost"), fontSize: 14, padding: "9px 14px" }}
+                      >
+                        Detail
+                      </button>
+                      {isTp && (
+                        <button onClick={() => removeTpGoal(g.id)} title="Odstranit hodinu"
+                          style={{ background: "none", border: "none", cursor: "pointer", padding: "9px 8px", borderRadius: 8, display: "flex", opacity: 0.5, transition: "opacity 0.12s" }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 4h12M5.333 4V2.667a.667.667 0 0 1 .667-.667h4a.667.667 0 0 1 .667.667V4M12.667 4l-.667 9.333A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 13.333L3.333 4" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </FadeIn>
@@ -2609,7 +2848,14 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 }
 
 function CileView() {
-  const { tpGoals, removeTpGoal, updateTpGoalText, animateIn } = useContext(GoalsContext);
+  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn } = useContext(GoalsContext);
+  const { evidenceRecords } = useContext(EvidenceContext);
+  // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
+  const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({ g1: { printed: true } });
+  const markLesson = (id: string | null, patch: { printed?: boolean; uploaded?: boolean }) => {
+    if (!id) return;
+    setLessonStatus(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+  };
   const goalNums = buildGoalNumbers(tpGoals);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const [filterSubject, setFilterSubject] = useState("");
@@ -2675,7 +2921,7 @@ function CileView() {
                 value={selectedTpGoal.text}
                 onChange={e => updateTpGoalText(selectedTpGoal.id, e.target.value)}
                 style={{
-                  display: "block", width: "100%", maxWidth: 560, boxSizing: "border-box",
+                  display: "block", width: "100%", boxSizing: "border-box",
                   fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 26, color: "#0a0a0a", lineHeight: 1.55,
                   margin: "0 0 14px", padding: "3px 8px", marginLeft: -8,
                   background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
@@ -2797,9 +3043,9 @@ function CileView() {
           </section>
         </div>
       </div>
-      {tpPrintOpen && <PrintModal onClose={() => setTpPrintOpen(false)} students={tpClassStudents} goal={selectedTpGoal.text} />}
+      {tpPrintOpen && <PrintModal onClose={() => setTpPrintOpen(false)} students={tpClassStudents} goal={selectedTpGoal.text} onPrinted={() => markLesson(selectedTpGoal.id, { printed: true })} />}
       {tpEvidenceOpen && <EvidenceModal onClose={() => setTpEvidenceOpen(false)} students={tpClassStudents} goal={selectedTpGoal.text} goalId={selectedTpGoal.id} subject={selectedTpGoal.subject} className={selectedTpGoal.trida} />}
-      {tpCameraOpen && <CameraModal onClose={() => setTpCameraOpen(false)} />}
+      {tpCameraOpen && <CameraModal onClose={() => setTpCameraOpen(false)} onUploaded={() => markLesson(selectedTpGoal.id, { uploaded: true })} />}
       </>
     );
   }
@@ -3084,6 +3330,7 @@ function CileView() {
           onClose={() => setPrintOpen(false)}
           students={classStudents}
           goal={selectedGoal.text}
+          onPrinted={() => markLesson(selectedGoal.id, { printed: true })}
         />
       )}
       {evidenceOpen && (
@@ -3096,7 +3343,7 @@ function CileView() {
           className={selectedGoal.className}
         />
       )}
-      {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} />}
+      {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} onUploaded={() => markLesson(selectedGoal.id, { uploaded: true })} />}
       </>
     );
   }
@@ -3161,6 +3408,22 @@ function CileView() {
           <IconPlus />
           Vytvořit hodinu
         </button>
+      </div>
+
+      {/* hodiny a tématický plán jsou jedna a ta samá data */}
+      <div style={{
+        display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 24,
+        padding: "13px 16px", borderRadius: 12,
+        background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.18)",
+      }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1, color: "#2563eb" }} aria-hidden="true">
+          <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M8 7.3v3.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="8" cy="5.3" r="0.8" fill="currentColor" />
+        </svg>
+        <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, lineHeight: 1.55, color: "#1e40af", margin: 0 }}>
+          Všechny úpravy tady se rovnou projeví i v tématickém plánu — cíl, předmět, třída, měsíc i rozsah hodin jsou stejná data.
+        </p>
       </div>
 
       {/* filter bar */}
@@ -3237,6 +3500,19 @@ function CileView() {
           setTpEditingLevels={setTpEditingLevels}
           setSelectedGoalId={id => setSelectedGoalId(id)}
           btnStyle={btnStyle}
+          classOptions={initialClasses.map(c => c.name)}
+          evidenceCountFor={id => evidenceRecords.filter(r => r.goalId === id).length}
+          statusFor={id => lessonStatus[id] ?? {}}
+          onPatch={(id, isTp, patch) => {
+            if (isTp) {
+              // hodiny z tématického plánu se mění přímo v plánu, odkud pocházejí
+              const { className, ...rest } = patch;
+              updateTpGoal(id, rest as Partial<TpGoal>);
+            } else {
+              const { trida, ...rest } = patch;
+              setGoals(prev => prev.map(x => x.id === id ? { ...x, ...rest } as Goal : x));
+            }
+          }}
         />
       )}
     </div>
@@ -3500,7 +3776,7 @@ function DukazyView() {
             Důkazy o učení
           </h1>
           <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 15, color: "#717182" }}>
-            {filtered.length} {filtered.length === 1 ? "záznam" : filtered.length < 5 ? "záznamy" : "záznamů"}
+            {filtered.length} {filtered.length === 1 ? "záznam" : filtered.length >= 2 && filtered.length <= 4 ? "záznamy" : "záznamů"}
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
@@ -4447,12 +4723,24 @@ const initialPlans: TpPlan[] = [
 
 function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v: string) => void; color?: string }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
+  // Výšku je potřeba přepočítat nejen při změně textu, ale i když se změní šířka
+  // buňky (užší okno, otevření Buddy panelu) — jinak se text přelomí na víc řádků,
+  // výška zůstane stará a přebytek zmizí pod overflow: hidden.
+  const resize = useCallback(() => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
-  });
+  }, []);
+  useEffect(resize);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    if (el.parentElement) ro.observe(el.parentElement);
+    return () => ro.disconnect();
+  }, [resize]);
   return (
     <textarea
       ref={ref}
@@ -5813,6 +6101,7 @@ export default function App() {
     },
     removeTpGoal: (id) => setTpGoals(prev => prev.filter(g => g.id !== id)),
     updateTpGoalText: (id, text) => setTpGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g)),
+    updateTpGoal: (id, patch) => setTpGoals(prev => prev.map(g => g.id === id ? { ...g, ...patch } : g)),
     navigateCile: () => {
       setActive("cile");
       setNavKey(k => k + 1);
