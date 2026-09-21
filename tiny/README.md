@@ -30,9 +30,11 @@ Figma Make:
 - **`index.html`** — Figma HTML sloty (`<!-- figma:title -->` apod.) nahrazeny
   statickým `<head>`, `lang="cs"`, favicon.
 - **Font Inter** — původně se stahoval z `https://static.figma.com/font/Inter_1`.
-  Teď je hostovaný lokálně v `public/fonts/` (latin + latin-ext subset, variabilní
+  Teď se balí přímo do buildu ze `src/fonts/` (latin + latin-ext subset, variabilní
   woff2 z Google Fonts). Názvy rodin `"Inter:Regular"` / `"Inter:Medium"` zůstaly,
   protože je `App.tsx` používá na 257 místech. Aplikace nestahuje nic z figma.com.
+- **`base: "./"`** ve `vite.config.ts` — build odkazuje na assety relativně, takže
+  funguje i jinde než v kořeni domény (statický hosting, náhled, podadresář).
 - **`src/App.tsx`** — jediná úprava: závorky kolem výrazu `?? ... ||` u `goalNum`
   (TypeScript TS5076, `'??' and '||' cannot be mixed`). Obě možná čtení dávají
   stejný výsledek, protože čísla cílů začínají od 1.
