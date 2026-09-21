@@ -202,6 +202,17 @@ const EvidenceContext = createContext<EvidenceCtx>({
 // ─── ai hint wrapper ──────────────────────────────────────────────────────────
 
 // 4-pointed sparkle SVG used in AI hint button
+// Jeden úchyt pro přetahování všude: sloupce, řádky plánu, vyučovací hodiny
+function DragGrip({ size = 14, opacity = 0.3 }: { size?: number; opacity?: number }) {
+  return (
+    <svg width={size * 10 / 16} height={size} viewBox="0 0 10 16" fill="none" aria-hidden="true" style={{ opacity, flexShrink: 0 }}>
+      <circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="7" cy="3" r="1.2" fill="currentColor"/>
+      <circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="7" cy="8" r="1.2" fill="currentColor"/>
+      <circle cx="3" cy="13" r="1.2" fill="currentColor"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/>
+    </svg>
+  );
+}
+
 function SparkleIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
@@ -2927,11 +2938,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       onMouseEnter={e => (e.currentTarget.style.opacity = "0.65")}
                       onMouseLeave={e => (e.currentTarget.style.opacity = "0.3")}
                     >
-                      <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">
-                        <circle cx="3" cy="3" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="3" r="1.2" fill="#0a0a0a"/>
-                        <circle cx="3" cy="8" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="8" r="1.2" fill="#0a0a0a"/>
-                        <circle cx="3" cy="13" r="1.2" fill="#0a0a0a"/><circle cx="7" cy="13" r="1.2" fill="#0a0a0a"/>
-                      </svg>
+                      <span style={{ color: "#0a0a0a", display: "flex" }}><DragGrip size={16} opacity={1} /></span>
                     </div>
 
                     {/* číslo hodiny s knížkou */}
@@ -4779,8 +4786,6 @@ const tpColumns: TpColumnDef[] = [
   { id: "rozsahHodin", label: "Rozsah hodin", defaultOn: false },
   { id: "pocetHodin", label: "Počet hodin", defaultOn: false },
   { id: "vystupy", label: "Výstupy", defaultOn: false },
-  { id: "nazevSkoly", label: "Název školy", defaultOn: false },
-  { id: "vyucujici", label: "Vyučující", defaultOn: false },
   { id: "rvp", label: "RVP odkaz", defaultOn: false },
 ];
 
@@ -5416,7 +5421,7 @@ function TematickyPlanView() {
         {/* header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginTop: 28, marginBottom: 28 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#6b6b7a", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
             <input
               value={text}
               onChange={e => setText(e.target.value)}
@@ -5507,9 +5512,12 @@ function TematickyPlanView() {
                   cursor: locked ? "default" : "pointer", transition: "all 0.13s",
                   opacity: locked ? 1 : undefined,
                 }}>
-                  {on && <span style={{ marginRight: 5, fontSize: 10 }}>✓</span>}
+                  {on && (
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ marginRight: 5, verticalAlign: "-1px" }} aria-hidden="true">
+                      <path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
                   {col.label}
-                  {locked && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>●</span>}
                 </button>
               );
             })}
@@ -5547,6 +5555,7 @@ function TematickyPlanView() {
             <thead>
               <tr>
                 <th style={{ ...thStyle, borderRadius: "12px 0 0 0", cursor: "default", position: "relative" }}>Čas</th>
+                <th style={{ ...thStyle, width: 28, padding: "11px 0" }} aria-label="Přetažení řádku" />
                 {activeCols.map((colId, i) => {
                   const col = tpColumns.find(c => c.id === colId)!;
                   const isDragTarget = dragOver === i;
@@ -5583,10 +5592,7 @@ function TematickyPlanView() {
                         <SparkleIcon />
                       </button>
                       <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
-                          <circle cx="3" cy="3" r="1" fill="currentColor"/><circle cx="7" cy="3" r="1" fill="currentColor"/>
-                          <circle cx="3" cy="7" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/>
-                        </svg>
+                        <DragGrip size={13} opacity={0.35} />
                         {col.label}
                         {colId === "cile" && (
                           <button
@@ -5599,12 +5605,12 @@ function TematickyPlanView() {
                               color: "#fff", cursor: "pointer",
                               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
                               boxShadow: "0 1px 4px rgba(124,58,237,0.22)",
-                              whiteSpace: "nowrap", flexShrink: 0, marginLeft: "auto",
+                              whiteSpace: "nowrap", flexShrink: 0,
                               textTransform: "none", letterSpacing: "normal",
                             }}
                           >
                             <SparkleIcon />
-                            Generovat kritéria a úrovně
+                            Generovat plán hodin
                           </button>
                         )}
                       </span>
@@ -5654,10 +5660,6 @@ function TematickyPlanView() {
                   <tr
                     key={ri}
                     className="tp-row"
-                    draggable
-                    onDragStart={() => {
-                      rowDragRef.current = { kind: "sub", fromMonth: monthKey, fromSubIdx: subIdx };
-                    }}
                     onDragEnter={() => {
                       if (!rowDragRef.current) return;
                       if (rowDragRef.current.kind === "month") setRowDragOverMonth(monthKey);
@@ -5705,11 +5707,9 @@ function TematickyPlanView() {
                       >
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                           {/* drag handle for month */}
-                          <svg width="12" height="10" viewBox="0 0 12 10" fill="none" style={{ opacity: isMonthHovered ? 0.35 : 0.15, transition: "opacity 0.14s", flexShrink: 0 }}>
-                            <rect y="0" width="12" height="1.5" rx="0.75" fill="#0a0a0a"/>
-                            <rect y="4" width="12" height="1.5" rx="0.75" fill="#0a0a0a"/>
-                            <rect y="8" width="12" height="1.5" rx="0.75" fill="#0a0a0a"/>
-                          </svg>
+                          <span style={{ color: "#0a0a0a", opacity: isMonthHovered ? 1 : 0.55, transition: "opacity 0.14s", display: "flex" }}>
+                            <DragGrip size={14} opacity={isMonthHovered ? 0.4 : 0.18} />
+                          </span>
                           <button
                             onClick={() => openBuddy(`Chci upravit měsíc: ${row.cas}`)}
                             title="Otevřít Buddy AI"
@@ -5732,6 +5732,24 @@ function TematickyPlanView() {
                         </div>
                       </td>
                     )}
+                    <td
+                      draggable
+                      onDragStart={e => {
+                        e.stopPropagation();
+                        rowDragRef.current = { kind: "sub", fromMonth: monthKey, fromSubIdx: subIdx };
+                      }}
+                      onDragEnd={() => { rowDragRef.current = null; setRowDragOverMonth(null); setRowDragOverSub(null); }}
+                      title="Přetažením změníte pořadí řádků"
+                      style={{
+                        ...tdStyle, width: 28, padding: "6px 0", textAlign: "center",
+                        verticalAlign: "middle", cursor: "grab", color: "#0a0a0a",
+                        borderTop: isMonthStart && !isDragOverSub ? topBorder : undefined,
+                      }}
+                    >
+                      <span style={{ display: "inline-flex" }}>
+                        <DragGrip size={14} opacity={hoveredMonthKey === monthKey ? 0.35 : 0.14} />
+                      </span>
+                    </td>
                     {activeCols.map(colId => {
                       const field = colFieldMap[colId];
                       const isNarrow = colId === "rozsahHodin" || colId === "pocetHodin";
