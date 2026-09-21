@@ -21,6 +21,9 @@ a zdůvodňování zvolených řešení; to patří do commit message. Na konec 
 věci k rozhodnutí. Zmínit navíc jen to, co bylo potřeba udělat jinak, než
 znělo zadání, nebo co je rozbité.
 
+**Po dokončení balíku změn poslat upozornění** (PushNotification) s jednou
+větou o tom, co je hotové — zadavatelka u toho nesedí a čeká na signál.
+
 Dávkovat změny. Velký balík zadání v jedné zprávě je rychlejší než totéž
 rozdělené do několika — ušetří se opakované čtení kódu a buildy.
 
