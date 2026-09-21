@@ -40,10 +40,11 @@ Klíčové části: `TematickyPlanView` (tabulka plánu), `CileView` + `LessonLi
 
 ## Na co narazit
 
-- **Plán a hodiny jsou dvě oddělené kopie dat.** Hodiny se z tematického plánu
-  jednorázově vygenerují (`addTpGoals`) a dál si žijí vlastním životem. Úprava
-  hodiny se do plánu nepropíše, i když to poznámka na stránce Vyučovací hodiny
-  slibuje. Zapojit to znamená vytáhnout stav plánu na úroveň `App`.
+- **Plán a hodiny jsou propojené.** Řádky plánu (`planRows`) i hodiny
+  (`tpGoals`) žijí v `App` a `GoalsContext` je drží v souladu: `updatePlanRow`
+  a `updateTpGoal` píšou vždy do obojího. Párují se přes `TpRow._id`, které
+  hodina zdědí jako své `id`. Synchronizuje se cíl, měsíc, rozsah a výstup;
+  předmět a třída jsou vlastnost celého plánu, ne řádku.
 - **Dlouhé texty nepatří do `<input>`.** Cíle učení jsou celé věty a input je
   usekne bez jakékoli indikace. Používat rostoucí `<textarea>`
   (`AutoTextarea`, `EditableLessonTitle`).

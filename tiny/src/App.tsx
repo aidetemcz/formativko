@@ -20,11 +20,16 @@ interface GoalsCtx {
   removeTpGoal: (id: string) => void;
   updateTpGoalText: (id: string, text: string) => void;
   updateTpGoal: (id: string, patch: Partial<TpGoal>) => void;
+  planRows: TpRow[];
+  setPlanRows: React.Dispatch<React.SetStateAction<TpRow[]>>;
+  updatePlanRow: (rowId: string, patch: Partial<TpRow>) => void;
   navigateCile: () => void;
   animateIn: boolean;
 }
 const GoalsContext = createContext<GoalsCtx>({
-  tpGoals: [], addTpGoals: () => {}, removeTpGoal: () => {}, updateTpGoalText: () => {}, updateTpGoal: () => {}, navigateCile: () => {}, animateIn: false,
+  tpGoals: [], addTpGoals: () => {}, removeTpGoal: () => {}, updateTpGoalText: () => {}, updateTpGoal: () => {},
+  planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
+  navigateCile: () => {}, animateIn: false,
 });
 
 type StudentEvidence = { audio: number; photo: number };
@@ -3600,7 +3605,7 @@ function CileView() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
           Vyučovací hodiny
-          <InfoHint text="Všechny úpravy tady se rovnou projeví i v tématickém plánu — cíl, předmět, třída, měsíc i rozsah hodin jsou stejná data." />
+          <InfoHint text="Cíl, měsíc, rozsah hodin a výstup jsou stejná data jako v tématickém plánu — úprava tady se hned projeví i tam. Předmět a třída se nastavují pro celý plán." />
         </h1>
         <button
           onClick={() => { setNewGoalText(""); setCreatingGoal(true); }}
@@ -4780,6 +4785,8 @@ const tpColumns: TpColumnDef[] = [
 ];
 
 interface TpRow {
+  // _id páruje řádek plánu s vyučovací hodinou, která z něj vznikla
+  _id: string;
   cas: string; tema: string; rozsah: string; pocet: string; cile: string; vystupy: string; rvp: string;
   _monthSpan?: number; _isMonthStart?: boolean;
 }
@@ -4791,6 +4798,7 @@ function buildMesiceRows(mesiceData: MesicData[]): TpRow[] {
   for (const m of mesiceData) {
     m.topics.forEach((t, i) => {
       rows.push({
+        _id: uid(),
         cas: m.cas,
         tema: t.tema,
         rozsah: t.rozsah,
@@ -4983,7 +4991,7 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
 
 function TematickyPlanView() {
   const openBuddy = useContext(BuddyContext);
-  const { addTpGoals, navigateCile } = useContext(GoalsContext);
+  const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow } = useContext(GoalsContext);
   const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [text, setText] = useState("");
@@ -5015,7 +5023,8 @@ function TematickyPlanView() {
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [editRows, setEditRows] = useState<TpRow[]>(() => buildRows("celý rok", "měsíc"));
+  const editRows = planRows;
+  const setEditRows = setPlanRows;
   const [hoveredMonthKey, setHoveredMonthKey] = useState<string | null>(null);
 
   // row drag state — "month" drags whole month group, "sub" drags within a month
@@ -5071,7 +5080,7 @@ function TematickyPlanView() {
     const newGoals: TpGoal[] = editRows
       .filter(r => r.cile.trim())
       .map(r => ({
-        id: `tp-${predmet}-${trida}-${r.cas}-${r.tema}`.replace(/\s+/g, "-"),
+        id: r._id,
         text: r.cile,
         subject: predmet,
         trida,
@@ -5116,13 +5125,20 @@ function TematickyPlanView() {
     setTrida(plan.trida);
     setPeriod(plan.period);
     setUnit(plan.unit);
-    setEditRows(plan.rows);
+    // Řádky se natáhnou z uložené kopie jen tehdy, když ve sdíleném stavu
+    // ještě nejsou — jinak by se zahodily úpravy přišlé ze seznamu hodin.
+    const alreadyLoaded = plan.rows.length > 0 && planRows.some(r => r._id === plan.rows[0]._id);
+    if (!alreadyLoaded) setEditRows(plan.rows);
     setView("result");
   }
 
+  const unitRef = useRef(unit + "|" + period);
   useEffect(() => {
+    const key = unit + "|" + period;
+    if (unitRef.current === key) return;
+    unitRef.current = key;
     if (view === "result") setEditRows(buildRows(period, unit));
-  }, [unit, period]);
+  }, [unit, period, view]);
 
   useEffect(() => {
     if (view !== "generating") return;
@@ -5310,7 +5326,8 @@ function TematickyPlanView() {
   if (view === "result") {
     const rows = editRows;
     function updateCell(ri: number, field: keyof TpRow, val: string) {
-      setEditRows(prev => prev.map((r, i) => i === ri ? { ...r, [field]: val } : r));
+      const row = rows[ri];
+      if (row) updatePlanRow(row._id, { [field]: val } as Partial<TpRow>);
     }
     const showSkola = cols.has("nazevSkoly");
     const showVyucujici = cols.has("vyucujici");
@@ -6272,6 +6289,9 @@ export default function App() {
   const [buddyTrigger, setBuddyTrigger] = useState<{ msg: string; key: number } | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [tpGoals, setTpGoals] = useState<TpGoal[]>([]);
+  // Řádky tématického plánu žijí tady, aby je viděl plán i seznam hodin —
+  // jsou to stejná data, jen dvě obrazovky.
+  const [planRows, setPlanRows] = useState<TpRow[]>(() => buildRows("celý rok", "měsíc"));
   const [animateIn, setAnimateIn] = useState(false);
   const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
     const acc: Record<string, StudentEvidence> = {};
@@ -6317,8 +6337,36 @@ export default function App() {
       setTimeout(() => setAnimateIn(false), 3000);
     },
     removeTpGoal: (id) => setTpGoals(prev => prev.filter(g => g.id !== id)),
-    updateTpGoalText: (id, text) => setTpGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g)),
-    updateTpGoal: (id, patch) => setTpGoals(prev => prev.map(g => g.id === id ? { ...g, ...patch } : g)),
+    updateTpGoalText: (id, text) => {
+      setTpGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g));
+      setPlanRows(prev => prev.map(r => r._id === id ? { ...r, cile: text } : r));
+    },
+    updateTpGoal: (id, patch) => {
+      setTpGoals(prev => prev.map(g => g.id === id ? { ...g, ...patch } : g));
+      // co má hodina společné s řádkem plánu, se propíše i do plánu
+      const rowPatch: Partial<TpRow> = {};
+      if (patch.text !== undefined) rowPatch.cile = patch.text;
+      if (patch.rozsah !== undefined) rowPatch.rozsah = patch.rozsah;
+      if (patch.vystupy !== undefined) rowPatch.vystupy = patch.vystupy;
+      if (patch.month !== undefined) rowPatch.cas = patch.month;
+      if (Object.keys(rowPatch).length) {
+        setPlanRows(prev => prev.map(r => r._id === id ? { ...r, ...rowPatch } : r));
+      }
+    },
+    planRows,
+    setPlanRows,
+    updatePlanRow: (rowId, patch) => {
+      setPlanRows(prev => prev.map(r => r._id === rowId ? { ...r, ...patch } : r));
+      // a naopak: úprava v plánu se projeví na hodině, která z řádku vznikla
+      const goalPatch: Partial<TpGoal> = {};
+      if (patch.cile !== undefined) goalPatch.text = patch.cile;
+      if (patch.rozsah !== undefined) goalPatch.rozsah = patch.rozsah;
+      if (patch.vystupy !== undefined) goalPatch.vystupy = patch.vystupy;
+      if (patch.cas !== undefined) goalPatch.month = patch.cas;
+      if (Object.keys(goalPatch).length) {
+        setTpGoals(prev => prev.map(g => g.id === rowId ? { ...g, ...goalPatch } : g));
+      }
+    },
     navigateCile: () => {
       setActive("cile");
       setNavKey(k => k + 1);
