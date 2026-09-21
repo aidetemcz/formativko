@@ -4677,7 +4677,7 @@ function TematickyPlanView() {
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 18, maxWidth: 1140 }}>
             {plans.map((plan) => (
               <button
                 key={plan.id}
