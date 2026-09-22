@@ -2951,7 +2951,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       opacity: dragGoalRef.current === g.id ? 0.45 : 1,
                     }}
                   >
-                    {editMode && isTp && (
+                    {editMode && (
                       <input
                         type="checkbox"
                         checked={selectedIds.has(g.id)}
@@ -3774,12 +3774,14 @@ function CileView() {
         />
       )}
 
-      {confirmDelete && (
+      {confirmDelete && (() => {
+        const selectedFromPlan = [...selectedIds].filter(id => tpGoals.some(g => g.id === id)).length;
+        return (
         <Modal title="Odstranit vybrané hodiny?" onClose={() => setConfirmDelete(false)} width={440}>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, lineHeight: 1.6, color: "#0a0a0a", margin: "0 0 10px" }}>
             Odstraní se {selectedIds.size} {selectedIds.size === 1 ? "vyučovací hodina" : selectedIds.size <= 4 ? "vyučovací hodiny" : "vyučovacích hodin"}.
           </p>
-          <div style={{
+          {selectedFromPlan > 0 && <div style={{
             display: "flex", gap: 9, alignItems: "flex-start",
             padding: "11px 13px", borderRadius: 10, marginBottom: 4,
             background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.22)",
@@ -3790,22 +3792,28 @@ function CileView() {
               <circle cx="8" cy="11.6" r="0.8" fill="currentColor"/>
             </svg>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.55, color: "#991b1b", margin: 0 }}>
-              Odstraní se i z tématického plánu — jsou to stejná data. Tuhle změnu nelze vzít zpět.
+              {selectedFromPlan === selectedIds.size
+                ? "Odstraní se i z tématického plánu — jsou to stejná data. Tuhle změnu nelze vzít zpět."
+                : `${selectedFromPlan} z nich pochází z tématického plánu a odstraní se i tam. Tuhle změnu nelze vzít zpět.`}
             </p>
-          </div>
+          </div>}
           <ModalActions
             onCancel={() => setConfirmDelete(false)}
             onConfirm={() => {
-              selectedIds.forEach(id => removeTpGoal(id));
+              selectedIds.forEach(id => {
+                if (tpGoals.some(g => g.id === id)) removeTpGoal(id);
+                else setGoals(prev => prev.filter(x => x.id !== id));
+              });
               setSelectedIds(new Set());
               setConfirmDelete(false);
               setEditMode(false);
             }}
-            confirmLabel="Odstranit i z plánu"
+            confirmLabel={selectedFromPlan > 0 ? "Odstranit i z plánu" : "Odstranit"}
             danger
           />
         </Modal>
-      )}
+        );
+      })()}
 
       {/* akce ze seznamu hodin — tisk, sběr důkazů, nahrání tabulky */}
       {listModal && (() => {
