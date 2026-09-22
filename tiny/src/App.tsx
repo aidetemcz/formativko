@@ -2783,8 +2783,19 @@ function LessonStatus({ printed, uploaded, evidenceCount }: { printed?: boolean;
   );
 }
 
+// Ikony akcí nad tabulkou hodnocení — stejné všude: v řádku hodiny,
+// v detailu hodiny i na stránce Důkazy o učení.
+const ICON_PRINT = "M4.5 6.5V2.5h7v4M4.5 11.5h-1a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1M4.5 9.5h7v4h-7z";
+// digitální záznam důkazu: obrazovka s odškrtnutím
+const ICON_EVIDENCE = "M2.5 3h11a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-7A.5.5 0 0 1 2.5 3zM5.5 14h5M8 11v3M5.6 7l1.6 1.6L10.4 5.4";
+// nahrání vyplněné tabulky: list se šipkou nahoru
+const ICON_UPLOAD = "M4 14h8a1 1 0 0 0 1-1V5.5L9.5 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1zM9.5 2v3.5H13M8 11.5V7M6.2 8.8L8 7l1.8 1.8";
+
 // Ikonová akce v řádku hodiny
-function LessonActionButton({ title, onClick, path }: { title: string; onClick: () => void; path: string }) {
+function LessonActionButton({ title, onClick, path, done }: { title: string; onClick: () => void; path: string; done?: boolean }) {
+  const base = done ? "#dcfce7" : "#fff";
+  const line = done ? "#16a34a" : "rgba(0,0,0,0.12)";
+  const ink = done ? "#15803d" : "#5c5c6b";
   return (
     <button
       onClick={onClick}
@@ -2793,11 +2804,11 @@ function LessonActionButton({ title, onClick, path }: { title: string; onClick: 
       style={{
         width: 30, height: 30, borderRadius: 8, padding: 0, cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", color: "#5c5c6b",
+        background: base, border: `1.5px solid ${line}`, color: ink,
         transition: "background 0.12s, border-color 0.12s, color 0.12s",
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(236,236,240,0.7)"; e.currentTarget.style.color = "#0a0a0a"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#5c5c6b"; }}
+      onMouseEnter={e => { e.currentTarget.style.background = done ? "#bbf7d0" : "rgba(236,236,240,0.7)"; e.currentTarget.style.color = done ? "#166534" : "#0a0a0a"; }}
+      onMouseLeave={e => { e.currentTarget.style.background = base; e.currentTarget.style.color = ink; }}
     >
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d={path} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -2847,7 +2858,7 @@ function InfoHint({ text }: { text: string }) {
   );
 }
 
-function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions, onLessonAction }: {
+function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions, onLessonAction, editMode, selectedIds, onToggleSelect }: {
   filtered: AnyGoal[];
   animateIn: boolean;
   tpGoals: TpGoal[];
@@ -2861,6 +2872,9 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
   statusFor: (id: string) => { printed?: boolean; uploaded?: boolean };
   classOptions: string[];
   onLessonAction: (goalId: string, isTp: boolean, kind: "print" | "evidence" | "camera") => void;
+  editMode: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 }) {
   const [orderedIds, setOrderedIds] = useState<string[]>(() => filtered.map(g => g.id));
   const dragGoalRef = useRef<string | null>(null);
@@ -2937,6 +2951,15 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       opacity: dragGoalRef.current === g.id ? 0.45 : 1,
                     }}
                   >
+                    {editMode && isTp && (
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(g.id)}
+                        onChange={() => onToggleSelect(g.id)}
+                        aria-label={`Vybrat hodinu: ${g.text.slice(0, 40)}`}
+                        style={{ width: 16, height: 16, marginTop: 13, flexShrink: 0, accentColor: "#7c3aed", cursor: "pointer" }}
+                      />
+                    )}
                     {/* úchyt pro přetahování — tažení drží jen tato ikona, aby šlo psát do políček */}
                     <div
                       draggable
@@ -3008,8 +3031,6 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       </div>
                     </div>
 
-                    <LessonStatus printed={st.printed} uploaded={st.uploaded} evidenceCount={evidenceCountFor(g.id)} />
-
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch", marginTop: 2 }}>
                       <button
                         onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
@@ -3019,43 +3040,24 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       </button>
                       <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
                         <LessonActionButton
-                          title="Vytisknout tabulku hodnocení"
+                          title={st.printed ? "Tabulka hodnocení vytisknuta" : "Vytisknout tabulku hodnocení"}
                           onClick={() => onLessonAction(g.id, isTp, "print")}
-                          path="M4 6V2h8v4M4 12H3a1.333 1.333 0 0 1-1.333-1.333V7.333A1.333 1.333 0 0 1 3 6h10a1.333 1.333 0 0 1 1.333 1.333v3.334A1.333 1.333 0 0 1 13 12h-1M4 9.333h8V14H4z"
+                          path={ICON_PRINT}
+                          done={st.printed}
                         />
                         <LessonActionButton
-                          title="Zaznamenat důkazy o učení"
+                          title="Zaznamenat důkazy o učení digitálně"
                           onClick={() => onLessonAction(g.id, isTp, "evidence")}
-                          path="M2.5 3.5h11v9h-11zM2.5 6.5h11M6 6.5V12.5M9.5 6.5V12.5"
+                          path={ICON_EVIDENCE}
                         />
                         <LessonActionButton
-                          title="Nahrát vyplněnou tabulku"
+                          title="Nahrát vyplněnou tabulku hodnocení"
                           onClick={() => onLessonAction(g.id, isTp, "camera")}
-                          path="M8 10.5V2.8M5.2 5.6L8 2.8l2.8 2.8M2.5 10v2.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V10"
+                          path={ICON_UPLOAD}
+                          done={st.uploaded}
                         />
                       </div>
                     </div>
-
-                    {isTp && (
-                      <button
-                        onClick={() => removeTpGoal(g.id)}
-                        title="Odstranit hodinu"
-                        aria-label="Odstranit hodinu"
-                        style={{
-                          position: "absolute", top: 12, right: 12,
-                          width: 30, height: 30, borderRadius: 9,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          background: "transparent", border: "none", color: "#c81e1e",
-                          cursor: "pointer", padding: 0, transition: "background 0.12s",
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "#fee2e2")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                          <path d="M2 4h12M5.333 4V2.667a.667.667 0 0 1 .667-.667h4a.667.667 0 0 1 .667.667V4M12.667 4l-.667 9.333A1.333 1.333 0 0 1 10.667 14H5.333A1.333 1.333 0 0 1 4 13.333L3.333 4M6.667 7v4M9.333 7v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </button>
-                    )}
                   </div>
                 </FadeIn>
               );
@@ -3073,6 +3075,9 @@ function CileView() {
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
   const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({ g1: { printed: true } });
   const [listModal, setListModal] = useState<{ kind: "print" | "evidence" | "camera"; goalId: string; isTp: boolean } | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const markLesson = (id: string | null, patch: { printed?: boolean; uploaded?: boolean }) => {
     if (!id) return;
     setLessonStatus(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -3176,16 +3181,14 @@ function CileView() {
               Tisknout tabulku hodnocení
             </button>
             <button onClick={() => setTpEvidenceOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M2 12.667C2 11.194 4.686 10 8 10s6 1.194 6 2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
-                <circle cx="8" cy="5.333" r="3.333" stroke="currentColor" strokeWidth="1.33"/>
-                <path d="M13.333 2v4M11.333 4h4" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_EVIDENCE} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               Zaznamenat důkazy o učení
             </button>
             <button onClick={() => setTpCameraOpen(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M15.333 5.333L10.667 8l4.666 2.667V5.333zM1.333 4h8a1.333 1.333 0 0 1 1.334 1.333v5.334A1.333 1.333 0 0 1 9.333 12h-8A1.333 1.333 0 0 1 0 10.667V5.333A1.333 1.333 0 0 1 1.333 4z" stroke="#0a0a0a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_UPLOAD} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               Nahrát hotovou tabulku hodnocení
             </button>
@@ -3399,10 +3402,8 @@ function CileView() {
                 display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M2 12.667C2 11.194 4.686 10 8 10s6 1.194 6 2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
-                <circle cx="8" cy="5.333" r="3.333" stroke="currentColor" strokeWidth="1.33"/>
-                <path d="M13.333 2v4M11.333 4h4" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_EVIDENCE} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               Zaznamenat důkazy o učení
             </button>
@@ -3413,8 +3414,8 @@ function CileView() {
                 display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M15.333 5.333L10.667 8l4.666 2.667V5.333zM1.333 4h8a1.333 1.333 0 0 1 1.334 1.333v5.334A1.333 1.333 0 0 1 9.333 12h-8A1.333 1.333 0 0 1 0 10.667V5.333A1.333 1.333 0 0 1 1.333 4z" stroke="#0a0a0a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_UPLOAD} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               Nahrát hotovou tabulku hodnocení
             </button>
@@ -3623,14 +3624,55 @@ function CileView() {
           Vyučovací hodiny
           <InfoHint text="Cíl, měsíc, rozsah hodin a výstup jsou stejná data jako v tématickém plánu — úprava tady se hned projeví i tam. Předmět a třída se nastavují pro celý plán." />
         </h1>
-        <button
-          onClick={() => { setNewGoalText(""); setCreatingGoal(true); }}
-          style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <IconPlus />
-          Vytvořit hodinu
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={() => { setEditMode(v => !v); setSelectedIds(new Set()); }}
+            style={{
+              ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7,
+              borderColor: editMode ? "#7c4dbd" : undefined,
+              color: editMode ? "#7c4dbd" : undefined,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M11.3 2.2a1.4 1.4 0 0 1 2 2L6 11.5l-2.7.8.8-2.7z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2.5 14h11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+            {editMode ? "Hotovo" : "Upravit hodiny"}
+          </button>
+          <button
+            onClick={() => { setNewGoalText(""); setCreatingGoal(true); }}
+            style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <IconPlus />
+            Vytvořit hodinu
+          </button>
+        </div>
       </div>
+
+      {editMode && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12, marginBottom: 16,
+          padding: "10px 14px", borderRadius: 11,
+          background: "rgba(124,77,189,0.06)", border: "1px solid rgba(124,77,189,0.22)",
+        }}>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#5b21b6" }}>
+            {selectedIds.size === 0
+              ? "Zaškrtněte hodiny, které chcete odstranit."
+              : `Vybráno ${selectedIds.size} ${selectedIds.size === 1 ? "hodina" : selectedIds.size <= 4 ? "hodiny" : "hodin"}`}
+          </span>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            disabled={selectedIds.size === 0}
+            style={{
+              ...btnStyle("danger"), fontSize: 13, marginLeft: "auto",
+              opacity: selectedIds.size === 0 ? 0.45 : 1,
+              cursor: selectedIds.size === 0 ? "default" : "pointer",
+            }}
+          >
+            Odstranit vybrané
+          </button>
+        </div>
+      )}
 
       {/* filter bar — vše na jednom řádku */}
       <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "12px 16px", marginBottom: 24 }}>
@@ -3710,6 +3752,13 @@ function CileView() {
           btnStyle={btnStyle}
           classOptions={initialClasses.map(c => c.name)}
           onLessonAction={(goalId, isTp, kind) => setListModal({ kind, goalId, isTp })}
+          editMode={editMode}
+          selectedIds={selectedIds}
+          onToggleSelect={id => setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+          })}
           evidenceCountFor={id => evidenceRecords.filter(r => r.goalId === id).length}
           statusFor={id => lessonStatus[id] ?? {}}
           onPatch={(id, isTp, patch) => {
@@ -3723,6 +3772,39 @@ function CileView() {
             }
           }}
         />
+      )}
+
+      {confirmDelete && (
+        <Modal title="Odstranit vybrané hodiny?" onClose={() => setConfirmDelete(false)} width={440}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, lineHeight: 1.6, color: "#0a0a0a", margin: "0 0 10px" }}>
+            Odstraní se {selectedIds.size} {selectedIds.size === 1 ? "vyučovací hodina" : selectedIds.size <= 4 ? "vyučovací hodiny" : "vyučovacích hodin"}.
+          </p>
+          <div style={{
+            display: "flex", gap: 9, alignItems: "flex-start",
+            padding: "11px 13px", borderRadius: 10, marginBottom: 4,
+            background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.22)",
+          }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1, color: "#c81e1e" }} aria-hidden="true">
+              <path d="M8 1.8L15 14H1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+              <path d="M8 6.2v3.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="8" cy="11.6" r="0.8" fill="currentColor"/>
+            </svg>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.55, color: "#991b1b", margin: 0 }}>
+              Odstraní se i z tématického plánu — jsou to stejná data. Tuhle změnu nelze vzít zpět.
+            </p>
+          </div>
+          <ModalActions
+            onCancel={() => setConfirmDelete(false)}
+            onConfirm={() => {
+              selectedIds.forEach(id => removeTpGoal(id));
+              setSelectedIds(new Set());
+              setConfirmDelete(false);
+              setEditMode(false);
+            }}
+            confirmLabel="Odstranit i z plánu"
+            danger
+          />
+        </Modal>
       )}
 
       {/* akce ze seznamu hodin — tisk, sběr důkazů, nahrání tabulky */}
@@ -4022,20 +4104,18 @@ function DukazyView() {
             onClick={openEvidenceModal}
             style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M2 12.667C2 11.194 4.686 10 8 10s6 1.194 6 2.667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
-              <circle cx="8" cy="5.333" r="3.333" stroke="currentColor" strokeWidth="1.33"/>
-              <path d="M13.333 2v4M11.333 4h4" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_EVIDENCE} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             Zaznamenat důkazy o učení
           </button>
           <button
             onClick={() => setCameraOpen(true)}
             style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M15.333 5.333L10.667 8l4.666 2.667V5.333zM1.333 4h8a1.333 1.333 0 0 1 1.334 1.333v5.334A1.333 1.333 0 0 1 9.333 12h-8A1.333 1.333 0 0 1 0 10.667V5.333A1.333 1.333 0 0 1 1.333 4z" stroke="#0a0a0a" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d={ICON_UPLOAD} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             Nahrát hotovou tabulku hodnocení
           </button>
         </div>
@@ -6426,7 +6506,19 @@ export default function App() {
       setAnimateIn(true);
       setTimeout(() => setAnimateIn(false), 3000);
     },
-    removeTpGoal: (id) => setTpGoals(prev => prev.filter(g => g.id !== id)),
+    removeTpGoal: (id) => {
+      setTpGoals(prev => prev.filter(g => g.id !== id));
+      // hodina a řádek plánu jsou stejná data, takže mizí obojí
+      setPlanRows(prev => {
+        const next = prev.filter(r => r._id !== id);
+        const groups: Record<string, TpRow[]> = {};
+        const order: string[] = [];
+        for (const r of next) { if (!groups[r.cas]) { groups[r.cas] = []; order.push(r.cas); } groups[r.cas].push(r); }
+        const out: TpRow[] = [];
+        for (const m of order) groups[m].forEach((r, i) => out.push({ ...r, _isMonthStart: i === 0, _monthSpan: i === 0 ? groups[m].length : undefined }));
+        return out;
+      });
+    },
     updateTpGoalText: (id, text) => {
       setTpGoals(prev => prev.map(g => g.id === id ? { ...g, text } : g));
       setPlanRows(prev => prev.map(r => r._id === id ? { ...r, cile: text } : r));
