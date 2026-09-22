@@ -907,7 +907,7 @@ function ClassesView() {
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Třídy" }]} />
         {/* header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
             Třídy
           </h1>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -3620,7 +3620,7 @@ function CileView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Vyučovací hodiny" }]} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
           Vyučovací hodiny
           <InfoHint text="Cíl, měsíc, rozsah hodin a výstup jsou stejná data jako v tématickém plánu — úprava tady se hned projeví i tam. Předmět a třída se nastavují pro celý plán." />
         </h1>
@@ -4123,8 +4123,8 @@ function DukazyView() {
 
       {/* filter bar */}
       <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "16px 20px", marginBottom: 24 }}>
-        {/* row 1: Předmět · Třída · Cíl */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+        {/* filtr na jednom řádku */}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} style={selStyle}>
             <option value="vse">Všechny předměty</option>
             {allSubjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -4135,22 +4135,20 @@ function DukazyView() {
             {allClasses.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
 
-          <select value={filterGoalId} onChange={e => setFilterGoalId(e.target.value)} style={{ ...selStyle, flex: 1, minWidth: 0 }}>
-            <option value="vse">Všechny cíle</option>
-            {allGoals.map(g => {
-              const num = goalNums.get(g.id);
-              const prefix = num ? `Cíl ${num} · ` : "";
-              const label = prefix + (g.text.length > 60 ? g.text.slice(0, 58) + "…" : g.text);
-              return <option key={g.id} value={g.id}>{label}</option>;
-            })}
-          </select>
-        </div>
-
-        {/* row 2: Žáci · Časové období · (vlastní datumový rozsah) · Zrušit filtry */}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <select value={filterStudentId} onChange={e => setFilterStudentId(e.target.value)} style={selStyle}>
             <option value="vse">{filterClass === "vse" ? "Všichni žáci" : "Všichni žáci třídy"}</option>
             {studentsOfClass.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+
+          {/* místo cílů se filtruje po jednotlivých vyučovacích hodinách */}
+          <select value={filterGoalId} onChange={e => setFilterGoalId(e.target.value)} style={{ ...selStyle, flex: "1 1 220px", minWidth: 0 }}>
+            <option value="vse">Všechny vyučovací hodiny</option>
+            {allGoals.map(g => {
+              const num = goalNums.get(g.id);
+              const prefix = num ? `Hodina ${num} · ` : "";
+              const label = prefix + (g.text.length > 52 ? g.text.slice(0, 50) + "…" : g.text);
+              return <option key={g.id} value={g.id}>{label}</option>;
+            })}
           </select>
 
           <select value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={selStyle}>
@@ -4189,7 +4187,7 @@ function DukazyView() {
                 color: "#dc2626", whiteSpace: "nowrap",
               }}
             >
-              Zrušit filtry ({activeFilters})
+              Zrušit ({activeFilters})
             </button>
           )}
         </div>
@@ -4343,7 +4341,7 @@ function PlaceholderView({ label }: { label: string }) {
   return (
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label }]} />
-      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
         {label}
       </h1>
     </div>
@@ -4773,7 +4771,7 @@ function HodnoceniView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Hodnocení" }]} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
           Hodnocení
         </h1>
         <button
@@ -4870,8 +4868,8 @@ type TpColumn = "casJednotka" | "tema" | "rozsahHodin" | "pocetHodin" | "cile" |
 interface TpColumnDef { id: TpColumn; label: string; defaultOn: boolean }
 const tpColumns: TpColumnDef[] = [
   { id: "casJednotka", label: "Časová jednotka", defaultOn: true },
-  { id: "tema", label: "Témata", defaultOn: true },
   { id: "cile", label: "Cíle vyučovacích hodin", defaultOn: true },
+  { id: "tema", label: "Témata", defaultOn: true },
   { id: "rozsahHodin", label: "Rozsah hodin", defaultOn: false },
   { id: "pocetHodin", label: "Počet hodin", defaultOn: false },
   { id: "vystupy", label: "Výstupy", defaultOn: false },
@@ -5120,11 +5118,13 @@ function TematickyPlanView() {
   }
 
   // draggable column order (excludes fixed "Čas" and meta cols)
-  const draggableCols: TpColumn[] = ["tema", "cile", "rozsahHodin", "pocetHodin", "vystupy", "rvp"];
+  const draggableCols: TpColumn[] = ["cile", "tema", "rozsahHodin", "pocetHodin", "vystupy", "rvp"];
   const [colOrder, setColOrder] = useState<TpColumn[]>(draggableCols);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  // Z jaké osoby mají být cíle formulované. Ovlivňuje generování nových cílů.
+  const [cilOsoba, setCilOsoba] = useState<"zak" | "ja">("zak");
   const editRows = planRows;
   const setEditRows = setPlanRows;
   const [hoveredMonthKey, setHoveredMonthKey] = useState<string | null>(null);
@@ -5263,7 +5263,7 @@ function TematickyPlanView() {
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán" }]} />
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 28, marginBottom: 28 }}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: 0 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
             Tématický plán
           </h1>
           <button
@@ -5576,6 +5576,7 @@ function TematickyPlanView() {
               { label: "Třída", val: trida, set: setTrida, opts: ["1.A", "2.A", "3.A", "4.A", "5.A"] },
               { label: "Časová jednotka", val: unit, set: setUnit, opts: ["týden", "14 dní", "měsíc"] },
               { label: "Období", val: period, set: setPeriod, opts: ["3 měsíce", "1. pololetí", "2. pololetí", "celý rok"] },
+              { label: "Formulace cílů", val: cilOsoba === "zak" ? "Žák…" : "Já…", set: (v: string) => setCilOsoba(v === "Já…" ? "ja" : "zak"), opts: ["Žák…", "Já…"] },
             ].map(({ label, val, set, opts }) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
@@ -5590,9 +5591,11 @@ function TematickyPlanView() {
             <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
             {tpColumns.map(col => {
               const on = cols.has(col.id);
-              const locked = col.id === "cile";
+              const locked = col.id === "cile" || col.id === "casJednotka";
               return (
-                <button key={col.id} onClick={() => !locked && toggleCol(col.id)} style={{
+                <button key={col.id} onClick={() => !locked && toggleCol(col.id)}
+                  title={locked ? "Pevný sloupec — nejde vypnout" : undefined}
+                  style={{
                   display: "inline-flex", alignItems: "center", gap: 5,
                   padding: "5px 12px", borderRadius: 20, border: "1px solid",
                   borderColor: on ? "#7c4dbd" : "rgba(0,0,0,0.12)",
@@ -5609,6 +5612,12 @@ function TematickyPlanView() {
                     </svg>
                   )}
                   {col.label}
+                  {locked && (
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, opacity: 0.55 }} aria-hidden="true">
+                      <rect x="3.5" y="7" width="9" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="1.4"/>
+                      <path d="M5.8 7V5.2a2.2 2.2 0 0 1 4.4 0V7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                  )}
                 </button>
               );
             })}
@@ -5668,6 +5677,11 @@ function TematickyPlanView() {
                       <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <DragGrip size={13} opacity={0.35} />
                         {col.label}
+                        {colId === "cile" && (
+                          <span style={{ textTransform: "none", letterSpacing: "normal", fontFamily: "'Inter:Regular', sans-serif", color: "#8a8a99" }}>
+                            ({cilOsoba === "zak" ? "žák…" : "já…"})
+                          </span>
+                        )}
                         <BuddyButton
                           onClick={e => { e.stopPropagation(); openBuddy(`Sloupec: ${col.label}`); }}
                           title="Přidat sloupec do kontextu Buddyho"
