@@ -1,3 +1,4 @@
+import buddyImg from "./assets/buddy.png";
 import React, { useState, useRef, useEffect, useContext, createContext, useCallback } from "react";
 import { initialClasses, type Class, type Student } from "./data";
 
@@ -178,6 +179,7 @@ interface EvidenceCtx {
   evidenceRecords: EvidenceRecord[];
   addEvidenceRecords: (records: EvidenceRecord[]) => void;
   updateEvidenceRecord: (record: EvidenceRecord) => void;
+  removeEvidenceRecord: (id: string) => void;
 }
 const EvidenceContext = createContext<EvidenceCtx>({
   studentEvidence: {},
@@ -185,6 +187,7 @@ const EvidenceContext = createContext<EvidenceCtx>({
   evidenceRecords: [],
   addEvidenceRecords: () => {},
   updateEvidenceRecord: () => {},
+  removeEvidenceRecord: () => {},
 });
 
 // ─── ai hint wrapper ──────────────────────────────────────────────────────────
@@ -424,7 +427,7 @@ function Breadcrumb({ crumbs }: { crumbs: { label: string; onClick?: () => void 
 
 // ─── nav data ─────────────────────────────────────────────────────────────────
 
-type NavItem = "tridy" | "cile" | "dukazy" | "hodnoceni" | "tematicky-plan" | "profil" | "tinyboti" | "lekce" | "asistenti" | "navody" | "zpetna-vazba";
+type NavItem = "tridy" | "cile" | "dukazy" | "hodnoceni" | "tematicky-plan" | "profil" | "napady" | "tinyboti" | "lekce" | "asistenti" | "navody" | "zpetna-vazba";
 
 // nav items v2
 const navItems: { id: NavItem; label: string; icon: React.ReactNode }[] = [
@@ -699,7 +702,7 @@ function StudentProfile({
   className: string;
   onBack: () => void;
 }) {
-  const { evidenceRecords } = useContext(EvidenceContext);
+  const { evidenceRecords, removeEvidenceRecord } = useContext(EvidenceContext);
   const { tpGoals } = useContext(GoalsContext);
   const goalNums = buildGoalNumbers(tpGoals);
   const fullName = `${student.firstName} ${student.lastName}`;
@@ -708,6 +711,7 @@ function StudentProfile({
     .sort((a, b) => b.date.localeCompare(a.date));
   const [addOpen, setAddOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<EvidenceRecord | null>(null);
+  const [deleteRecord, setDeleteRecord] = useState<EvidenceRecord | null>(null);
 
   // stejný filtr jako na přehledu důkazů, jen s předvybranou třídou a žákem
   const [filterSubject, setFilterSubject] = useState("vse");
@@ -807,7 +811,7 @@ function StudentProfile({
             width: 22, height: 22, borderRadius: "50%", background: "#5b21b6", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <span style={{ color: "#fff", display: "flex" }}><BuddyMark size={14} mono /></span>
+            <img src={buddyImg} alt="" style={{ width: 15, height: 15, objectFit: "contain" }} />
           </span>
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#5b21b6", margin: 0 }}>
             Shrnutí od Buddyho
@@ -949,12 +953,19 @@ function StudentProfile({
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {studentRecords.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent onEdit={() => setEditRecord(r)} />)}
+          {studentRecords.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent onEdit={() => setEditRecord(r)} onDelete={() => setDeleteRecord(r)} />)}
         </div>
       )}
 
       {addOpen && <AddEvidenceModal student={student} className={className} onClose={() => setAddOpen(false)} />}
       {preset && <AddEvidenceModal student={student} className={className} preset={preset} onClose={() => setPreset(null)} />}
+      {deleteRecord && (
+        <DeleteEvidenceModal
+          record={deleteRecord}
+          onClose={() => setDeleteRecord(null)}
+          onConfirm={() => { removeEvidenceRecord(deleteRecord.id); setDeleteRecord(null); }}
+        />
+      )}
       {editRecord && <AddEvidenceModal student={student} className={className} record={editRecord} onClose={() => setEditRecord(null)} />}
     </div>
   );
@@ -1077,8 +1088,143 @@ function ProfilView() {
   );
 }
 
+// Nápady — fronta otázek, na které Buddy čeká, aby uměl navrhnout hodnocení.
+function NapadyView() {
+  const { tpGoals, lessonsDone } = useContext(GoalsContext);
+  const { evidenceRecords, addEvidenceRecords, addStudentEvidence } = useContext(EvidenceContext);
+  const [answered, setAnswered] = useState<Set<string>>(new Set());
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+
+  // Otázka = žák × kritérium bez zaznamenané úrovně, jen u odučených hodin.
+  // Dávka je krátká schválně — ptát se na všechno najednou nemá smysl.
+  const BATCH = 12;
+  const pending = tpGoals
+    .filter(g => lessonsDone[g.id] || evidenceRecords.some(r => r.goalId === g.id))
+    .flatMap(g => {
+      const students = initialClasses.find(c => c.name === g.trida)?.students ?? [];
+      return g.criteria.flatMap(c => students.map(st => ({
+        key: `${g.id}|${c.label}|${st.id}`,
+        goal: g, criterion: c.label, student: st,
+      })));
+    })
+    .filter(q => !evidenceRecords.some(r =>
+      r.studentId === q.student.id && r.goalId === q.goal.id && r.criterion === q.criterion && r.level));
+
+  const open = pending.filter(q => !skipped.has(q.key)).slice(0, BATCH - answered.size);
+  const current = open[0] ?? null;
+  const total = Math.min(BATCH, pending.length + answered.size);
+  const rest = Math.max(0, pending.length - open.length);
+
+  function answer(level: string) {
+    if (!current) return;
+    addEvidenceRecords([{
+      id: "ev" + Date.now(),
+      studentId: current.student.id,
+      studentName: `${current.student.lastName}, ${current.student.firstName}`,
+      className: current.goal.trida,
+      type: "photo",
+      goalId: current.goal.id,
+      goalText: current.goal.text,
+      subject: current.goal.subject,
+      date: new Date().toISOString().slice(0, 10),
+      criterion: current.criterion,
+      level,
+    }]);
+    addStudentEvidence(current.student.id, "photo");
+    setAnswered(prev => new Set(prev).add(current.key));
+  }
+
+  return (
+    <div style={{ padding: "32px 40px" }}>
+      <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Nápady" }]} />
+
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
+          Nápady od Buddyho
+          <InfoHint text="Buddy se ptá na to, co mu chybí, aby uměl navrhnout hodnocení. Každá odpověď je rovnou důkaz o učení." />
+        </h1>
+      </div>
+
+      <div style={{ maxWidth: 640 }}>
+        {!current ? (
+          <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "28px 24px", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: "0 0 6px" }}>
+              {total === 0 ? "Zatím se není na co ptát" : "Hotovo, nic dalšího nechybí"}
+            </p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.6 }}>
+              {total === 0
+                ? "Vytvořte tématický plán, vygenerujte z něj vyučovací hodiny a označte je jako probrané — Buddy se pak začne ptát."
+                : rest > 0
+                  ? `Dnešní dávku máte za sebou. Dalších ${rest} otázek počká na příště.`
+                  : "U odučených hodin máte zaznamenané úrovně. Můžete jít generovat hodnocení."}
+            </p>
+            {skipped.size > 0 && (
+              <button onClick={() => setSkipped(new Set())} style={{ ...btnStyle("ghost"), marginTop: 16 }}>
+                Vrátit přeskočené ({skipped.size})
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "20px 22px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase", margin: "0 0 8px" }}>
+              Dnešní dávka · otázka {answered.size + 1} z {total}
+            </p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 17, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
+              Na jaké úrovni je <strong style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500 }}>{current.student.firstName}</strong> v kritériu „{current.criterion}"?
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
+              <SubjectChip subject={current.goal.subject} />
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99" }}>
+                {current.goal.trida} · {current.goal.text}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              {SHEET_LEVELS.map(lv => {
+                const c = SHEET_LEVEL_STYLE[lv];
+                return (
+                  <button
+                    key={lv}
+                    onClick={() => answer(lv)}
+                    style={{
+                      flex: 1, padding: "11px 12px", borderRadius: 10, cursor: "pointer",
+                      border: `1.5px solid ${c.border}`, background: "#fff", color: c.fg,
+                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5,
+                      transition: "background 0.12s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = c.bg)}
+                    onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                  >
+                    {lv}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                onClick={() => setSkipped(prev => new Set(prev).add(current.key))}
+                style={{ border: "none", background: "none", color: "#8a8a99", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, cursor: "pointer", padding: 0 }}
+              >
+                Přeskočit
+              </button>
+              <span style={{ flexGrow: 1, height: 5, borderRadius: 3, background: "rgba(0,0,0,0.07)", overflow: "hidden", display: "block" }}>
+                <span style={{ display: "block", height: "100%", width: `${total ? (answered.size / total) * 100 : 0}%`, background: "#7c3aed", transition: "width 0.25s" }} />
+              </span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99", whiteSpace: "nowrap" }}>
+                {open.length} zbývá{rest > 0 ? ` · ${rest} na příště` : ""}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ClassesView() {
   const { evidenceRecords } = useContext(EvidenceContext);
+  const { tpGoals, lessonsDone } = useContext(GoalsContext);
   const [classes, setClasses] = useState<Class[]>(initialClasses);
   const [search, setSearch] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
@@ -1541,6 +1687,81 @@ function ClassesView() {
           </div>
         ))}
       </div>
+
+      {/* semafor připravenosti k hodnocení */}
+      {(() => {
+        // počítají se jen hodiny, které už se odučily — jinde ještě není co sbírat
+        const taught = tpGoals
+          .filter(g => g.trida === selectedClass.name)
+          .filter(g => lessonsDone[g.id] || evidenceRecords.some(r => r.goalId === g.id))
+          .map(g => g.id);
+        const bucket = (st: Student) => {
+          const recs = evidenceRecords.filter(r => r.studentId === st.id);
+          if (taught.length === 0) return recs.length >= 6 ? 2 : recs.length >= 2 ? 1 : 0;
+          const covered = taught.filter(gid => recs.some(r => r.goalId === gid && r.level)).length;
+          const share = covered / taught.length;
+          return share >= 0.9 ? 2 : share >= 0.4 ? 1 : 0;
+        };
+        const groups: Student[][] = [[], [], []];
+        selectedClass.students.forEach(st => groups[bucket(st)].push(st));
+        const cols = [
+          { i: 0, title: "Žádné nebo málo důkazů", color: "#dc2626", bg: "#fef2f2", border: "rgba(220,38,38,0.25)" },
+          { i: 1, title: "Ještě potřeba pár důkazů", color: "#b45309", bg: "#fffbeb", border: "rgba(180,83,9,0.25)" },
+          { i: 2, title: "Připravení k hodnocení", color: "#15803d", bg: "#f0fdf4", border: "rgba(21,128,61,0.25)" },
+        ];
+        return (
+          <div style={{ marginTop: 28 }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+              Připravenost k hodnocení
+              <InfoHint text="Počítá se z odučených hodin — u kolika z nich má žák zaznamenanou úroveň. Klepnutím na jméno se dostanete k jeho důkazům." />
+            </p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 14px" }}>
+              U koho už jde vygenerovat hodnocení a u koho ještě chybí důkazy o učení.
+            </p>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              {cols.map(c => (
+                <div key={c.i} style={{ flex: 1, minWidth: 0, background: c.bg, border: `1.5px solid ${c.border}`, borderRadius: 14, padding: "14px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color, flexShrink: 0, display: "block" }} />
+                    <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12.5, color: "#0a0a0a" }}>{c.title}</span>
+                    <span style={{ marginLeft: "auto", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: c.color }}>{groups[c.i].length}</span>
+                  </div>
+                  {groups[c.i].length === 0 ? (
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a8a99", margin: 0 }}>Nikdo</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {groups[c.i].map(st => (
+                        <button
+                          key={st.id}
+                          onClick={() => setSelectedStudentId(st.id)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",
+                            padding: "5px 7px", borderRadius: 8, border: "none", background: "transparent",
+                            cursor: "pointer", transition: "background 0.12s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.75)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <span style={{
+                            width: 20, height: 20, borderRadius: "50%", flexShrink: 0, background: avatarColor(st.lastName),
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9, color: "#fff",
+                          }}>
+                            {st.firstName[0]}{st.lastName[0]}
+                          </span>
+                          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {st.lastName}, {st.firstName}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* edit class modal */}
       {editClassOpen && (
@@ -2721,36 +2942,6 @@ function LessonPreviewIllustration() {
   );
 }
 
-// Značka Buddyho — vrstvený štít, zvenku tmavě fialový, uvnitř světlý.
-function BuddyMark({ size = 28, mono }: { size?: number; mono?: boolean }) {
-  const LAYERS = ["#5b2d72", "#6d4488", "#85609c", "#9c7cb0", "#b599c4", "#cbb6d6", "#ded2e8", "#f2eefc"];
-  const R = 26;
-  return (
-    <svg width={size} height={size * 384 / 400} viewBox="0 0 400 384" fill="none" aria-hidden="true" style={{ display: "block" }}>
-      {LAYERS.map((c, i) => {
-        const inset = i * 7;
-        const l = inset + R;
-        const r = 400 - inset - R;
-        const apex = 12 + i * 28 + R;
-        const shoulder = apex + (r - l) / 2;
-        const col = mono ? "currentColor" : c;
-        return (
-          <polygon
-            key={i}
-            points={`${l},400 ${l},${shoulder} ${(l + r) / 2},${apex} ${r},${shoulder} ${r},400`}
-            fill={col}
-            stroke={col}
-            strokeWidth={R * 2}
-            strokeLinejoin="round"
-            opacity={mono ? (i + 1) / LAYERS.length : 1}
-          />
-        );
-      })}
-      <circle cx="143" cy="338" r="30" fill={mono ? "currentColor" : "#5b2d72"} />
-      <circle cx="265" cy="338" r="30" fill={mono ? "currentColor" : "#5b2d72"} />
-    </svg>
-  );
-}
 
 // Náhled hotového hodnocení — co ze zaznamenaných důkazů vznikne.
 function AssessmentPreviewIllustration() {
@@ -4405,10 +4596,10 @@ const EVIDENCE_LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
 
 type EvidenceKind = "uroven" | "foto" | "audio" | "poznamka";
 const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; bg: string; color: string }> = {
-  uroven:   { label: "Úroveň",   bg: "#15803d", color: "#fff" },
-  foto:     { label: "Foto",     bg: "#0e7490", color: "#fff" },
-  audio:    { label: "Audio",    bg: "#6d28d9", color: "#fff" },
-  poznamka: { label: "Poznámka", bg: "#b45309", color: "#fff" },
+  uroven:   { label: "Úroveň",   bg: "#eef5f0", color: "#3f7a56" },
+  foto:     { label: "Foto",     bg: "#eef3f6", color: "#3d6f83" },
+  audio:    { label: "Audio",    bg: "#f1eff7", color: "#5e5185" },
+  poznamka: { label: "Poznámka", bg: "#f7f2ec", color: "#8a6a45" },
 };
 function evidenceKind(r: EvidenceRecord): EvidenceKind {
   if (r.criterion) return "uroven";
@@ -4497,24 +4688,46 @@ function PhotoThumb() {
   );
 }
 
-function EvidenceRecordCard({ r, goalNums, hideStudent, onEdit }: {
-  r: EvidenceRecord; goalNums: Map<string, number>; hideStudent?: boolean; onEdit?: () => void;
+function DeleteEvidenceModal({ record, onClose, onConfirm }: {
+  record: EvidenceRecord; onClose: () => void; onConfirm: () => void;
+}) {
+  return (
+    <Modal title="Odstranit důkaz o učení?" onClose={onClose} width={420}>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", lineHeight: 1.6, margin: "0 0 4px" }}>
+        {EVIDENCE_KINDS[evidenceKind(record)].label} u žáka {record.studentName} z {formatDate(record.date)}.
+        Tuhle změnu nelze vzít zpět.
+      </p>
+      <ModalActions onCancel={onClose} onConfirm={onConfirm} confirmLabel="Odstranit" danger />
+    </Modal>
+  );
+}
+
+function EvidenceRecordCard({ r, goalNums, hideStudent, onEdit, onDelete }: {
+  r: EvidenceRecord; goalNums: Map<string, number>; hideStudent?: boolean;
+  onEdit?: () => void; onDelete?: () => void;
 }) {
   const lc = r.level ? (EVIDENCE_LEVEL_COLORS[r.level] ?? { bg: "#f3f4f6", color: "#374151" }) : null;
   const kind = evidenceKind(r);
   const kindStyle = EVIDENCE_KINDS[kind];
   const num = goalNums.get(r.goalId);
-  const metaChip: React.CSSProperties = {
-    padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.85)",
-    fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: CHIP_FG,
-    maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-  };
+  const iconBtn = (title: string, color: string, opacity: number, node: React.ReactNode, onClick?: () => void) => (
+    <button
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color, display: "flex", opacity, transition: "opacity 0.12s" }}
+      onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+      onMouseLeave={e => (e.currentTarget.style.opacity = String(opacity))}
+    >
+      {node}
+    </button>
+  );
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 16 }}>
-      {/* druh důkazu — inverzní, aby se nepletl s předměty */}
-      <div style={{ flexShrink: 0, width: 54, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: kindStyle.bg, display: "flex", alignItems: "center", justifyContent: "center", color: kindStyle.color }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+      {/* druh důkazu vlevo */}
+      <div style={{ flexShrink: 0, width: 50, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: kindStyle.bg, display: "flex", alignItems: "center", justifyContent: "center", color: kindStyle.color }}>
           <EvidenceKindIcon kind={kind} />
         </div>
         <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.03em", textTransform: "uppercase" }}>
@@ -4524,95 +4737,81 @@ function EvidenceRecordCard({ r, goalNums, hideStudent, onEdit }: {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         {!hideStudent && (
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 6px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", margin: "0 0 4px" }}>
             {r.studentName}
           </p>
         )}
-        {/* pořadí: předmět · hodina · kritérium · úroveň · datum */}
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-          <SubjectChip subject={r.subject} />
-          <span style={metaChip} title={r.goalText}>
-            {num ? `Hodina ${num} · ` : ""}{r.goalText}
-          </span>
-          {r.criterion && <span style={metaChip}>{r.criterion}</span>}
-          {r.level && lc && (
-            <span style={{ padding: "2px 9px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
-              {r.level}
-            </span>
-          )}
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
-            {formatDate(r.date)}
-          </span>
-        </div>
 
-        {/* náhled obsahu důkazu */}
-        {kind === "audio" && (
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5c5c6b", lineHeight: 1.55, margin: "9px 0 0" }}>
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, color: "#0a0a0a" }}>Přepis: </span>
-            {evidenceTranscript(r)}
+        {/* napřed obsah důkazu */}
+        {kind === "uroven" ? (
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a", margin: "0 0 6px", lineHeight: 1.5 }}>
+            {r.criterion}
+            {r.level && lc && (
+              <span style={{ marginLeft: 8, padding: "2px 9px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11 }}>
+                {r.level}
+              </span>
+            )}
           </p>
-        )}
-        {kind === "poznamka" && (
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5c5c6b", lineHeight: 1.55, margin: "9px 0 0" }}>
+        ) : kind === "audio" ? (
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a", margin: "0 0 6px", lineHeight: 1.5 }}>
+            „{evidenceTranscript(r)}"
+          </p>
+        ) : kind === "poznamka" ? (
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a", margin: "0 0 6px", lineHeight: 1.5 }}>
             {evidenceNoteText(r)}
           </p>
-        )}
-        {kind === "foto" && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 9 }}>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 6px" }}>
             <PhotoThumb />
-            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {evidencePhotoName(r)}
             </span>
           </div>
         )}
+
+        {/* kontext drobně pod tím */}
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+          <SubjectChip subject={r.subject} />
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 380 }}>
+            {num ? `Hodina ${num} · ` : ""}{r.goalText}
+          </span>
+          {kind !== "uroven" && r.criterion && (
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>· {r.criterion}</span>
+          )}
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>· {formatDate(r.date)}</span>
+        </div>
       </div>
 
       {/* akce */}
-      <div style={{ flexShrink: 0, display: "flex", gap: 4, alignItems: "center" }}>
-        {(kind === "audio" || kind === "foto") && (
-          <button
-            title={kind === "audio" ? "Přehrát nahrávku" : "Zobrazit fotografii"}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color: kindStyle.bg, display: "flex", opacity: 0.8, transition: "opacity 0.12s" }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "0.8")}
-          >
-            {kind === "audio" ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 3.333l9.333 4.667L4 12.667V3.333z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M1 8s2.667-5.333 7-5.333S15 8 15 8s-2.667 5.333-7 5.333S1 8 1 8z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
-                <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.33"/>
-              </svg>
-            )}
-          </button>
+      <div style={{ flexShrink: 0, display: "flex", gap: 2, alignItems: "center" }}>
+        {(kind === "audio" || kind === "foto") && iconBtn(
+          kind === "audio" ? "Přehrát nahrávku" : "Zobrazit fotografii", kindStyle.color, 0.9,
+          kind === "audio" ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 3.333l9.333 4.667L4 12.667V3.333z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1 8s2.667-5.333 7-5.333S15 8 15 8s-2.667 5.333-7 5.333S1 8 1 8z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
+              <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.33"/>
+            </svg>
+          ),
         )}
-        <button
-          title="Upravit důkaz"
-          onClick={onEdit}
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color: "#717182", display: "flex", opacity: 0.6, transition: "opacity 0.12s" }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
-        >
+        {iconBtn("Upravit důkaz", "#717182", 0.6, (
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
             <path d="M11.333 2a1.885 1.885 0 0 1 2.667 2.667L5.333 13.333 1.333 14.667l1.334-4L11.333 2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </button>
-        <button
-          title="Odstranit důkaz"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, display: "flex", opacity: 0.45, transition: "opacity 0.12s" }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.45")}
-        >
+        ), onEdit)}
+        {iconBtn("Odstranit důkaz", "#dc2626", 0.5, (
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-            <path d={ICON_TRASH} stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d={ICON_TRASH} stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </button>
+        ), onDelete)}
       </div>
     </div>
   );
 }
+
 // ─── placeholder views ────────────────────────────────────────────────────────
 
 // ─── důkazy o učení view ──────────────────────────────────────────────────────
@@ -4621,40 +4820,40 @@ function EvidenceRecordCard({ r, goalNums, hideStudent, onEdit }: {
 // barevná ikona. Důkazy o učení jsou naopak inverzní (tmavé pozadí, bílá ikona),
 // aby šlo obojí na první pohled rozlišit.
 const SUBJECT_STYLES: Record<string, { bg: string; color: string; icon: React.ReactNode }> = {
-  "Čeština": { bg: "#f3e8ff", color: "#7c3aed", icon: (
+  "Čeština": { bg: "#f4effa", color: "#6b4f96", icon: (
     <><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <path d="M13.5 3.5h-4a2 2 0 0 0-2 2v7a1.5 1.5 0 0 1 1.5-1.5h4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></>
   )},
-  "Matematika": { bg: "#dbeafe", color: "#1d4ed8", icon: (
+  "Matematika": { bg: "#eef2fa", color: "#3f5d99", icon: (
     <><path d="M2.5 4.5h4M4.5 2.5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M9.5 4.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M2.8 10.2l2.8 2.8M5.6 10.2l-2.8 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M9.5 10.3h4M9.5 12.7h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></>
   )},
-  "Prvouka": { bg: "#dcfce7", color: "#15803d", icon: (
+  "Prvouka": { bg: "#eef6f0", color: "#35684a", icon: (
     <><path d="M8 14V7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M8 7.5c0-2.6 2.6-4.2 4.7-3.7C12.7 6.4 10.6 8 8 7.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <path d="M8 10.2c0-2.1-2.6-3.6-4.7-3.1C3.3 9.6 5.4 10.7 8 10.2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></>
   )},
-  "Anglický jazyk": { bg: "#fef3c7", color: "#b45309", icon: (
+  "Anglický jazyk": { bg: "#faf4e8", color: "#7a5c30", icon: (
     <><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M2.2 8h11.6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M8 2c1.8 2 2.7 4 2.7 6s-.9 4-2.7 6C6.2 12 5.3 10 5.3 8S6.2 4 8 2z" stroke="currentColor" strokeWidth="1.2"/></>
   )},
-  "Hudební výchova": { bg: "#fce7f3", color: "#be185d", icon: (
+  "Hudební výchova": { bg: "#faeff4", color: "#8f4f70", icon: (
     <><path d="M6 12V3.8l7-1.3V10" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
     <circle cx="4.3" cy="12.2" r="1.8" stroke="currentColor" strokeWidth="1.3"/>
     <circle cx="11.3" cy="10.2" r="1.8" stroke="currentColor" strokeWidth="1.3"/></>
   )},
-  "Výtvarná výchova": { bg: "#ffedd5", color: "#c2410c", icon: (
+  "Výtvarná výchova": { bg: "#faf1ea", color: "#8f5a3a", icon: (
     <><path d="M8 2a6 6 0 0 0 0 12c.9 0 1.4-.6 1.4-1.3 0-.4-.2-.7-.4-.9-.2-.3-.4-.5-.4-.9 0-.7.6-1.2 1.3-1.2h1.2A3 3 0 0 0 14 6.7C14 4.1 11.3 2 8 2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <circle cx="5.3" cy="7" r="0.9" fill="currentColor"/><circle cx="8" cy="5.2" r="0.9" fill="currentColor"/><circle cx="10.8" cy="7" r="0.9" fill="currentColor"/></>
   )},
-  "Tělesná výchova": { bg: "#ccfbf1", color: "#0f766e", icon: (
+  "Tělesná výchova": { bg: "#eaf6f4", color: "#34675f", icon: (
     <><circle cx="9.5" cy="3.3" r="1.6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M9 6.2L6.7 8l1.4 2.2L7 14M9 6.2l2.6 1.6.9 2.4M9 6.2L5.6 7.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></>
   )},
-  "Informatika": { bg: "#e2e8f0", color: "#334155", icon: (
+  "Informatika": { bg: "#f0f2f5", color: "#4a5568", icon: (
     <><rect x="2" y="3" width="12" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M5.5 14h5M8 11v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></>
   )},
@@ -5034,10 +5233,11 @@ function AddEvidenceModal({ student, className, record, preset, onClose }: {
 }
 
 function DukazyView() {
-  const { evidenceRecords } = useContext(EvidenceContext);
+  const { evidenceRecords, removeEvidenceRecord } = useContext(EvidenceContext);
   const { tpGoals } = useContext(GoalsContext);
   const goalNums = buildGoalNumbers(tpGoals);
 
+  const [deleteRecord, setDeleteRecord] = useState<EvidenceRecord | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<EvidenceRecord | null>(null);
   const [evidenceModalCtx, setEvidenceModalCtx] = useState<{ students: Student[]; goal: string; goalId: string; subject: string; className: string } | null>(null);
@@ -5220,7 +5420,7 @@ function DukazyView() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {filtered.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} onEdit={() => setEditRecord(r)} />)}
+          {filtered.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} onEdit={() => setEditRecord(r)} onDelete={() => setDeleteRecord(r)} />)}
         </div>
       )}
 
@@ -5235,6 +5435,13 @@ function DukazyView() {
         />
       )}
       {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} />}
+      {deleteRecord && (
+        <DeleteEvidenceModal
+          record={deleteRecord}
+          onClose={() => setDeleteRecord(null)}
+          onConfirm={() => { removeEvidenceRecord(deleteRecord.id); setDeleteRecord(null); }}
+        />
+      )}
       {editRecord && (() => {
         const st = initialClasses.find(c => c.name === editRecord.className)?.students.find(x => x.id === editRecord.studentId);
         if (!st) return null;
@@ -7169,7 +7376,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
             border: "1.5px solid rgba(120,80,180,0.15)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
-            <BuddyMark size={24} />
+            <img src={buddyImg} alt="Buddy" style={{ width: 24, height: 24, objectFit: "contain" }} />
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>Buddy</p>
@@ -7192,7 +7399,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
               <div key={m.id} style={{ display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", alignItems: "flex-end", gap: 8 }}>
                 {m.role === "buddy" && (
                   <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <BuddyMark size={18} />
+                    <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
                   </div>
                 )}
                 {isAudio ? (
@@ -7237,7 +7444,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
           {typing && (
             <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <BuddyMark size={18} />
+                <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
               </div>
               <div style={{ padding: "10px 14px", borderRadius: "16px 16px 16px 4px", background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", display: "flex", gap: 4, alignItems: "center" }}>
                 {[0, 1, 2].map(i => (
@@ -7464,7 +7671,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 
           {/* buddy intro */}
           <div style={{ marginTop: 32, display: "inline-flex", alignItems: "flex-end", gap: 10, background: "#faf9ff", border: "1.5px solid rgba(124,77,189,0.12)", borderRadius: 14, padding: "10px 14px 10px 14px" }}>
-            <span style={{ flexShrink: 0, display: "flex" }}><BuddyMark size={36} /></span>
+            <img src={buddyImg} alt="Buddy" style={{ width: 34, height: 34, objectFit: "contain", flexShrink: 0 }} />
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#3d3d52", lineHeight: 1.5, margin: 0, maxWidth: 380 }}>
               <span style={{ fontWeight: 600, color: "#7c4dbd" }}>Buddy</span> je tu vždy pro vás — pomůže s cíli, kritérii i hodnocením a vaši práci zjednoduší na minimum.
             </p>
@@ -7581,7 +7788,8 @@ function buildEvidenceForGoals(goals: TpGoal[]): EvidenceRecord[] {
     const month = mi + 9 > 12 ? mi - 3 : mi + 9;
     const year = mi + 9 > 12 ? SCHOOL_YEAR_START + 1 : SCHOOL_YEAR_START;
     students.forEach((st, si) => {
-      if ((si + gi) % 3 === 0) return; // ne každý žák má důkaz ke každé hodině
+      // někdo má zaznamenané všechny hodiny, někdo žádnou — jako ve skutečné třídě
+      if (gi >= (si * 3) % 5) return;
       const crit = g.criteria[(si + gi) % Math.max(1, g.criteria.length)];
       const day = 3 + ((si * 3 + gi) % 12);
       const start = (si + gi * 2) % (levels.length - 1);
@@ -7651,7 +7859,21 @@ export default function App() {
     setEvidenceRecords(prev => prev.map(r => r.id === record.id ? record : r));
   }, []);
 
-  const evidenceCtx: EvidenceCtx = { studentEvidence, addStudentEvidence, evidenceRecords, addEvidenceRecords, updateEvidenceRecord };
+  const removeEvidenceRecord = useCallback((id: string) => {
+    setEvidenceRecords(prev => {
+      const gone = prev.find(r => r.id === id);
+      if (gone) {
+        setStudentEvidence(se => {
+          const cur = se[gone.studentId];
+          if (!cur) return se;
+          return { ...se, [gone.studentId]: { ...cur, [gone.type]: Math.max(0, (cur[gone.type] ?? 0) - 1) } };
+        });
+      }
+      return prev.filter(r => r.id !== id);
+    });
+  }, []);
+
+  const evidenceCtx: EvidenceCtx = { studentEvidence, addStudentEvidence, evidenceRecords, addEvidenceRecords, updateEvidenceRecord, removeEvidenceRecord };
 
   function navigate(id: NavItem) {
     setActive(id);
@@ -7905,6 +8127,7 @@ export default function App() {
 
                 {!collapsed && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 4 }}>
+                    <button onClick={() => navigate("napady")} style={devBtnStyle}>Nápady</button>
                     <button onClick={addDemoPlan} style={devBtnStyle}>Přidat plán a hodiny</button>
                     <button onClick={clearPlanAndLessons} style={devBtnStyle}>Vymazat plán a hodiny</button>
                   </div>
@@ -7974,6 +8197,7 @@ export default function App() {
         {active === "hodnoceni" && <HodnoceniView key={navKey} />}
         {active === "tematicky-plan" && <TematickyPlanView key={navKey} />}
         {active === "profil" && <ProfilView key={navKey} />}
+        {active === "napady" && <NapadyView key={navKey} />}
       </main>
 
       {/* buddy chat panel — inline, part of the flex row */}
@@ -8005,7 +8229,7 @@ export default function App() {
           onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         >
-          <span style={{ color: "#fff", display: "flex" }}><BuddyMark size={28} mono /></span>
+          <img src={buddyImg} alt="Buddy" style={{ width: 26, height: 26, objectFit: "contain" }} />
         </button>
       )}
     </div>
