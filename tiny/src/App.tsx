@@ -35,14 +35,15 @@ const GoalsContext = createContext<GoalsCtx>({
   navigateCile: () => {}, animateIn: false,
 });
 
-type StudentEvidence = { audio: number; photo: number };
+type StudentEvidence = { audio: number; photo: number; note?: number };
 
 interface EvidenceRecord {
   id: string;
   studentId: string;
   studentName: string;
   className: string;
-  type: "audio" | "photo";
+  type: "audio" | "photo" | "note";
+  note?: string;
   goalText: string;
   goalId: string;
   subject: string;
@@ -51,7 +52,7 @@ interface EvidenceRecord {
   level?: string;
 }
 
-function er(id: string, studentId: string, studentName: string, className: string, type: "audio" | "photo", goalId: string, goalText: string, subject: string, date: string, criterion?: string, level?: string): EvidenceRecord {
+function er(id: string, studentId: string, studentName: string, className: string, type: "audio" | "photo" | "note", goalId: string, goalText: string, subject: string, date: string, criterion?: string, level?: string): EvidenceRecord {
   return { id, studentId, studentName, className, type, goalId, goalText, subject, date, criterion, level };
 }
 
@@ -159,7 +160,7 @@ const sampleEvidenceRecords: EvidenceRecord[] = [
 
 interface EvidenceCtx {
   studentEvidence: Record<string, StudentEvidence>;
-  addStudentEvidence: (studentId: string, type: "audio" | "photo") => void;
+  addStudentEvidence: (studentId: string, type: "audio" | "photo" | "note") => void;
   evidenceRecords: EvidenceRecord[];
   addEvidenceRecords: (records: EvidenceRecord[]) => void;
 }
@@ -206,12 +207,12 @@ function BuddyButton({ onClick, title, style }: { onClick: (e: React.MouseEvent)
       style={{
         width: 24, height: 24, borderRadius: 7, padding: 0, flexShrink: 0, cursor: "pointer",
         display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#faf5ff", border: "1px solid rgba(124,58,237,0.35)", color: "#7c3aed",
-        opacity: 0.6, transition: "opacity 0.14s, background 0.14s, border-color 0.14s",
+        background: "transparent", border: "1px solid rgba(0,0,0,0.13)", color: "#9a9aa8",
+        opacity: 0.75, transition: "opacity 0.14s, background 0.14s, border-color 0.14s, color 0.14s",
         ...style,
       }}
-      onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; }}
-      onMouseLeave={e => { e.currentTarget.style.opacity = "0.6"; e.currentTarget.style.background = "#faf5ff"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.35)"; }}
+      onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.color = "#7c3aed"; }}
+      onMouseLeave={e => { e.currentTarget.style.opacity = "0.75"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(0,0,0,0.13)"; e.currentTarget.style.color = "#9a9aa8"; }}
     >
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M8 1.5l1.6 4.9 4.9 1.6-4.9 1.6L8 14.5l-1.6-4.9L1.5 8l4.9-1.6z" fill="currentColor"/>
@@ -684,7 +685,7 @@ function StudentProfile({
   const allStudentRecords = [...evidenceRecords]
     .filter(r => r.studentId === student.id)
     .sort((a, b) => b.date.localeCompare(a.date));
-  const [view, setView] = useState<"goal" | "all" | "sheet">("all");
+  const [addOpen, setAddOpen] = useState(false);
 
   // stejný filtr jako na přehledu důkazů, jen s předvybranou třídou a žákem
   const [filterSubject, setFilterSubject] = useState("vse");
@@ -724,28 +725,12 @@ function StudentProfile({
     setFilterClass(className); setFilterStudentId(student.id);
   }
 
-  const byGoal: Record<string, EvidenceRecord[]> = {};
-  studentRecords.forEach(r => { (byGoal[r.goalText] ??= []).push(r); });
-  const groups = Object.entries(byGoal);
-
   // předměty do shrnutí: co žák má v důkazech plus co ho čeká podle hodin
   const summarySubjects = Array.from(new Set([
     ...allStudentRecords.map(r => r.subject),
     ...tpGoals.filter(g => g.trida === className).map(g => g.subject),
   ])).sort();
   const summary = buddySummary(fullName, allStudentRecords, summarySubjects);
-
-  // list důkazů o učení: jedna vyučovací hodina na řádek, přepínátka pro tohoto žáka
-  const sheetLessons = tpGoals.filter(g =>
-    g.trida === className &&
-    (filterSubject === "vse" || g.subject === filterSubject) &&
-    (filterGoalId === "vse" || g.id === filterGoalId));
-  const latestLevel = (goalId: string) => {
-    const recs = allStudentRecords.filter(r => r.goalId === goalId && r.level);
-    return recs.length ? recs[0].level! : null;
-  };
-  const [sheetLevels, setSheetLevels] = useState<Record<string, string>>({});
-  const [sheetNote, setSheetNote] = useState("");
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -776,27 +761,13 @@ function StudentProfile({
           </div>
         </div>
 
-        {/* view toggle */}
-        <div style={{ display: "flex", gap: 4, background: "rgba(236,236,240,0.6)", borderRadius: 9, padding: 3 }}>
-          {([["all", "Vše"], ["goal", "Podle cíle"], ["sheet", "List důkazů"]] as const).map(([v, label]) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              style={{
-                padding: "5px 14px", borderRadius: 7, border: "none", cursor: "pointer",
-                fontFamily: view === v ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                fontWeight: view === v ? 500 : 400, fontSize: 12,
-                background: view === v ? "#fff" : "transparent",
-                color: view === v ? "#0a0a0a" : "#717182",
-                boxShadow: view === v ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
-                transition: "background 0.12s, color 0.12s",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setAddOpen(true)}
+          style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", flexShrink: 0 }}
+        >
+          <IconPlus />
+          Přidat důkaz o učení
+        </button>
       </div>
 
       {/* shrnutí od Buddyho */}
@@ -890,94 +861,17 @@ function StudentProfile({
         </div>
       </div>
 
-      {/* list důkazů o učení — jedna hodina na řádek, přepínátka pro tohoto žáka */}
-      {view === "sheet" ? (
-        sheetLessons.length === 0 ? (
-          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
-            Zatím žádné vyučovací hodiny — vygenerujte je z tématického plánu.
-          </div>
-        ) : (
-          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "18px 20px" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              {sheetLessons.map(g => {
-                const num = goalNums.get(g.id);
-                const level = sheetLevels[g.id] ?? latestLevel(g.id);
-                return (
-                  <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", margin: 0, lineHeight: 1.5 }}>
-                        {g.text}
-                      </p>
-                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a", margin: "2px 0 0" }}>
-                        {num ? `Hodina ${num} · ` : ""}{g.subject} · {monthLabel(g.month)}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
-                      {SHEET_LEVELS.map(lv => {
-                        const on = level === lv;
-                        const c = SHEET_LEVEL_STYLE[lv];
-                        return (
-                          <button
-                            key={lv}
-                            onClick={() => setSheetLevels(prev => ({ ...prev, [g.id]: on ? "" : lv }))}
-                            aria-pressed={on}
-                            style={{
-                              padding: "6px 13px", borderRadius: 8, border: `1px solid ${c.border}`,
-                              background: on ? c.bg : "#fff", color: c.fg,
-                              fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                              fontWeight: on ? 500 : 400, fontSize: 12, cursor: "pointer",
-                              transition: "background 0.12s",
-                            }}
-                          >
-                            {lv}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <label style={{ display: "block", marginTop: 14 }}>
-              <span style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a", marginBottom: 4 }}>
-                Poznámka
-              </span>
-              <input
-                type="text"
-                value={sheetNote}
-                onChange={e => setSheetNote(e.target.value)}
-                placeholder="Co konkrétně udělal nebo řekl…"
-                style={{
-                  width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif",
-                  fontSize: 13, padding: "9px 11px", borderRadius: 9,
-                  border: "1px solid rgba(0,0,0,0.13)", outline: "none",
-                }}
-              />
-            </label>
-          </div>
-        )
-      ) : studentRecords.length === 0 ? (
+      {studentRecords.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
           Zatím žádné důkazy nebyly zaznamenány.
         </div>
-      ) : view === "all" ? (
+      ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {studentRecords.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent />)}
         </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {groups.map(([goalText, items]) => (
-            <div key={goalText}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
-                {goalText.length > 80 ? goalText.slice(0, 78) + "…" : goalText}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {items.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent />)}
-              </div>
-            </div>
-          ))}
-        </div>
       )}
+
+      {addOpen && <AddEvidenceModal student={student} className={className} onClose={() => setAddOpen(false)} />}
     </div>
   );
 }
@@ -2587,6 +2481,126 @@ function TeachingIllustration({ size = 280 }: { size?: number }) {
   );
 }
 
+// Náhled toho, co z popisu vznikne — zjednodušená tabulka plánu.
+function PlanPreviewIllustration() {
+  const rows = [
+    { cas: "Září", tema: "Stavba slova", cil: "Rozliším části slova", h: "2" },
+    { cas: "", tema: "Hláskosloví", cil: "Správně vyslovuji hlásky", h: "1" },
+    { cas: "Říjen", tema: "Slovní druhy", cil: "Rozliším slovní druhy", h: "1" },
+    { cas: "", tema: "Podstatná jména", cil: "Určím rod, číslo a pád", h: "2" },
+    { cas: "Listopad", tema: "Přídavná jména", cil: "Rozliším druhy přídavných jmen", h: "2" },
+  ];
+  const cell: React.CSSProperties = {
+    padding: "8px 10px", borderBottom: "1px solid rgba(0,0,0,0.06)",
+    fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#3f3f4b",
+    verticalAlign: "top", lineHeight: 1.4,
+  };
+  const head: React.CSSProperties = {
+    padding: "9px 10px", textAlign: "left", background: "#fafafa",
+    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5,
+    color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.07em",
+    borderBottom: "1px solid rgba(0,0,0,0.08)", whiteSpace: "nowrap",
+  };
+  return (
+    <div style={{
+      width: 330, borderRadius: 14, overflow: "hidden", background: "#fff",
+      border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
+      transform: "rotate(-1.2deg)",
+    }}>
+      <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ width: 22, height: 22, borderRadius: 6, background: "#f3e8ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M14 2.5H6.5A1.5 1.5 0 0 0 5 4v16a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 20V7.5L14 2.5z" stroke="#7c4dbd" strokeWidth="1.7" strokeLinejoin="round"/>
+            <path d="M14 2.5V7.5h5" stroke="#7c4dbd" strokeWidth="1.7" strokeLinejoin="round"/>
+          </svg>
+        </span>
+        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Čeština 3.A</span>
+        <span style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 20, background: "rgba(236,236,240,0.9)", fontFamily: "'Inter:Regular', sans-serif", fontSize: 10, color: CHIP_FG }}>
+          celý rok
+        </span>
+      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={head}>Čas</th>
+            <th style={head}>Cíl hodiny</th>
+            <th style={head}>Téma</th>
+            <th style={{ ...head, textAlign: "center" }}>Hod.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} style={{ background: r.cas ? "#fff" : "rgba(0,0,0,0.012)" }}>
+              <td style={{ ...cell, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, color: "#0a0a0a", whiteSpace: "nowrap", background: "#fafafa" }}>{r.cas}</td>
+              <td style={cell}>{r.cil}</td>
+              <td style={{ ...cell, color: "#717182" }}>{r.tema}</td>
+              <td style={{ ...cell, textAlign: "center", color: "#717182" }}>{r.h}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// Náhled vyučovací hodiny — co z jedné věty vznikne.
+function LessonPreviewIllustration() {
+  const criteria = [
+    "Pozná kořen slova",
+    "Rozliší předponu od kořene",
+    "Použije správný tvar ve větě",
+  ];
+  return (
+    <div style={{
+      width: 320, borderRadius: 14, overflow: "hidden", background: "#fff",
+      border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
+      transform: "rotate(1deg)", padding: "16px 18px",
+    }}>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 6px" }}>
+        Výukový cíl
+      </p>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
+        Rozliším a správně pojmenuji části slova.
+      </p>
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 16 }}>
+        {["Čeština", "3.A", "2 hodiny"].map(t => (
+          <span key={t} style={{ padding: "3px 9px", borderRadius: 20, background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 10.5 }}>{t}</span>
+        ))}
+      </div>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 8px" }}>
+        Kritéria hodnocení
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {criteria.map((c, i) => (
+          <div key={c} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <span style={{
+              width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+              background: "rgba(236,236,240,0.9)", color: CHIP_FG,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10,
+            }}>{i + 1}</span>
+            <span style={{ flex: 1, fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#3f3f4b" }}>{c}</span>
+            <span style={{ display: "flex", gap: 3 }}>
+              {(["Začínám", "Rozvíjím", "Zvládám"] as const).map((lv, j) => {
+                const st = SHEET_LEVEL_STYLE[lv];
+                const on = j === (i % 3);
+                return (
+                  <span key={lv} style={{
+                    width: 16, height: 8, borderRadius: 4,
+                    background: on ? st.bg : "rgba(0,0,0,0.05)",
+                    border: `1px solid ${on ? st.border : "rgba(0,0,0,0.07)"}`,
+                    display: "block",
+                  }} />
+                );
+              })}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FadeIn({ children, delay }: { children: React.ReactNode; delay: number }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -2782,7 +2796,7 @@ const fmtDateLong = (d: string) => d ? new Date(d).toLocaleDateString("cs-CZ", {
 
 const CAL_PATH = "M1.333 6.667h13.333M5.333 1.333v2.667M10.667 1.333v2.667";
 
-function LessonDates({ goalId }: { goalId: string }) {
+function LessonDates({ goalId, big }: { goalId: string; big?: boolean }) {
   const [dates, setDates] = useState<string[]>(() => readLessonDates(goalId));
 
   useEffect(() => { setDates(readLessonDates(goalId)); }, [goalId]);
@@ -2811,8 +2825,9 @@ function LessonDates({ goalId }: { goalId: string }) {
           title={fmtDateLong(d)}
           style={{
             position: "relative",
-            display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 4px 3px 9px", borderRadius: 20,
-            background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 11,
+            display: "inline-flex", alignItems: "center", gap: big ? 6 : 4,
+            padding: big ? "6px 7px 6px 13px" : "3px 4px 3px 9px", borderRadius: 20,
+            background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: big ? 13 : 11,
             transition: "box-shadow 0.12s",
           }}
           onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
@@ -2854,7 +2869,7 @@ function LessonDates({ goalId }: { goalId: string }) {
         style={{
           position: "relative",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-          height: 23, padding: "0 10px", borderRadius: 20,
+          height: big ? 29 : 23, padding: big ? "0 13px" : "0 10px", borderRadius: 20,
           background: CHIP_BG, color: CHIP_FG, cursor: "pointer",
           transition: "box-shadow 0.12s",
         }}
@@ -2896,9 +2911,9 @@ const CHIP_FG = "#5c5c6b";
 const CHIP_CARET = `url("data:image/svg+xml,%3Csvg width='9' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`;
 
 // Chip, ve kterém se vybírá z možností
-function ChipSelect({ value, options, onChange, title, labelFor }: {
+function ChipSelect({ value, options, onChange, title, labelFor, big }: {
   value: string; options: string[]; onChange: (v: string) => void;
-  title: string; labelFor?: (v: string) => string;
+  title: string; labelFor?: (v: string) => string; big?: boolean;
 }) {
   const opts = options.includes(value) || !value ? options : [value, ...options];
   const label = labelFor ? labelFor(value) : value;
@@ -2907,9 +2922,10 @@ function ChipSelect({ value, options, onChange, title, labelFor }: {
       title={title}
       onClick={e => e.stopPropagation()}
       style={{
-        display: "inline-flex", alignItems: "center", padding: "3px 5px 3px 9px", borderRadius: 20,
+        display: "inline-flex", alignItems: "center",
+        padding: big ? "6px 8px 6px 13px" : "3px 5px 3px 9px", borderRadius: 20,
         background: CHIP_BG, color: CHIP_FG,
-        fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, transition: "box-shadow 0.12s",
+        fontFamily: "'Inter:Regular', sans-serif", fontSize: big ? 13 : 11, transition: "box-shadow 0.12s",
       }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "inset 0 0 0 1.5px rgba(0,0,0,0.13)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
@@ -3064,7 +3080,7 @@ function InfoHint({ text }: { text: string }) {
         style={{
           width: 20, height: 20, borderRadius: "50%", padding: 0, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "transparent", border: "1.4px solid #2563eb", color: "#2563eb",
+          background: "transparent", border: "1.3px solid rgba(0,0,0,0.2)", color: "#8a8a99",
           fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, lineHeight: 1,
           transition: "border-color 0.12s, color 0.12s",
         }}
@@ -3414,12 +3430,14 @@ function CileView() {
                 title="Předmět"
                 value={selectedTpGoal.subject}
                 options={subjectOptions}
+                big
                 onChange={v => updateTpGoal(selectedTpGoal.id, { subject: v })}
               />
               <ChipSelect
                 title="Třída"
                 value={selectedTpGoal.trida}
                 options={initialClasses.map(c => c.name)}
+                big
                 onChange={v => updateTpGoal(selectedTpGoal.id, { trida: v })}
               />
               <ChipSelect
@@ -3427,6 +3445,7 @@ function CileView() {
                 value={String(parseInt(selectedTpGoal.rozsah) || 1)}
                 options={["1", "2", "3", "4", "5", "6", "7", "8", "9"]}
                 labelFor={(v: string) => `${v} ${v === "1" ? "hodina" : Number(v) <= 4 ? "hodiny" : "hodin"}`}
+                big
                 onChange={v => updateTpGoal(selectedTpGoal.id, { rozsah: v })}
               />
               <ChipSelect
@@ -3434,9 +3453,10 @@ function CileView() {
                 value={selectedTpGoal.month}
                 options={LESSON_MONTHS}
                 labelFor={monthLabel}
+                big
                 onChange={v => updateTpGoal(selectedTpGoal.id, { month: v })}
               />
-              <LessonDates goalId={selectedTpGoal.id} />
+              <LessonDates goalId={selectedTpGoal.id} big />
             </div>
           </div>
 
@@ -3544,21 +3564,26 @@ function CileView() {
         <Breadcrumb crumbs={[
           { label: "Formativní hodnocení" },
           { label: "Vyučovací hodiny", onClick: () => setCreatingGoal(false) },
-          { label: "Nový cíl" },
+          { label: "Nová hodina" },
         ]} />
 
-        <div style={{ maxWidth: 560, marginTop: 48 }}>
+        <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
+        <div style={{ maxWidth: 560, flex: "1 1 500px", minWidth: 0 }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            Vytvořit hodinu
+          </p>
           <h1 style={{
             fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-            fontSize: 32, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.3,
+            fontSize: 30, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.25,
           }}>
-            Co chcete učit?
+            Co se má žák v hodině naučit?
           </h1>
           <p style={{
             fontFamily: "'Inter:Regular', sans-serif", fontSize: 14,
-            color: "#717182", margin: "0 0 24px", lineHeight: 1.6,
+            color: "#717182", margin: "0 0 24px", lineHeight: 1.65, maxWidth: 480,
           }}>
-            Např. Počítání do pěti nebo obojživelníky…
+            Stačí jedna věta — třeba počítání do pěti nebo obojživelníci. Buddy z ní udělá
+            výukový cíl a k němu kritéria, podle kterých pak v hodině sbíráte důkazy o učení.
           </p>
           <textarea
             value={newGoalText}
@@ -3592,6 +3617,11 @@ function CileView() {
             </svg>
             Generovat cíl
           </button>
+        </div>
+
+        <div style={{ flex: "0 0 auto", paddingTop: 36 }}>
+          <LessonPreviewIllustration />
+        </div>
         </div>
       </div>
     );
@@ -4139,34 +4169,69 @@ const EVIDENCE_LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
   "Začínám":  { bg: "#fee2e2", color: "#991b1b" },
 };
 
-function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; goalNums: Map<string, number>; hideStudent?: boolean }) {
-  const lc = r.level ? (EVIDENCE_LEVEL_COLORS[r.level] ?? { bg: "#f3f4f6", color: "#374151" }) : null;
-  const iconColor = r.type === "audio" ? "#7c3aed" : "#0891b2";
-  const iconBg    = r.type === "audio" ? "#f3f0ff" : "#ecfeff";
+type EvidenceKind = "uroven" | "foto" | "audio" | "poznamka";
+const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; bg: string; color: string }> = {
+  uroven:   { label: "Úroveň",   bg: "#f0fdf4", color: "#16a34a" },
+  foto:     { label: "Foto",     bg: "#ecfeff", color: "#0891b2" },
+  audio:    { label: "Audio",    bg: "#f3f0ff", color: "#7c3aed" },
+  poznamka: { label: "Poznámka", bg: "#fff7ed", color: "#c2620c" },
+};
+function evidenceKind(r: EvidenceRecord): EvidenceKind {
+  if (r.criterion) return "uroven";
+  if (r.type === "note") return "poznamka";
+  if (r.type === "audio") return "audio";
+  return "foto";
+}
 
+function EvidenceKindIcon({ kind, size = 17 }: { kind: EvidenceKind; size?: number }) {
+  const sz = String(size);
   return (
-    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
-      {/* type icon */}
-      <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 10, background: r.criterion ? "#f0fdf4" : iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: r.criterion ? "#16a34a" : iconColor }}>
-        {r.criterion ? (
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
+    <>
+{kind === "uroven" ? (
+          <svg width={sz} height={sz} viewBox="0 0 16 16" fill="none">
             <path d="M8 14V7" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
             <path d="M8 7c0-2.5 2.5-4 4.5-3.5C12.5 6 10.5 7.5 8 7z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15"/>
             <path d="M8 9.5c0-2-2.5-3.5-4.5-3C3.5 9 5.5 10 8 9.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity="0.15"/>
             <path d="M5 14h6" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
           </svg>
-        ) : r.type === "audio" ? (
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
+        ) : kind === "poznamka" ? (
+          <svg width={sz} height={sz} viewBox="0 0 16 16" fill="none">
+            <path d="M3 2.5h10a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5z" stroke="currentColor" strokeWidth="1.33" strokeLinejoin="round"/>
+            <path d="M5.333 6h5.334M5.333 8.667h3.334" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
+          </svg>
+        ) : kind === "audio" ? (
+          <svg width={sz} height={sz} viewBox="0 0 16 16" fill="none">
             <rect x="5" y="1" width="6" height="9" rx="3" stroke="currentColor" strokeWidth="1.33"/>
             <path d="M2.667 8A5.333 5.333 0 0 0 8 13.333 5.333 5.333 0 0 0 13.333 8" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
             <path d="M8 13.333V15.333" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round"/>
           </svg>
         ) : (
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
+          <svg width={sz} height={sz} viewBox="0 0 16 16" fill="none">
             <path d="M1.333 5.333A1.333 1.333 0 0 1 2.667 4h1.2L5.2 2h5.6l1.333 2h1.2A1.333 1.333 0 0 1 14.667 5.333v7.334A1.333 1.333 0 0 1 13.333 14H2.667a1.333 1.333 0 0 1-1.334-1.333V5.333z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
             <circle cx="8" cy="9" r="2.333" stroke="currentColor" strokeWidth="1.33"/>
           </svg>
         )}
+    </>
+  );
+}
+
+function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; goalNums: Map<string, number>; hideStudent?: boolean }) {
+  const lc = r.level ? (EVIDENCE_LEVEL_COLORS[r.level] ?? { bg: "#f3f4f6", color: "#374151" }) : null;
+  const kind = evidenceKind(r);
+  const kindStyle = EVIDENCE_KINDS[kind];
+  const iconColor = kindStyle.color;
+  const iconBg = kindStyle.bg;
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 16 }}>
+      {/* type icon */}
+      <div style={{ flexShrink: 0, width: 54, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: iconColor }}>
+        <EvidenceKindIcon kind={kind} />
+      </div>
+      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.03em", textTransform: "uppercase" }}>
+        {kindStyle.label}
+      </span>
       </div>
 
       {/* main info */}
@@ -4223,7 +4288,7 @@ function EvidenceRecordCard({ r, goalNums, hideStudent }: { r: EvidenceRecord; g
 
       {/* actions */}
       <div style={{ flexShrink: 0, display: "flex", gap: 4, alignItems: "center" }}>
-        {!r.criterion && (
+        {(kind === "audio" || kind === "foto") && (
           <button
             title={r.type === "audio" ? "Přehrát nahrávku" : "Zobrazit fotografii"}
             style={{ background: "none", border: "none", cursor: "pointer", padding: "6px 8px", borderRadius: 8, color: iconColor, display: "flex", opacity: 0.7, transition: "opacity 0.12s" }}
@@ -4310,6 +4375,263 @@ function inSelectedPeriod(dateStr: string, period: string, from: string, to: str
     return true;
   }
   return true;
+}
+
+// Přidání jednoho důkazu o učení u konkrétního žáka.
+function AddEvidenceModal({ student, className, onClose }: {
+  student: Student; className: string; onClose: () => void;
+}) {
+  const { tpGoals } = useContext(GoalsContext);
+  const { addEvidenceRecords, addStudentEvidence } = useContext(EvidenceContext);
+  const lessons = tpGoals.filter(g => g.trida === className);
+  const [kind, setKind] = useState<EvidenceKind>("uroven");
+  const [level, setLevel] = useState("");
+  const [criterion, setCriterion] = useState("");
+  const [note, setNote] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [goalId, setGoalId] = useState(lessons[0]?.id ?? "");
+  const [subject, setSubject] = useState(lessons[0]?.subject ?? subjectOptions[0]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
+  const lesson = lessons.find(g => g.id === goalId) ?? null;
+  const criteria = lesson?.criteria ?? [];
+
+  const ready =
+    kind === "uroven" ? !!level :
+    kind === "poznamka" ? !!note.trim() :
+    !!fileName || recording;
+
+  function save() {
+    if (!ready) return;
+    const type = kind === "audio" ? "audio" : kind === "foto" ? "photo" : kind === "poznamka" ? "note" : "photo";
+    addEvidenceRecords([{
+      id: "ev" + Date.now(),
+      studentId: student.id,
+      studentName: `${student.lastName}, ${student.firstName}`,
+      className,
+      type: type as "audio" | "photo" | "note",
+      note: kind === "poznamka" ? note.trim() : undefined,
+      goalId: goalId || "bez-hodiny",
+      goalText: lesson?.text ?? "Bez vyučovací hodiny",
+      subject,
+      date,
+      criterion: kind === "uroven" ? (criterion || criteria[0]?.label || "Celkové zvládnutí") : undefined,
+      level: kind === "uroven" ? level : undefined,
+    }]);
+    addStudentEvidence(student.id, type as "audio" | "photo" | "note");
+    onClose();
+  }
+
+  const selStyle: React.CSSProperties = { ...FILTER_SELECT_STYLE, width: "100%", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = {
+    display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
+    fontSize: 11, color: "#717182", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6,
+  };
+
+  return (
+    <Modal title={`Přidat důkaz o učení — ${student.firstName} ${student.lastName}`} onClose={onClose} width={560}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* druh důkazu */}
+        <div>
+          <span style={labelStyle}>Druh důkazu</span>
+          <div style={{ display: "flex", gap: 8 }}>
+            {(Object.keys(EVIDENCE_KINDS) as EvidenceKind[]).map(k => {
+              const cfg = EVIDENCE_KINDS[k];
+              const on = kind === k;
+              return (
+                <button
+                  key={k}
+                  onClick={() => setKind(k)}
+                  aria-pressed={on}
+                  style={{
+                    flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                    padding: "12px 6px", borderRadius: 12, cursor: "pointer",
+                    border: on ? `1.5px solid ${cfg.color}` : "1.5px solid rgba(0,0,0,0.12)",
+                    background: on ? cfg.bg : "#fff",
+                    transition: "border-color 0.12s, background 0.12s",
+                  }}
+                >
+                  <span style={{ color: cfg.color, display: "flex" }}>
+                    <EvidenceKindIcon kind={k} size={20} />
+                  </span>
+                  <span style={{
+                    fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                    fontWeight: on ? 500 : 400, fontSize: 12, color: "#0a0a0a",
+                  }}>
+                    {cfg.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* co se podle druhu vyplňuje */}
+        {kind === "uroven" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {criteria.length > 0 && (
+              <div>
+                <span style={labelStyle}>Kritérium</span>
+                <select value={criterion} onChange={e => setCriterion(e.target.value)} style={selStyle}>
+                  {criteria.map(c => <option key={c.id} value={c.label}>{c.label}</option>)}
+                </select>
+              </div>
+            )}
+            <div>
+              <span style={labelStyle}>Úroveň</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                {SHEET_LEVELS.map(lv => {
+                  const c = SHEET_LEVEL_STYLE[lv];
+                  const on = level === lv;
+                  return (
+                    <button
+                      key={lv}
+                      onClick={() => setLevel(on ? "" : lv)}
+                      aria-pressed={on}
+                      style={{
+                        flex: 1, padding: "9px 12px", borderRadius: 10, cursor: "pointer",
+                        border: `1.5px solid ${c.border}`, background: on ? c.bg : "#fff", color: c.fg,
+                        fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                        fontWeight: on ? 500 : 400, fontSize: 13, transition: "background 0.12s",
+                      }}
+                    >
+                      {lv}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {kind === "poznamka" && (
+          <div>
+            <span style={labelStyle}>Poznámka</span>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              rows={4}
+              autoFocus
+              placeholder="Co konkrétně žák udělal nebo řekl…"
+              style={{
+                width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10,
+                border: "1.5px solid rgba(0,0,0,0.13)", outline: "none", resize: "none",
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, lineHeight: 1.55, color: "#0a0a0a",
+              }}
+            />
+          </div>
+        )}
+
+        {kind === "audio" && (
+          <div>
+            <span style={labelStyle}>Nahrávka</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => { setRecording(r => !r); setFileName(""); }}
+                style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  padding: "14px 12px", borderRadius: 12, cursor: "pointer",
+                  border: recording ? "1.5px solid #dc2626" : "1.5px solid rgba(0,0,0,0.13)",
+                  background: recording ? "#fee2e2" : "#fff",
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13,
+                  color: recording ? "#991b1b" : "#0a0a0a",
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: recording ? "#dc2626" : "#7c3aed", display: "block" }} />
+                {recording ? "Nahrávám… klepnutím zastavte" : "Nahrát teď"}
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                style={{ ...btnStyle("ghost"), padding: "14px 16px", whiteSpace: "nowrap" }}
+              >
+                Nahrát soubor
+              </button>
+            </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="audio/*"
+              style={{ display: "none" }}
+              onChange={e => { setFileName(e.target.files?.[0]?.name ?? ""); setRecording(false); }}
+            />
+            {fileName && (
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: "8px 0 0" }}>{fileName}</p>
+            )}
+          </div>
+        )}
+
+        {kind === "foto" && (
+          <div>
+            <span style={labelStyle}>Fotografie</span>
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => { e.preventDefault(); setDragOver(false); setFileName(e.dataTransfer.files?.[0]?.name ?? "fotka.jpg"); }}
+              style={{
+                padding: "22px 16px", borderRadius: 12, textAlign: "center",
+                border: dragOver ? "1.5px dashed #7c3aed" : "1.5px dashed rgba(0,0,0,0.18)",
+                background: dragOver ? "#faf5ff" : "#fafafa",
+                transition: "border-color 0.12s, background 0.12s",
+              }}
+            >
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: "0 0 12px" }}>
+                Přetáhněte sem fotku
+              </p>
+              <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                <button onClick={() => fileRef.current?.click()} style={{ ...btnStyle("ghost") }}>Nahrát z počítače</button>
+                <button onClick={() => cameraRef.current?.click()} style={{ ...btnStyle("ghost") }}>Vyfotit mobilem</button>
+              </div>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => setFileName(e.target.files?.[0]?.name ?? "")} />
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={e => setFileName(e.target.files?.[0]?.name ?? "fotka.jpg")} />
+            {fileName && (
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: "8px 0 0" }}>{fileName}</p>
+            )}
+          </div>
+        )}
+
+        {/* kam důkaz patří */}
+        <div style={{ display: "flex", gap: 10, borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 16 }}>
+          <div style={{ width: 150, flexShrink: 0 }}>
+            <span style={labelStyle}>Datum</span>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ ...selStyle, backgroundImage: "none", paddingRight: 12 }} />
+          </div>
+          <div style={{ width: 150, flexShrink: 0 }}>
+            <span style={labelStyle}>Předmět</span>
+            <select value={subject} onChange={e => setSubject(e.target.value)} style={selStyle}>
+              {subjectOptions.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={labelStyle}>Vyučovací hodina</span>
+            <select
+              value={goalId}
+              onChange={e => {
+                setGoalId(e.target.value);
+                const g = lessons.find(x => x.id === e.target.value);
+                if (g) setSubject(g.subject);
+                setCriterion("");
+              }}
+              style={selStyle}
+            >
+              <option value="">Bez vyučovací hodiny</option>
+              {lessons.map((g, i) => (
+                <option key={g.id} value={g.id}>
+                  {`Hodina ${i + 1} · ${g.text.length > 46 ? g.text.slice(0, 44) + "…" : g.text}`}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <ModalActions onCancel={onClose} onConfirm={save} confirmLabel="Uložit" />
+    </Modal>
+  );
 }
 
 function DukazyView() {
@@ -6031,26 +6353,24 @@ function TematickyPlanView() {
                           title="Přidat sloupec do kontextu Buddyho"
                           style={{ width: 20, height: 20 }}
                         />
-                        {colId === "cile" && (
-                          <button
-                            onClick={e => { e.stopPropagation(); handleGenerateCriteria(); }}
-                            title="Generovat plán hodin"
-                            style={{
-                              display: "inline-flex", alignItems: "center", gap: 5,
-                              padding: "3px 9px 3px 7px", borderRadius: 20, border: "none",
-                              background: "linear-gradient(135deg, #a855f7, #7c3aed)",
-                              color: "#fff", cursor: "pointer",
-                              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
-                              boxShadow: "0 1px 4px rgba(124,58,237,0.22)",
-                              whiteSpace: "nowrap", flexShrink: 0,
-                              textTransform: "none", letterSpacing: "normal",
-                            }}
-                          >
-                            <SparkleIcon />
-                            Generovat plán hodin
-                          </button>
-                        )}
                       </span>
+                      {colId === "cile" && (
+                        <button
+                          onClick={e => { e.stopPropagation(); handleGenerateCriteria(); }}
+                          title="Generovat plán hodin"
+                          style={{
+                            ...btnStyle("primary"),
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                            marginTop: 8, padding: "7px 14px", fontSize: 12,
+                            background: "#7c3aed", color: "#fff",
+                            whiteSpace: "nowrap",
+                            textTransform: "none", letterSpacing: "normal",
+                          }}
+                        >
+                          <SparkleIcon />
+                          Generovat plán hodin
+                        </button>
+                      )}
                     </th>
                   );
                 })}
@@ -6212,18 +6532,19 @@ function TematickyPlanView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán", onClick: () => setView("list") }, { label: "Nový plán" }]} />
 
-      <div style={{ display: "flex", gap: 56, alignItems: "flex-start", marginTop: 32, maxWidth: 1120 }}>
+      <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
       <div style={{ maxWidth: 580, flex: "1 1 520px", minWidth: 0 }}>
         <FadeIn delay={0}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
             Vytvořit nový plán
           </p>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 30, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.25 }}>
             Co chcete učit?
           </h1>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.65, maxWidth: 480 }}>
-            Napište předmět, ročník a čemu se chcete věnovat. Buddy z toho složí tématický plán —
-            měsíc po měsíci, s tématy i cíli. Všechno pak můžete přepsat.
+            Napište, čemu se chcete věnovat. Buddy z toho složí tématický plán podle vašich
+            představ — od časové jednotky přes konkrétní výstupy až po odkaz na RVP.
+            Všechno pak budete moct pohodlně upravit a exportovat.
           </p>
         </FadeIn>
 
@@ -6337,12 +6658,8 @@ function TematickyPlanView() {
       </div>
 
       <FadeIn delay={240}>
-        <div style={{ flex: "0 0 auto", paddingTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-          <TeachingIllustration size={300} />
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, textAlign: "center", lineHeight: 1.6, maxWidth: 280 }}>
-            Dobrý plán není papír do šuplíku. Je to slib, co se vaši žáci letos naučí —
-            a Buddy vám ho pomůže dodržet.
-          </p>
+        <div style={{ flex: "0 0 auto", paddingTop: 36 }}>
+          <PlanPreviewIllustration />
         </div>
       </FadeIn>
       </div>
@@ -6893,20 +7210,21 @@ export default function App() {
   const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
     const acc: Record<string, StudentEvidence> = {};
     sampleEvidenceRecords.forEach(r => {
-      acc[r.studentId] = acc[r.studentId] ?? { audio: 0, photo: 0 };
-      acc[r.studentId][r.type]++;
+      acc[r.studentId] = acc[r.studentId] ?? { audio: 0, photo: 0, note: 0 };
+      acc[r.studentId][r.type] = (acc[r.studentId][r.type] ?? 0) + 1;
     });
     return acc;
   });
   const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>(sampleEvidenceRecords);
   const mainRef = useRef<HTMLElement>(null);
 
-  const addStudentEvidence = useCallback((studentId: string, type: "audio" | "photo") => {
+  const addStudentEvidence = useCallback((studentId: string, type: "audio" | "photo" | "note") => {
     setStudentEvidence(prev => ({
       ...prev,
       [studentId]: {
         audio: (prev[studentId]?.audio ?? 0) + (type === "audio" ? 1 : 0),
         photo: (prev[studentId]?.photo ?? 0) + (type === "photo" ? 1 : 0),
+        note: (prev[studentId]?.note ?? 0) + (type === "note" ? 1 : 0),
       },
     }));
   }, []);
@@ -6941,8 +7259,8 @@ export default function App() {
         setStudentEvidence(prev => {
           const next = { ...prev };
           generated.forEach(r => {
-            const cur = next[r.studentId] ?? { audio: 0, photo: 0 };
-            next[r.studentId] = { ...cur, [r.type]: cur[r.type] + 1 };
+            const cur = next[r.studentId] ?? { audio: 0, photo: 0, note: 0 };
+            next[r.studentId] = { ...cur, [r.type]: (cur[r.type] ?? 0) + 1 };
           });
           return next;
         });
