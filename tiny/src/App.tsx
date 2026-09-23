@@ -27,6 +27,7 @@ interface GoalsCtx {
   lessonsDone: Record<string, boolean>;
   toggleLessonDone: (id: string) => void;
   goToSettings: () => void;
+  goToClasses: () => void;
   openGuide: () => void;
   teacherName: string;
   setTeacherName: (v: string) => void;
@@ -45,7 +46,7 @@ const GoalsContext = createContext<GoalsCtx>({
   planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
   plans: [], setPlans: () => {},
   lessonsDone: {}, toggleLessonDone: () => {},
-  goToSettings: () => {}, openGuide: () => {},
+  goToSettings: () => {}, goToClasses: () => {}, openGuide: () => {},
   teacherName: "", setTeacherName: () => {},
   schoolName: "", setSchoolName: () => {},
   schoolLevelId: "začínám", setSchoolLevelId: () => {},
@@ -1065,7 +1066,7 @@ function ProfilView() {
             Tahle stupnice platí pro celou aplikaci — pro všechny vyučovací hodiny i pro sběr důkazů o učení.
           </p>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "10px 13px", lineHeight: 1.55, margin: "0 0 16px" }}>
-            Nastavte ji na začátku roku. Pozdější změna se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále, takže je nepůjde porovnat s novými.
+            Nastavte ji na začátku roku. Pozdější změna se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále.
           </p>
 
           {editingLevels ? (
@@ -1119,7 +1120,7 @@ function ProfilView() {
             Nová stupnice se použije u vyučovacích hodin, které teprve vzniknou.
           </p>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#991b1b", lineHeight: 1.65, margin: 0 }}>
-            Už odučené hodiny a zaznamenané důkazy zůstanou na staré škále — zpětně je přepsat nejde, a tím pádem je nepůjde porovnat s novými.
+            Už odučené hodiny a zaznamenané důkazy zůstanou na staré škále — zpětně je přepsat nejde.
           </p>
           <ModalActions
             onCancel={() => setConfirmLevel(null)}
@@ -3566,6 +3567,7 @@ function InfoHint({ text }: { text: string }) {
             width: 320, padding: "10px 13px", borderRadius: 10,
             background: "#0a0a0a", color: "#fff",
             fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, lineHeight: 1.5,
+            textTransform: "none", letterSpacing: "normal", fontWeight: 400,
             boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
           }}
         >
@@ -4020,7 +4022,7 @@ function CileView() {
               </button>
             </div>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "9px 12px", lineHeight: 1.55, margin: "10px 0 0" }}>
-              Změna stupnice se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále a nepůjdou s novými porovnat. Nastavte ji na začátku roku.
+              Změna stupnice se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále. Nastavte ji na začátku roku.
             </p>
           </section>
         </div>
@@ -4649,10 +4651,10 @@ const EVIDENCE_LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
 
 type EvidenceKind = "uroven" | "foto" | "audio" | "poznamka";
 const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; bg: string; color: string }> = {
-  uroven:   { label: "Úroveň",   bg: "#e3f3e9", color: "#2b7a4e" },
-  foto:     { label: "Foto",     bg: "#e2f0f5", color: "#1f6a80" },
-  audio:    { label: "Audio",    bg: "#ece7f8", color: "#5a3fa0" },
-  poznamka: { label: "Poznámka", bg: "#f9eee0", color: "#8a5a1f" },
+  uroven:   { label: "Úroveň",   bg: "#d6f0e0", color: "#1f6b41" },
+  foto:     { label: "Foto",     bg: "#d6eaf2", color: "#145f76" },
+  audio:    { label: "Audio",    bg: "#e5ddf8", color: "#4f31a0" },
+  poznamka: { label: "Poznámka", bg: "#fbe8d2", color: "#8a5314" },
 };
 function evidenceKind(r: EvidenceRecord): EvidenceKind {
   if (r.criterion) return "uroven";
@@ -5702,6 +5704,7 @@ function readinessOf(studentId: string, className: string, tpGoals: TpGoal[], le
 }
 
 // Škály, kterými učitel ladí tón zpětné vazby
+const TONE_STEPS = 7;
 const TONE_SCALES = [
   { id: "formalita", left: "Profesionální", right: "Přátelská" },
   { id: "delka", left: "Stručná", right: "Podrobná" },
@@ -5709,7 +5712,7 @@ const TONE_SCALES = [
 ];
 
 function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; onGenerate: (data: { students: StudentAssessment[]; period: string; className: string }) => void }) {
-  const { tpGoals, lessonsDone } = useContext(GoalsContext);
+  const { tpGoals, lessonsDone, goToClasses } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
   const [selectedClassId, setSelectedClassId] = useState(initialClasses[0]?.id ?? "");
   const cls = initialClasses.find(c => c.id === selectedClassId) ?? initialClasses[0];
@@ -5719,7 +5722,8 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   const [customFrom, setCustomFrom] = useState("2026-09-01");
   const [customTo, setCustomTo] = useState(new Date().toISOString().slice(0, 10));
   const [instruction, setInstruction] = useState("");
-  const [tone, setTone] = useState<Record<string, number>>({ formalita: 50, delka: 50, osobnost: 60 });
+  const [tone, setTone] = useState<Record<string, number>>({ formalita: 3, delka: 3, osobnost: 4 });
+  const [subject, setSubject] = useState("vse");
   const [generating, setGenerating] = useState(false);
 
   const allSelected = cls.students.length > 0 && selectedStudents.size === cls.students.length;
@@ -5785,9 +5789,18 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 760 }}>
-        {/* třída a období vedle sebe */}
+        {/* předmět a třída */}
         <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 240px", minWidth: 0 }}>
+          <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+              Předmět
+            </label>
+            <select value={subject} onChange={e => setSubject(e.target.value)} style={selectStyle}>
+              <option value="vse">Všechny předměty</option>
+              {subjectOptions.map(sub => <option key={sub} value={sub}>{sub}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: "1 1 260px", minWidth: 0 }}>
         <div>
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
             Třída
@@ -5795,61 +5808,6 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           <select value={selectedClassId} onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents(new Set()); }} style={selectStyle}>
             {initialClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-        </div>
-
-          </div>
-          <div style={{ flex: "1 1 380px", minWidth: 0 }}>
-        <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 10 }}>
-            Časové období
-          </label>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-            {(["mesic", "ctvrtleti", "pololeti", "vlastni"] as HodnoceniPeriod[]).map(p => (
-              <button
-                key={p}
-                onClick={() => handlePeriodChange(p)}
-                style={{
-                  padding: "6px 14px", borderRadius: 20, border: "1.5px solid",
-                  borderColor: period === p ? "#0a0a0a" : "rgba(0,0,0,0.13)",
-                  background: period === p ? "#0a0a0a" : "#fff",
-                  color: period === p ? "#fff" : "#717182",
-                  fontFamily: period === p ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                  fontSize: 13, cursor: "pointer", transition: "all 0.12s",
-                }}
-              >
-                {periodLabels[p]}
-              </button>
-            ))}
-          </div>
-          {period === "vlastni" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Od</label>
-                <input
-                  type="date"
-                  value={customFrom}
-                  max={customTo}
-                  onChange={e => setCustomFrom(e.target.value)}
-                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
-                />
-              </div>
-              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, paddingTop: 20 }}>—</div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Do</label>
-                <input
-                  type="date"
-                  value={customTo}
-                  min={customFrom}
-                  onChange={e => setCustomTo(e.target.value)}
-                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
-                />
-              </div>
-            </div>
-          ) : (
-            <select value={periodValue} onChange={e => setPeriodValue(e.target.value)} style={selectStyle}>
-              {periodSelectOptions.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          )}
         </div>
 
           </div>
@@ -5917,10 +5875,79 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                     <span style={{ width: 7, height: 7, borderRadius: "50%", background: rs.color, display: "block" }} />
                     {rs.label}
                   </span>
+                  {rd.level < 2 && (
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      onClick={e => { e.stopPropagation(); goToClasses(); }}
+                      onKeyDown={e => { if (e.key === "Enter") { e.stopPropagation(); goToClasses(); } }}
+                      style={{
+                        flexShrink: 0, padding: "3px 10px", borderRadius: 20, cursor: "pointer",
+                        border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#5b21b6",
+                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, whiteSpace: "nowrap",
+                      }}
+                    >
+                      Přidat důkazy
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
+        </div>
+
+        {/* časové období */}
+        <div>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 10 }}>
+            Časové období
+          </label>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            {(["mesic", "ctvrtleti", "pololeti", "vlastni"] as HodnoceniPeriod[]).map(p => (
+              <button
+                key={p}
+                onClick={() => handlePeriodChange(p)}
+                style={{
+                  padding: "6px 14px", borderRadius: 20, border: "1.5px solid",
+                  borderColor: period === p ? "#0a0a0a" : "rgba(0,0,0,0.13)",
+                  background: period === p ? "#0a0a0a" : "#fff",
+                  color: period === p ? "#fff" : "#717182",
+                  fontFamily: period === p ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                  fontSize: 13, cursor: "pointer", transition: "all 0.12s",
+                }}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
+          </div>
+          {period === "vlastni" ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Od</label>
+                <input
+                  type="date"
+                  value={customFrom}
+                  max={customTo}
+                  onChange={e => setCustomFrom(e.target.value)}
+                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
+                />
+              </div>
+              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, paddingTop: 20 }}>—</div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Do</label>
+                <input
+                  type="date"
+                  value={customTo}
+                  min={customFrom}
+                  onChange={e => setCustomTo(e.target.value)}
+                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+          ) : (
+            <select value={periodValue} onChange={e => setPeriodValue(e.target.value)} style={selectStyle}>
+              {periodSelectOptions.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          )}
         </div>
 
         {/* jak má zpětná vazba znít */}
@@ -5933,24 +5960,38 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             {TONE_SCALES.map(sc => (
               <div key={sc.id}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] <= 40 ? "#0a0a0a" : "#8a8a99" }}>{sc.left}</span>
-                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] >= 60 ? "#0a0a0a" : "#8a8a99" }}>{sc.right}</span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] <= 2 ? "#0a0a0a" : "#8a8a99" }}>{sc.left}</span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] >= 4 ? "#0a0a0a" : "#8a8a99" }}>{sc.right}</span>
                 </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={10}
-                  value={tone[sc.id]}
-                  aria-label={`${sc.left} až ${sc.right}`}
-                  onChange={e => setTone(prev => ({ ...prev, [sc.id]: Number(e.target.value) }))}
-                  style={{ width: "100%", accentColor: "#7c3aed", cursor: "pointer" }}
-                />
+                <div style={{ position: "relative" }}>
+                  {/* krokové čárky pod táhlem */}
+                  <div style={{ position: "absolute", left: 7, right: 7, top: 17, display: "flex", justifyContent: "space-between", pointerEvents: "none" }}>
+                    {Array.from({ length: TONE_STEPS }).map((_, i) => (
+                      <span key={i} style={{ width: 1, height: 6, background: i === tone[sc.id] ? "#7c3aed" : "rgba(0,0,0,0.16)", display: "block" }} />
+                    ))}
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={TONE_STEPS - 1}
+                    step={1}
+                    value={tone[sc.id]}
+                    aria-label={`${sc.left} až ${sc.right}`}
+                    onChange={e => setTone(prev => ({ ...prev, [sc.id]: Number(e.target.value) }))}
+                    style={{ width: "100%", accentColor: "#7c3aed", cursor: "pointer", position: "relative", zIndex: 1, margin: 0 }}
+                  />
+                </div>
               </div>
             ))}
           </div>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5b21b6", background: "#faf5ff", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 10, padding: "9px 12px", lineHeight: 1.55, margin: "10px 0 0" }}>
-            Ať nastavíte cokoli, Buddy píše podle metodiky formativního hodnocení — popisuje pokrok, drží se doložených faktů a nikdy žáka neshazuje.
+          <p style={{ display: "flex", alignItems: "flex-start", gap: 8, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55, margin: "10px 0 0" }}>
+            <span style={{
+              flexShrink: 0, width: 15, height: 15, borderRadius: "50%", marginTop: 1,
+              border: "1px solid rgba(0,0,0,0.22)", color: "#8a8a99",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "'Inter:Regular', sans-serif", fontSize: 10, lineHeight: 1,
+            }}>i</span>
+            Buddy píše podle metodiky formativního hodnocení. Popisuje pokrok, drží se faktů a podporuje žáka.
           </p>
         </div>
 
@@ -6275,29 +6316,8 @@ function HodnoceniResultPage({
                       U tohohle žáka zatím nejsou žádné důkazy — text je proto obecný.
                     </p>
                   ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {basis.map(r => {
-                        const k = EVIDENCE_KINDS[evidenceKind(r)];
-                        const num = goalNums.get(r.goalId);
-                        return (
-                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{
-                              width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: k.bg, color: k.color,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
-                              <EvidenceKindIcon kind={evidenceKind(r)} size={12} />
-                            </span>
-                            <SubjectChip subject={r.subject} />
-                            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#5c5c6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {num ? `Hodina ${num} · ` : ""}{r.criterion ?? r.goalText}
-                              {r.level ? ` — ${r.level.toLowerCase()}` : ""}
-                            </span>
-                            <span style={{ marginLeft: "auto", flexShrink: 0, fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
-                              {formatDate(r.date)}
-                            </span>
-                          </div>
-                        );
-                      })}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {basis.map(r => <EvidenceRecordCard key={r.id} r={r} goalNums={goalNums} hideStudent />)}
                     </div>
                   )}
                 </div>
@@ -8254,8 +8274,8 @@ function buildEvidenceForGoals(goals: TpGoal[]): EvidenceRecord[] {
     const month = mi + 9 > 12 ? mi - 3 : mi + 9;
     const year = mi + 9 > 12 ? SCHOOL_YEAR_START + 1 : SCHOOL_YEAR_START;
     students.forEach((st, si) => {
-      // někdo má zaznamenané všechny hodiny, někdo žádnou — jako ve skutečné třídě
-      if (gi >= (si * 3) % 5) return;
+      // pokrytí se liší žák od žáka: pár připravených, pár skoro, pár bez důkazů
+      if (gi >= [4, 4, 3, 2, 0][si % 5]) return;
       const crit = g.criteria[(si + gi) % Math.max(1, g.criteria.length)];
       const day = 3 + ((si * 3 + gi) % 12);
       const start = (si + gi * 2) % (levels.length - 1);
@@ -8410,6 +8430,7 @@ export default function App() {
     lessonsDone,
     toggleLessonDone: (id) => setLessonsDone(prev => ({ ...prev, [id]: !prev[id] })),
     goToSettings: () => navigate("profil"),
+    goToClasses: () => navigate("tridy"),
     openGuide: () => setOnboardingOpen(true),
     teacherName,
     setTeacherName,
