@@ -22,6 +22,8 @@ interface GoalsCtx {
   updateTpGoal: (id: string, patch: Partial<TpGoal>) => void;
   planRows: TpRow[];
   setPlanRows: React.Dispatch<React.SetStateAction<TpRow[]>>;
+  plans: TpPlan[];
+  setPlans: React.Dispatch<React.SetStateAction<TpPlan[]>>;
   updatePlanRow: (rowId: string, patch: Partial<TpRow>) => void;
   navigateCile: () => void;
   animateIn: boolean;
@@ -29,6 +31,7 @@ interface GoalsCtx {
 const GoalsContext = createContext<GoalsCtx>({
   tpGoals: [], addTpGoals: () => {}, removeTpGoal: () => {}, updateTpGoalText: () => {}, updateTpGoal: () => {},
   planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
+  plans: [], setPlans: () => {},
   navigateCile: () => {}, animateIn: false,
 });
 
@@ -1289,7 +1292,7 @@ function ClassesView() {
                       Přetáhněte screenshot nebo PDF se seznamem žáků
                     </p>
                     <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0, lineHeight: 1.5 }}>
-                      AI automaticky rozpozná jména žáků z libovolného formátu nebo systému
+                      Buddy automaticky rozpozná jména žáků z libovolného formátu nebo systému
                     </p>
                   </>
                 )}
@@ -2503,6 +2506,87 @@ const generatedCriteria = [
   { n: 6, label: "Vlastní hlas a zaujetí", desc: "Žák téma zpracovává se zřetelným osobním vztahem nebo nadšením, které čtenář nebo posluchač zaznamená." },
 ];
 
+// Obrázky pro prázdné stavy a úvodní stránku — kreslené, ne fotorealistické,
+// aby seděly k mid-fi prototypu.
+function PlanIllustration({ size = 200 }: { size?: number }) {
+  return (
+    <svg width={size} height={size * 0.78} viewBox="0 0 260 200" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
+      <ellipse cx="130" cy="178" rx="96" ry="12" fill="#efeaf8" />
+      <g transform="rotate(-7 78 104)">
+        <rect x="34" y="42" width="102" height="126" rx="8" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
+        <rect x="34" y="42" width="102" height="22" rx="8" fill="#ede5fb" />
+        <rect x="34" y="56" width="102" height="8" fill="#ede5fb" />
+        <rect x="46" y="78" width="60" height="6" rx="3" fill="rgba(0,0,0,0.13)" />
+        <rect x="46" y="94" width="78" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+        <rect x="46" y="110" width="70" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+        <rect x="46" y="126" width="52" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+        <rect x="46" y="142" width="64" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+      </g>
+      <g transform="rotate(6 186 100)">
+        <rect x="140" y="30" width="96" height="120" rx="8" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
+        <rect x="140" y="30" width="96" height="20" rx="8" fill="#e3edfd" />
+        <rect x="140" y="42" width="96" height="8" fill="#e3edfd" />
+        <rect x="152" y="64" width="46" height="6" rx="3" fill="rgba(0,0,0,0.13)" />
+        <rect x="152" y="80" width="68" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+        <rect x="152" y="96" width="58" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+        <rect x="152" y="112" width="72" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
+      </g>
+      <path d="M126 14c0 0 1 12-6 18 7 6 6 18 6 18s-1-12 6-18c-7-6-6-18-6-18z" fill="#7c4dbd" />
+      <path d="M208 154c0 0 .7 8-4 12 4.7 4 4 12 4 12s-.7-8 4-12c-4.7-4-4-12-4-12z" fill="#a855f7" opacity="0.7" />
+      <circle cx="52" cy="26" r="7" fill="#c4b5fd" opacity="0.8" />
+    </svg>
+  );
+}
+
+function LessonsIllustration({ size = 200 }: { size?: number }) {
+  return (
+    <svg width={size} height={size * 0.78} viewBox="0 0 260 200" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
+      <ellipse cx="130" cy="178" rx="92" ry="12" fill="#e8eefb" />
+      {[0, 1, 2].map(i => (
+        <g key={i} transform={`translate(0 ${i * 42})`}>
+          <rect x={44 + i * 4} y="44" width="172" height="34" rx="9" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
+          <rect x={56 + i * 4} y="52" width="18" height="18" rx="5" fill="#e3edfd" stroke="rgba(59,130,246,0.3)" strokeWidth="1.5" />
+          <rect x={84 + i * 4} y="55" width={94 - i * 14} height="5" rx="2.5" fill="rgba(0,0,0,0.14)" />
+          <rect x={84 + i * 4} y="65" width={58 - i * 8} height="5" rx="2.5" fill="rgba(0,0,0,0.08)" />
+        </g>
+      ))}
+      <path d="M36 22c0 0 .9 11-5.4 16.5C36.9 44 36 55 36 55s-.9-11 5.4-16.5C35.1 33 36 22 36 22z" fill="#7c4dbd" />
+      <circle cx="226" cy="30" r="6" fill="#bfdbfe" />
+    </svg>
+  );
+}
+
+function TeachingIllustration({ size = 280 }: { size?: number }) {
+  return (
+    <svg width={size} height={size * 0.88} viewBox="0 0 300 264" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
+      <ellipse cx="150" cy="236" rx="112" ry="14" fill="#efeaf8" />
+      {/* tabule */}
+      <rect x="40" y="26" width="220" height="132" rx="10" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
+      <rect x="40" y="26" width="220" height="132" rx="10" fill="#faf7ff" />
+      <rect x="64" y="52" width="84" height="7" rx="3.5" fill="#c4b5fd" />
+      <rect x="64" y="72" width="150" height="6" rx="3" fill="rgba(0,0,0,0.11)" />
+      <rect x="64" y="88" width="122" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
+      <rect x="64" y="104" width="138" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
+      <rect x="64" y="120" width="96" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
+      <rect x="34" y="158" width="232" height="8" rx="4" fill="rgba(0,0,0,0.10)" />
+      {/* žáci v lavici */}
+      <g>
+        <circle cx="86" cy="192" r="15" fill="#f0a8c0" />
+        <path d="M66 224c0-11 9-18 20-18s20 7 20 18z" fill="#e9dcfa" />
+        <circle cx="150" cy="186" r="17" fill="#8ec9a8" />
+        <path d="M127 224c0-13 10-21 23-21s23 8 23 21z" fill="#dbeafe" />
+        <circle cx="214" cy="192" r="15" fill="#f5c98a" />
+        <path d="M194 224c0-11 9-18 20-18s20 7 20 18z" fill="#e9dcfa" />
+      </g>
+      {/* jiskry */}
+      <path d="M262 30c0 0 1.1 13-6.4 19.5C263.1 56 262 69 262 69s-1.1-13-6.4-19.5C263.1 43 262 30 262 30z" fill="#7c4dbd" />
+      <path d="M28 96c0 0 .7 8-4 12 4.7 4 4 12 4 12s-.7-8-4-12c4.7-4 4-12 4-12z" fill="#a855f7" opacity="0.65" />
+      <circle cx="276" cy="120" r="6" fill="#c4b5fd" />
+      <circle cx="22" cy="44" r="8" fill="#bfdbfe" />
+    </svg>
+  );
+}
+
 function FadeIn({ children, delay }: { children: React.ReactNode; delay: number }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -2796,73 +2880,6 @@ function LessonDates({ goalId }: { goalId: string }) {
   );
 }
 
-function LessonDatePicker({ goalId, compact }: { goalId: string; compact?: boolean }) {
-  const [lessonDate, setLessonDate] = useState(() => readLessonDates(goalId)[0] ?? "");
-  const [editingDate, setEditingDate] = useState(false);
-  const fmt = (d: string, short?: boolean) => {
-    if (!d) return "";
-    const dt = new Date(d);
-    return short
-      ? dt.toLocaleDateString("cs-CZ", { day: "numeric", month: "numeric" })
-      : dt.toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric" });
-  };
-  if (editingDate) return (
-    <input type="date" value={lessonDate} autoFocus
-      onChange={e => {
-        setLessonDate(e.target.value);
-        const rest = readLessonDates(goalId).slice(1);
-        writeLessonDates(goalId, [e.target.value, ...rest]);
-      }}
-      onBlur={() => setEditingDate(false)}
-      style={{ padding: compact ? "2px 8px" : "7px 12px", borderRadius: compact ? 20 : 8, border: "1.5px solid rgba(0,0,0,0.18)", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 11 : 14, color: "#0a0a0a", outline: "none", background: "#fff", width: compact ? 110 : undefined }}
-    />
-  );
-  if (lessonDate) return (
-    <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", gap: compact ? 4 : 8, padding: compact ? "2px 7px" : "7px 14px", borderRadius: compact ? 20 : 8, border: compact ? "none" : "1.5px solid rgba(0,0,0,0.12)", background: compact ? "transparent" : "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: compact ? 10 : 14, color: "#717182", cursor: "pointer", transition: "color 0.12s" }}
-      onMouseEnter={e => (e.currentTarget.style.color = compact ? "#0a0a0a" : "#0a0a0a")}
-      onMouseLeave={e => (e.currentTarget.style.color = "#717182")}
-    >
-      <svg width={compact ? 9 : 14} height={compact ? 9 : 14} viewBox="0 0 16 16" fill="none">
-        <rect x="1.333" y="2.667" width="13.333" height="12" rx="1.333" stroke="currentColor" strokeWidth="1.3"/>
-        <path d="M1.333 6.667h13.333" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-        <path d="M5.333 1.333v2.667M10.667 1.333v2.667" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-      </svg>
-      {fmt(lessonDate, compact)}
-    </button>
-  );
-  if (compact) return (
-    <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 6, border: "1.5px dashed rgba(0,0,0,0.2)", background: "transparent", color: "#c0c0cc", cursor: "pointer", padding: 0, transition: "border-color 0.12s, color 0.12s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.35)"; e.currentTarget.style.color = "#717182"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.2)"; e.currentTarget.style.color = "#c0c0cc"; }}
-      title="Přidat datum"
-    >
-      <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-        <rect x="1.333" y="2.667" width="13.333" height="12" rx="1.333" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M1.333 6.667h13.333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M5.333 1.333v2.667M10.667 1.333v2.667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M8 9.333v2M7 10.333h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    </button>
-  );
-  return (
-    <button onClick={() => setEditingDate(true)}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, border: "1.5px dashed rgba(0,0,0,0.18)", background: "transparent", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", cursor: "pointer", transition: "border-color 0.12s, color 0.12s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.3)"; e.currentTarget.style.color = "#717182"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.18)"; e.currentTarget.style.color = "#b0b0be"; }}
-    >
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-        <rect x="1.333" y="2.667" width="13.333" height="12" rx="1.333" stroke="currentColor" strokeWidth="1.2"/>
-        <path d="M1.333 6.667h13.333" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-        <path d="M5.333 1.333v2.667M10.667 1.333v2.667" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-        <path d="M8 9.333v2M7 10.333h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-      </svg>
-      Přidat datum
-    </button>
-  );
-}
-
 type AnyGoal = { id: string; text: string; subject: string; cls: string; period: string; isTp: boolean };
 
 const LESSON_MONTHS = ["Září", "Říjen", "Listopad", "Prosinec", "Leden", "Únor", "Březen", "Duben", "Květen", "Červen"];
@@ -3047,7 +3064,7 @@ function InfoHint({ text }: { text: string }) {
         style={{
           width: 20, height: 20, borderRadius: "50%", padding: 0, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "transparent", border: "1.4px solid rgba(0,0,0,0.22)", color: "#6b6b7a",
+          background: "transparent", border: "1.4px solid #2563eb", color: "#2563eb",
           fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, lineHeight: 1,
           transition: "border-color 0.12s, color 0.12s",
         }}
@@ -3360,19 +3377,28 @@ function CileView() {
           { label: selectedTpGoal.subject + " · " + selectedTpGoal.trida + " · " + selectedTpGoal.month },
         ]} />
 
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36 }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
+            Detail vyučovací hodiny
+            <InfoHint text="Jedna vyučovací hodina: co se v ní žák učí, podle čeho to poznáte a v jakých úrovních to hodnotíte. Cíl, měsíc a rozsah jsou stejná data jako v tématickém plánu." />
+          </h1>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 32 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Výukový cíl
+              <InfoHint text="Výukový cíl říká, co má žák na konci hodiny umět. Formuluje se z pohledu žáka, konkrétně a tak, aby šlo poznat, že ho zvládl." />
             </p>
             <AIHint message={`Chci upravit cíl: ${selectedTpGoal.text}`}>
               <input
                 value={selectedTpGoal.text}
                 onChange={e => updateTpGoalText(selectedTpGoal.id, e.target.value)}
+                aria-label="Výukový cíl"
                 style={{
                   display: "block", width: "100%", boxSizing: "border-box",
-                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 24, color: "#0a0a0a", lineHeight: 1.4,
-                  margin: "0 0 14px", padding: "2px 8px", marginLeft: -8,
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", lineHeight: 1.45,
+                  margin: "0 0 12px", padding: "3px 8px", marginLeft: -8,
                   background: "transparent", border: "1.5px solid transparent", borderRadius: 8,
                   outline: "none", transition: "background 0.12s, border-color 0.12s",
                 }}
@@ -3382,16 +3408,35 @@ function CileView() {
                 onBlur={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}
               />
             </AIHint>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "#f3e8ff", color: "#8200db", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12 }}>
-                {selectedTpGoal.subject}
-              </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
-                {selectedTpGoal.trida}
-              </span>
-              <span style={{ padding: "3px 10px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
-                {selectedTpGoal.rozsah} {parseInt(selectedTpGoal.rozsah) === 1 ? "hodina" : parseInt(selectedTpGoal.rozsah) <= 4 ? "hodiny" : "hodin"}
-              </span>
+            {/* stejné chipsy jako na kartě hodiny, včetně editace i termínů */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <ChipSelect
+                title="Předmět"
+                value={selectedTpGoal.subject}
+                options={subjectOptions}
+                onChange={v => updateTpGoal(selectedTpGoal.id, { subject: v })}
+              />
+              <ChipSelect
+                title="Třída"
+                value={selectedTpGoal.trida}
+                options={initialClasses.map(c => c.name)}
+                onChange={v => updateTpGoal(selectedTpGoal.id, { trida: v })}
+              />
+              <ChipSelect
+                title="Rozsah hodin"
+                value={String(parseInt(selectedTpGoal.rozsah) || 1)}
+                options={["1", "2", "3", "4", "5", "6", "7", "8", "9"]}
+                labelFor={(v: string) => `${v} ${v === "1" ? "hodina" : Number(v) <= 4 ? "hodiny" : "hodin"}`}
+                onChange={v => updateTpGoal(selectedTpGoal.id, { rozsah: v })}
+              />
+              <ChipSelect
+                title="Měsíc v tématickém plánu"
+                value={selectedTpGoal.month}
+                options={LESSON_MONTHS}
+                labelFor={monthLabel}
+                onChange={v => updateTpGoal(selectedTpGoal.id, { month: v })}
+              />
+              <LessonDates goalId={selectedTpGoal.id} />
             </div>
           </div>
 
@@ -3418,17 +3463,12 @@ function CileView() {
           </div>
         </div>
 
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", paddingTop: 28, display: "flex", flexDirection: "column", gap: 28 }}>
-          <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
-              Datum hodiny
-            </p>
-            <LessonDatePicker goalId={selectedTpGoal.id} />
-          </section>
+        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
           <section>
             <AIHint message="Chci upravit kritéria hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
                 Kritéria hodnocení
+                <InfoHint text="Kritéria jsou konkrétní pozorovatelné projevy, podle kterých poznáte, jak je žák na cestě k cíli daleko. Měla by jít vidět nebo slyšet přímo v hodině." />
               </p>
             </AIHint>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
@@ -3439,8 +3479,9 @@ function CileView() {
 
           <section>
             <AIHint message="Chci upravit úrovně hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 12px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 12px", display: "flex", alignItems: "center" }}>
                 Úrovně hodnocení
+                <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je — například začínám, rozvíjím, zvládám. Používají se u každého kritéria." />
               </p>
             </AIHint>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
@@ -3958,11 +3999,31 @@ function CileView() {
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ padding: "60px 0", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0be", margin: 0 }}>
-            {allGoals.length === 0 ? "Zatím žádné hodiny. Vytvořte první nebo vygenerujte z tématického plánu." : "Žádné hodiny neodpovídají filtru."}
-          </p>
-        </div>
+        allGoals.length === 0 ? (
+          <div style={{ padding: "48px 0 72px", textAlign: "center" }}>
+            <LessonsIllustration size={240} />
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
+              Hodiny vzniknou z vašeho plánu
+            </p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", margin: "0 auto 22px", lineHeight: 1.65, maxWidth: 430 }}>
+              Z každého řádku tématického plánu udělá Buddy jednu vyučovací hodinu i s kritérii,
+              podle kterých pak v hodině sbíráte důkazy o učení. Nebo si první hodinu napište sami.
+            </p>
+            <button
+              onClick={() => { setNewGoalText(""); setCreatingGoal(true); }}
+              style={{ ...btnStyle("primary"), display: "inline-flex", alignItems: "center", gap: 7 }}
+            >
+              <IconPlus />
+              Vytvořit hodinu
+            </button>
+          </div>
+        ) : (
+          <div style={{ padding: "60px 0", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#b0b0be", margin: 0 }}>
+              Žádné hodiny neodpovídají filtru.
+            </p>
+          </div>
+        )
       ) : (
         <LessonList
           filtered={filtered}
@@ -4699,7 +4760,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         Vygenerovat hodnocení
       </h1>
       <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.5 }}>
-        AI navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
+        Buddy navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -4817,7 +4878,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         {/* ai instruction */}
         <div>
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
-            Pokyn pro AI
+            Pokyn pro Buddyho
             <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, color: "#717182", marginLeft: 6 }}>(volitelné)</span>
           </label>
           <textarea
@@ -4942,7 +5003,7 @@ function HodnoceniResultPage({
                   }}
                 />
                 <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0be", margin: "12px 0 0", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 10 }}>
-                  Text navrhla AI na základě zaznamenaných důkazů o učení. Můžete ho upravit.
+                  Text navrhl Buddy na základě zaznamenaných důkazů o učení. Můžete ho upravit.
                 </p>
               </>
             )}
@@ -5122,6 +5183,62 @@ interface TpRow {
 
 type MesicData = { cas: string; topics: { tema: string; rozsah: string; cile: string; vystupy?: string; rvp?: string }[] };
 
+// Cíle se formulují buď z pohledu žáka, nebo z první osoby. Přepínač ve filtru
+// přepíše texty, takže se edituje vždycky to, co je vidět.
+const VERB_3_TO_1: Record<string, string> = {
+  "zopakuje": "zopakuji", "odstraní": "odstraním", "rozliší": "rozliším", "pojmenuje": "pojmenuji",
+  "vyslovuje": "vyslovuji", "rozlišuje": "rozlišuji", "napíše": "napíšu", "vyjmenuje": "vyjmenuji",
+  "určí": "určím", "skloňuje": "skloňuji", "uplatní": "uplatním", "časuje": "časuji",
+  "rozezná": "rozeznám", "použije": "použiji", "píše": "píšu", "vysvětlí": "vysvětlím",
+  "uvede": "uvedu", "odvodí": "odvodím", "identifikuje": "identifikuji", "opraví": "opravím",
+  "odliší": "odliším", "rozpozná": "rozpoznám", "umístí": "umístím", "zapíše": "zapíšu",
+  "uvozuje": "uvozuji", "interpunguje": "interpunguji", "převede": "převedu", "popíše": "popíšu",
+  "charakterizuje": "charakterizuji", "formuluje": "formuluji", "propojí": "propojím", "upevní": "upevním",
+  "vytvoří": "vytvořím", "představí": "představím", "zhodnotí": "zhodnotím", "stanoví": "stanovím",
+  "prokáže": "prokážu", "vybere": "vyberu", "okomentuje": "okomentuji", "reflektuje": "reflektuji",
+  "zorientuje": "zorientuji", "obnoví": "obnovím", "vyplní": "vyplním", "porozumí": "porozumím",
+  "aplikuje": "aplikuji", "řeší": "řeším", "odstraňuje": "odstraňuji", "spolupracuje": "spolupracuji",
+  "sdílí": "sdílím", "zaznačí": "zaznačím", "zvládne": "zvládnu", "procvičuje": "procvičuji",
+  "splní": "splním", "vypracuje": "vypracuji", "odevzdá": "odevzdám", "sebehodnotí": "sebehodnotím",
+};
+const VERB_1_TO_3: Record<string, string> = Object.fromEntries(
+  Object.entries(VERB_3_TO_1).map(([a, b]) => [b, a]),
+);
+
+function convertVerbs(text: string, dict: Record<string, string>) {
+  return text.replace(/[a-záčďéěíňóřšťúůýž]+/gi, w => {
+    const hit = dict[w.toLowerCase()];
+    if (!hit) return w;
+    return w[0] === w[0].toUpperCase() ? hit[0].toUpperCase() + hit.slice(1) : hit;
+  });
+}
+
+function cileToOsoba(text: string, osoba: "zak" | "ja") {
+  const t = text.trim();
+  if (!t) return text;
+  if (osoba === "ja") {
+    if (!/^Žák\b/.test(t)) return text;
+    // „Žák si zopakuje" → „Zopakuji si": zvratné zájmeno nesmí větu začínat
+    let rest = convertVerbs(t.replace(/^Žák\s+/, ""), VERB_3_TO_1)
+      .replace(/^(si|se)\s+(\S+)/, "$2 $1");
+    return rest.charAt(0).toUpperCase() + rest.slice(1);
+  }
+  if (/^Žák\b/.test(t)) return text;
+  const rest = convertVerbs(t, VERB_1_TO_3).replace(/^(\S+)\s+(si|se)\b/, "$2 $1");
+  return "Žák " + rest.charAt(0).toLowerCase() + rest.slice(1);
+}
+
+// Výstup hodiny se odvozuje z tématu — učitel ho pak může přepsat.
+function vystupForTema(tema: string) {
+  const t = tema.toLowerCase();
+  if (/diktát|pravopis|koncovk/.test(t)) return "Diktát s rozborem chyb";
+  if (/sloh|popis|vypravován|dialog|časopis|text/.test(t)) return "Napsaný text v portfoliu žáka";
+  if (/projekt|prezentac/.test(t)) return "Prezentace před třídou";
+  if (/sebehodnoc|reflexe|pohovor|portfolio/.test(t)) return "Vyplněný sebehodnoticí arch";
+  if (/opakován|test|hodnotící|zjišťován/.test(t)) return "Vyplněný pracovní list";
+  return "Zápis v sešitě a ústní ověření";
+}
+
 function buildMesiceRows(mesiceData: MesicData[]): TpRow[] {
   const rows: TpRow[] = [];
   for (const m of mesiceData) {
@@ -5133,7 +5250,7 @@ function buildMesiceRows(mesiceData: MesicData[]): TpRow[] {
         rozsah: t.rozsah,
         pocet: String(m.topics.reduce((s, x) => s + parseInt(x.rozsah || "0"), 0)),
         cile: t.cile,
-        vystupy: t.vystupy ?? "",
+        vystupy: t.vystupy ?? vystupForTema(t.tema),
         rvp: t.rvp ?? "RVP ZV",
         _isMonthStart: i === 0,
         _monthSpan: i === 0 ? m.topics.length : undefined,
@@ -5319,7 +5436,7 @@ function TematickyPlanView() {
     const loaded = plan.rows.length > 0 && planRows.some(r => r._id === plan.rows[0]._id);
     return loaded ? planRows : plan.rows;
   };
-  const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
+  const { plans, setPlans } = useContext(GoalsContext);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -5352,6 +5469,14 @@ function TematickyPlanView() {
   const [exportOpen, setExportOpen] = useState(false);
   // Z jaké osoby mají být cíle formulované. Ovlivňuje generování nových cílů.
   const [cilOsoba, setCilOsoba] = useState<"zak" | "ja">("zak");
+  function applyCilOsoba(osoba: "zak" | "ja") {
+    if (osoba === cilOsoba) return;
+    setCilOsoba(osoba);
+    planRows.forEach(r => {
+      const next = cileToOsoba(r.cile, osoba);
+      if (next !== r.cile) updatePlanRow(r._id, { cile: next });
+    });
+  }
   const editRows = planRows;
   const setEditRows = setPlanRows;
   const [hoveredMonthKey, setHoveredMonthKey] = useState<string | null>(null);
@@ -5503,28 +5628,22 @@ function TematickyPlanView() {
         </div>
 
         {plans.length === 0 ? (
-          <div style={{ padding: "80px 0", textAlign: "center" }}>
-            <div style={{
-              display: "inline-flex", flexDirection: "column", alignItems: "center",
-              gap: 0, marginBottom: 20,
-            }}>
-              <div style={{
-                width: 72, height: 88, borderRadius: 6, background: "#f5f5f7",
-                border: "1.5px solid rgba(0,0,0,0.10)", position: "relative",
-                boxShadow: "2px 3px 0 rgba(0,0,0,0.06)",
-              }}>
-                <div style={{ position: "absolute", left: 10, top: 16, right: 10, height: 2, background: "rgba(0,0,0,0.08)", borderRadius: 1 }} />
-                <div style={{ position: "absolute", left: 10, top: 26, right: 16, height: 2, background: "rgba(0,0,0,0.06)", borderRadius: 1 }} />
-                <div style={{ position: "absolute", left: 10, top: 36, right: 12, height: 2, background: "rgba(0,0,0,0.06)", borderRadius: 1 }} />
-                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 6, background: "rgba(0,0,0,0.12)", borderRadius: "4px 0 0 4px" }} />
-              </div>
-            </div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#717182", margin: "0 0 6px" }}>
-              Zatím žádný tématický plán
+          <div style={{ padding: "64px 0 80px", textAlign: "center" }}>
+            <PlanIllustration size={240} />
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
+              Začněte tím, co budete učit
             </p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#b0b0be", margin: 0 }}>
-              Vytvořte první a AI ho za vás připraví.
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", margin: "0 auto 22px", lineHeight: 1.65, maxWidth: 420 }}>
+              Napište pár vět o svém předmětu a Buddy z nich složí tématický plán na celý rok.
+              Pak už jen doladíte, co je vaše — a z plánu vzniknou vyučovací hodiny.
             </p>
+            <button
+              onClick={() => { setText(""); setSelectedPlanId(null); setView("form"); }}
+              style={{ ...btnStyle("primary"), display: "inline-flex", alignItems: "center", gap: 7 }}
+            >
+              <SparkleIcon />
+              Vytvořit první plán
+            </button>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16, maxWidth: 1140 }}>
@@ -5644,9 +5763,9 @@ function TematickyPlanView() {
 
   if (view === "generating") {
     return (
-      <div style={{ padding: "32px 40px", maxWidth: 600 }}>
+      <div style={{ padding: "32px 40px" }}>
         <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán" }]} />
-        <div style={{ marginTop: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 28 }}>
+        <div style={{ marginTop: 96, display: "flex", flexDirection: "column", alignItems: "center", gap: 28, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
           <div style={{ position: "relative", width: 72, height: 72 }}>
             <svg width="72" height="72" viewBox="0 0 72 72" style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }}>
               <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5"/>
@@ -5666,7 +5785,7 @@ function TematickyPlanView() {
               Generuji tématický plán…
             </p>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: 0 }}>
-              AI analyzuje obsah a vytváří strukturovaný plán výuky.
+              Buddy prochází obsah a skládá z něj strukturovaný plán výuky.
             </p>
           </div>
         </div>
@@ -5803,7 +5922,7 @@ function TematickyPlanView() {
               { label: "Třída", val: trida, set: setTrida, opts: ["1.A", "2.A", "3.A", "4.A", "5.A"] },
               { label: "Časová jednotka", val: unit, set: setUnit, opts: ["týden", "14 dní", "měsíc"] },
               { label: "Období", val: period, set: setPeriod, opts: ["3 měsíce", "1. pololetí", "2. pololetí", "celý rok"] },
-              { label: "Formulace cílů", val: cilOsoba === "zak" ? "Žák…" : "Já…", set: (v: string) => setCilOsoba(v === "Já…" ? "ja" : "zak"), opts: ["Žák…", "Já…"] },
+              { label: "Formulace cílů", val: cilOsoba === "zak" ? "Žák…" : "Já…", set: (v: string) => applyCilOsoba(v === "Já…" ? "ja" : "zak"), opts: ["Žák…", "Já…"] },
             ].map(({ label, val, set, opts }) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
@@ -5886,6 +6005,8 @@ function TematickyPlanView() {
                 {activeCols.map((colId, i) => {
                   const col = tpColumns.find(c => c.id === colId)!;
                   const isDragTarget = dragOver === i;
+                  // úzké sloupce s čísly: název se zalomí, ať sloupec nezabírá půl tabulky
+                  const isNarrowCol = colId === "rozsahHodin" || colId === "pocetHodin";
                   return (
                     <th
                       key={colId}
@@ -5899,16 +6020,12 @@ function TematickyPlanView() {
                         borderRadius: i === activeCols.length - 1 ? "0 12px 0 0" : undefined,
                         borderLeft: isDragTarget ? "2px solid #7c4dbd" : undefined,
                         opacity: dragFrom === i ? 0.45 : 1,
+                        ...(isNarrowCol ? { width: 74, padding: "11px 8px", whiteSpace: "normal" } : null),
                       }}
                     >
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: isNarrowCol ? 5 : 8, flexWrap: isNarrowCol ? "wrap" : "nowrap" }}>
                         <DragGrip size={13} opacity={0.35} />
-                        {col.label}
-                        {colId === "cile" && (
-                          <span style={{ textTransform: "none", letterSpacing: "normal", fontFamily: "'Inter:Regular', sans-serif", color: "#8a8a99" }}>
-                            ({cilOsoba === "zak" ? "žák…" : "já…"})
-                          </span>
-                        )}
+                        <span style={isNarrowCol ? { whiteSpace: "normal", lineHeight: 1.3 } : undefined}>{col.label}</span>
                         <BuddyButton
                           onClick={e => { e.stopPropagation(); openBuddy(`Sloupec: ${col.label}`); }}
                           title="Přidat sloupec do kontextu Buddyho"
@@ -6095,13 +6212,18 @@ function TematickyPlanView() {
     <div style={{ padding: "32px 40px" }}>
       <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Tématický plán", onClick: () => setView("list") }, { label: "Nový plán" }]} />
 
-      <div style={{ maxWidth: 580, marginTop: 48 }}>
+      <div style={{ display: "flex", gap: 56, alignItems: "flex-start", marginTop: 32, maxWidth: 1120 }}>
+      <div style={{ maxWidth: 580, flex: "1 1 520px", minWidth: 0 }}>
         <FadeIn delay={0}>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 32, color: "#0a0a0a", margin: "0 0 8px", lineHeight: 1.3 }}>
-            Co chcete plánovat?
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            Vytvořit nový plán
+          </p>
+          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 30, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.25 }}>
+            Co chcete učit?
           </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.6 }}>
-            Popište téma, předmět nebo vzdělávací oblast. AI vytvoří tématický plán výuky.
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.65, maxWidth: 480 }}>
+            Napište předmět, ročník a čemu se chcete věnovat. Buddy z toho složí tématický plán —
+            měsíc po měsíci, s tématy i cíli. Všechno pak můžete přepsat.
           </p>
         </FadeIn>
 
@@ -6213,6 +6335,17 @@ function TematickyPlanView() {
           </button>
         </FadeIn>
       </div>
+
+      <FadeIn delay={240}>
+        <div style={{ flex: "0 0 auto", paddingTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+          <TeachingIllustration size={300} />
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, textAlign: "center", lineHeight: 1.6, maxWidth: 280 }}>
+            Dobrý plán není papír do šuplíku. Je to slib, co se vaši žáci letos naučí —
+            a Buddy vám ho pomůže dodržet.
+          </p>
+        </div>
+      </FadeIn>
+      </div>
     </div>
   );
 }
@@ -6316,7 +6449,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>Buddy</p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: 0 }}>AI asistent</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: 0 }}>Váš pomocník</p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#b0b0be", padding: 4, borderRadius: 6 }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -6755,6 +6888,7 @@ export default function App() {
   // Řádky tématického plánu žijí tady, aby je viděl plán i seznam hodin —
   // jsou to stejná data, jen dvě obrazovky.
   const [planRows, setPlanRows] = useState<TpRow[]>([]);
+  const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
   const [animateIn, setAnimateIn] = useState(false);
   const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
     const acc: Record<string, StudentEvidence> = {};
@@ -6847,6 +6981,8 @@ export default function App() {
     },
     planRows,
     setPlanRows,
+    plans,
+    setPlans,
     updatePlanRow: (rowId, patch) => {
       setPlanRows(prev => prev.map(r => r._id === rowId ? { ...r, ...patch } : r));
       // a naopak: úprava v plánu se projeví na hodině, která z řádku vznikla
