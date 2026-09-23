@@ -26,6 +26,8 @@ interface GoalsCtx {
   setPlans: React.Dispatch<React.SetStateAction<TpPlan[]>>;
   lessonsDone: Record<string, boolean>;
   toggleLessonDone: (id: string) => void;
+  classes: Class[];
+  setClasses: React.Dispatch<React.SetStateAction<Class[]>>;
   goToSettings: () => void;
   goToClasses: () => void;
   openGuide: () => void;
@@ -46,6 +48,7 @@ const GoalsContext = createContext<GoalsCtx>({
   planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
   plans: [], setPlans: () => {},
   lessonsDone: {}, toggleLessonDone: () => {},
+  classes: [], setClasses: () => {},
   goToSettings: () => {}, goToClasses: () => {}, openGuide: () => {},
   teacherName: "", setTeacherName: () => {},
   schoolName: "", setSchoolName: () => {},
@@ -707,7 +710,7 @@ function StudentProfile({
   onBack: () => void;
 }) {
   const { evidenceRecords, removeEvidenceRecord } = useContext(EvidenceContext);
-  const { tpGoals } = useContext(GoalsContext);
+  const { tpGoals, classes } = useContext(GoalsContext);
   const goalNums = buildGoalNumbers(tpGoals);
   const fullName = `${student.firstName} ${student.lastName}`;
   const allStudentRecords = [...evidenceRecords]
@@ -727,8 +730,8 @@ function StudentProfile({
   const [filterDateTo, setFilterDateTo] = useState("");
 
   const allSubjects = Array.from(new Set([...SUBJECTS, ...evidenceRecords.map(r => r.subject)])).sort();
-  const allClasses = Array.from(new Set([...initialClasses.map(c => c.name), ...evidenceRecords.map(r => r.className)])).sort();
-  const studentsOfClass = (initialClasses.find(c => c.name === filterClass)?.students ?? [])
+  const allClasses = Array.from(new Set([...classes.map(c => c.name), ...evidenceRecords.map(r => r.className)])).sort();
+  const studentsOfClass = (classes.find(c => c.name === filterClass)?.students ?? [])
     .map(st => ({ id: st.id, name: `${st.lastName}, ${st.firstName}` }));
   const allGoals = [
     ...tpGoals.map(g => ({ id: g.id, text: g.text })),
@@ -1135,7 +1138,7 @@ function ProfilView() {
 }
 
 function NapadyView() {
-  const { tpGoals, lessonsDone } = useContext(GoalsContext);
+  const { tpGoals, lessonsDone, classes } = useContext(GoalsContext);
   const { evidenceRecords, addEvidenceRecords, addStudentEvidence } = useContext(EvidenceContext);
   const [answered, setAnswered] = useState<Set<string>>(new Set());
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
@@ -1146,7 +1149,7 @@ function NapadyView() {
   const pending = tpGoals
     .filter(g => lessonsDone[g.id] || evidenceRecords.some(r => r.goalId === g.id))
     .flatMap(g => {
-      const students = initialClasses.find(c => c.name === g.trida)?.students ?? [];
+      const students = classes.find(c => c.name === g.trida)?.students ?? [];
       return g.criteria.flatMap(c => students.map(st => ({
         key: `${g.id}|${c.label}|${st.id}`,
         goal: g, criterion: c.label, student: st,
@@ -1270,10 +1273,88 @@ function NapadyView() {
   );
 }
 
+// Náhled třídy — co v Tiny vznikne, když učitel nahraje seznam žáků.
+function ClassPreviewIllustration() {
+  const rows = [
+    { ini: "AB", name: "Beneš, Adam", bg: "#10b981", u: 6, f: 1 },
+    { ini: "AB", name: "Blahová, Anežka", bg: "#8b5cf6", u: 9, f: 1 },
+    { ini: "BČ", name: "Čermáková, Barbora", bg: "#f0a8c0", u: 9, a: 1 },
+    { ini: "DD", name: "Dvořák, Daniel", bg: "#60a5fa", u: 8, a: 1 },
+  ];
+  return (
+    <div style={{
+      width: 360, borderRadius: 14, background: "#fff", margin: "0 auto", textAlign: "left",
+      border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
+      overflow: "hidden", transform: "rotate(-1deg)",
+    }}>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a" }}>Třída 3.A</span>
+        <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99" }}>22 žáků</span>
+      </div>
+      {rows.map((r, i) => (
+        <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.05)" }}>
+          <span style={{
+            width: 22, height: 22, borderRadius: "50%", flexShrink: 0, background: r.bg,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9, color: "#fff",
+          }}>{r.ini}</span>
+          <span style={{ flexGrow: 1, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a" }}>{r.name}</span>
+          {([["uroven", r.u], ["foto", r.f], ["audio", r.a]] as const).filter(([, n]) => n).map(([k, n]) => {
+            const cfg = EVIDENCE_KINDS[k as EvidenceKind];
+            return (
+              <span key={k} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <span style={{ width: 16, height: 16, borderRadius: 5, background: cfg.bg, color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <EvidenceKindIcon kind={k as EvidenceKind} size={10} />
+                </span>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10.5, color: "#5c5c6b" }}>{n}</span>
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Náhled sběru důkazů o učení
+function EvidencePreviewIllustration() {
+  return (
+    <div style={{ width: 380, margin: "0 auto", textAlign: "left", display: "flex", flexDirection: "column", gap: 8 }}>
+      {([
+        { kind: "uroven", head: "Pozná kořen slova", meta: "Čeština · Hodina 2 · 12. září 2026", lvl: "Rozvíjím" },
+        { kind: "audio", head: "„Kořen je uč, předpona na. A přípona je ka.“", meta: "Čeština · Hodina 2 · 12. září 2026", lvl: "" },
+        { kind: "poznamka", head: "Sám si všiml chyby a opravil ji.", meta: "Čeština · Hodina 4 · 16. září 2026", lvl: "" },
+      ] as { kind: EvidenceKind; head: string; meta: string; lvl: string }[]).map((row, i) => {
+        const cfg = EVIDENCE_KINDS[row.kind];
+        const lc = row.lvl ? EVIDENCE_LEVEL_COLORS[row.lvl] : null;
+        return (
+          <div key={i} style={{
+            background: "#fff", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)",
+            padding: "11px 14px", display: "flex", alignItems: "flex-start", gap: 11,
+            transform: `rotate(${i === 1 ? 0.6 : -0.4}deg)`,
+          }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: cfg.bg, color: cfg.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <EvidenceKindIcon kind={row.kind} size={15} />
+            </span>
+            <span style={{ flexGrow: 1, minWidth: 0 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#0a0a0a", lineHeight: 1.4 }}>{row.head}</span>
+                {row.lvl && lc && (
+                  <span style={{ flexShrink: 0, padding: "1px 8px", borderRadius: 20, background: lc.bg, color: lc.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10 }}>{row.lvl}</span>
+                )}
+              </span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 10.5, color: "#8a8a99" }}>{row.meta}</span>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ClassesView() {
   const { evidenceRecords } = useContext(EvidenceContext);
-  const { tpGoals, lessonsDone } = useContext(GoalsContext);
-  const [classes, setClasses] = useState<Class[]>(initialClasses);
+  const { tpGoals, lessonsDone, classes, setClasses } = useContext(GoalsContext);
   const [search, setSearch] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -1456,7 +1537,27 @@ function ClassesView() {
           </div>
         </div>
 
-        {/* list */}
+        {classes.length === 0 ? (
+          <div style={{ padding: "44px 0 72px", textAlign: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+              <ClassPreviewIllustration />
+            </div>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
+              Bez žáků není co sbírat
+            </p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", margin: "0 auto 22px", lineHeight: 1.65, maxWidth: 430 }}>
+              Přidejte třídu a nahrajte do ní jména žáků — stačí seznam odkudkoli, Buddy si s formátem poradí.
+              Ke každému žákovi pak budete sbírat důkazy o učení.
+            </p>
+            <button
+              onClick={() => { setClassNameInput(""); setAddClassOpen(true); }}
+              style={{ ...btnStyle("primary"), display: "inline-flex", alignItems: "center", gap: 7 }}
+            >
+              <IconPlus />
+              Přidat první třídu
+            </button>
+          </div>
+        ) : (
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
           {filtered.length === 0 && (
             <p style={{ padding: "24px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
@@ -1498,6 +1599,7 @@ function ClassesView() {
             </button>
           ))}
         </div>
+        )}
 
         {/* add class modal */}
         {addClassOpen && (
@@ -3051,9 +3153,10 @@ function FadeIn({ children, delay }: { children: React.ReactNode; delay: number 
 const subjectOptions = ["Čeština", "Matematika", "Prvouka", "Anglický jazyk", "Výtvarná výchova", "Hudební výchova", "Tělesná výchova", "Informatika"];
 
 function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: () => void; onSave: (goal: { text: string; subject: string; className: string }) => void }) {
+  const { classes } = useContext(GoalsContext);
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
   const [subject, setSubject] = useState("Čeština");
-  const [classId, setClassId] = useState(initialClasses[0]?.id ?? "");
+  const [classId, setClassId] = useState(classes[0]?.id ?? "");
 
   const goalText = input.trim()
     ? `Dokážu ${input.trim().charAt(0).toLowerCase()}${input.trim().slice(1).replace(/\.$/, "")}, tak aby si to spolužák dokázal představit.`
@@ -3075,7 +3178,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         </h1>
         <button
           onClick={() => {
-            const className = initialClasses.find(c => c.id === classId)?.name ?? classId;
+            const className = classes.find(c => c.id === classId)?.name ?? classId;
             onSave({ text: goalText, subject, className });
           }}
           style={{ ...btnStyle("primary"), flexShrink: 0, whiteSpace: "nowrap" }}
@@ -3104,10 +3207,10 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
             />
             <ChipSelect
               title="Třída"
-              value={initialClasses.find(c => c.id === classId)?.name ?? classId}
-              options={initialClasses.map(c => c.name)}
+              value={classes.find(c => c.id === classId)?.name ?? classId}
+              options={classes.map(c => c.name)}
               big
-              onChange={v => setClassId(initialClasses.find(c => c.name === v)?.id ?? classId)}
+              onChange={v => setClassId(classes.find(c => c.name === v)?.id ?? classId)}
             />
           </div>
         </div>
@@ -3821,7 +3924,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 }
 
 function CileView() {
-  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone, schoolLevelId, schoolCustomLevels, goToSettings } = useContext(GoalsContext);
+  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone, schoolLevelId, schoolCustomLevels, goToSettings, classes } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
   const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({});
@@ -3858,7 +3961,7 @@ function CileView() {
   const [generatingGoal, setGeneratingGoal] = useState(false);
   const [savedCustomLevels, setSavedCustomLevels] = useState<CustomLevel[]>(schoolCustomLevels);
   const selectedGoal = goals.find((g) => g.id === selectedGoalId) ?? null;
-  const classStudents = initialClasses.find((c) => c.name === selectedGoal?.className)?.students ?? [];
+  const classStudents = classes.find((c) => c.name === selectedGoal?.className)?.students ?? [];
 
   if (generatingGoal) {
     return <GoalGeneratorPage
@@ -3877,7 +3980,7 @@ function CileView() {
   const selectedTpGoal = tpGoals.find(g => g.id === selectedTpGoalId) ?? null;
 
   if (selectedTpGoal) {
-    const tpClassStudents = initialClasses.find(c => c.name === selectedTpGoal.trida)?.students ?? [];
+    const tpClassStudents = classes.find(c => c.name === selectedTpGoal.trida)?.students ?? [];
     const tpOpt = levelOptions.find(o => o.id === tpSelectedLevelId) ?? levelOptions[1];
     return (
       <>
@@ -3932,7 +4035,7 @@ function CileView() {
               <ChipSelect
                 title="Třída"
                 value={selectedTpGoal.trida}
-                options={initialClasses.map(c => c.name)}
+                options={classes.map(c => c.name)}
                 big
                 onChange={v => updateTpGoal(selectedTpGoal.id, { trida: v })}
               />
@@ -4344,7 +4447,7 @@ function CileView() {
     ...goals.map(g => ({ id: g.id, text: g.text, subject: g.subject, cls: g.className, period: "", isTp: false })),
   ];
   const subjects = Array.from(new Set(allGoals.map(g => g.subject))).sort();
-  const classes  = Array.from(new Set(allGoals.map(g => g.cls).filter(Boolean))).sort();
+  const goalClassNames = Array.from(new Set(allGoals.map(g => g.cls).filter(Boolean))).sort();
   const periods  = Array.from(new Set(tpGoals.map(g => g.month).filter(Boolean))).sort();
 
   const monthToDate: Record<string, string> = {
@@ -4466,7 +4569,7 @@ function CileView() {
           </select>
           <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={selectStyle}>
             <option value="">Všechny třídy</option>
-            {classes.map(c => <option key={c}>{c}</option>)}
+            {goalClassNames.map(c => <option key={c}>{c}</option>)}
           </select>
           <select value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={selectStyle}>
             {goalPeriodOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -4542,7 +4645,7 @@ function CileView() {
           setSelectedTpGoalId={id => setSelectedTpGoalId(id)}
           setSelectedGoalId={id => setSelectedGoalId(id)}
           btnStyle={btnStyle}
-          classOptions={initialClasses.map(c => c.name)}
+          classOptions={classes.map(c => c.name)}
           onLessonAction={(goalId, isTp, kind) => setListModal({ kind, goalId, isTp })}
           editMode={editMode}
           selectedIds={selectedIds}
@@ -4613,7 +4716,7 @@ function CileView() {
       {listModal && (() => {
         const lg = allGoals.find(x => x.id === listModal.goalId);
         if (!lg) return null;
-        const students = initialClasses.find(c => c.name === lg.cls)?.students ?? [];
+        const students = classes.find(c => c.name === lg.cls)?.students ?? [];
         const close = () => setListModal(null);
         if (listModal.kind === "print") return (
           <PrintModal
@@ -5289,7 +5392,7 @@ function AddEvidenceModal({ student, className, record, preset, onClose }: {
 
 function DukazyView() {
   const { evidenceRecords, removeEvidenceRecord } = useContext(EvidenceContext);
-  const { tpGoals } = useContext(GoalsContext);
+  const { tpGoals, classes } = useContext(GoalsContext);
   const goalNums = buildGoalNumbers(tpGoals);
 
   const [deleteRecord, setDeleteRecord] = useState<EvidenceRecord | null>(null);
@@ -5305,7 +5408,7 @@ function DukazyView() {
   function openEvidenceModal() {
     const g = allGoalOptions[0];
     if (!g) return;
-    const students = initialClasses.find(c => c.name === g.className)?.students ?? [];
+    const students = classes.find(c => c.name === g.className)?.students ?? [];
     setEvidenceModalCtx({ goal: g.text, goalId: g.id, subject: g.subject, className: g.className, students });
   }
 
@@ -5473,7 +5576,30 @@ function DukazyView() {
       </div>
 
       {/* evidence list */}
-      {filtered.length === 0 ? (
+      {evidenceRecords.length === 0 ? (
+        <div style={{ padding: "36px 0 72px", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+            <EvidencePreviewIllustration />
+          </div>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
+            Zachyťte, co jste v hodině viděla
+          </p>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", margin: "0 auto 22px", lineHeight: 1.65, maxWidth: 440 }}>
+            Důkaz o učení je konkrétní stopa toho, co žák umí — úroveň u kritéria, fotka práce,
+            nahrávka rozhovoru nebo vaše poznámka. Stačí pár vteřin přímo v hodině a na konci
+            období z nich Buddy sestaví hodnocení.
+          </p>
+          <button
+            onClick={openEvidenceModal}
+            style={{ ...btnStyle("primary"), display: "inline-flex", alignItems: "center", gap: 7 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d={ICON_EVIDENCE} stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Zaznamenat první důkaz
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <div style={{ textAlign: "center", padding: "64px 0", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14 }}>
           Žádné záznamy neodpovídají vybraným filtrům.
         </div>
@@ -5502,7 +5628,7 @@ function DukazyView() {
         />
       )}
       {editRecord && (() => {
-        const st = initialClasses.find(c => c.name === editRecord.className)?.students.find(x => x.id === editRecord.studentId);
+        const st = classes.find(c => c.name === editRecord.className)?.students.find(x => x.id === editRecord.studentId);
         if (!st) return null;
         return <AddEvidenceModal student={st} className={editRecord.className} record={editRecord} onClose={() => setEditRecord(null)} />;
       })()}
@@ -5529,7 +5655,8 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
   const availableClasses = Array.from(new Set(allGoalOptions.map(g => g.className))).sort();
   const [selectedClass, setSelectedClass] = useState(selectedGoal?.className ?? availableClasses[0] ?? "3.A");
 
-  const students = initialClasses.find(c => c.name === selectedClass)?.students ?? [];
+  const { classes } = useContext(GoalsContext);
+  const students = classes.find(c => c.name === selectedClass)?.students ?? [];
 
   const selStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "9px 32px 9px 12px",
@@ -5654,6 +5781,26 @@ interface Hodnoceni {
   period: string;
   createdAt: string;
   students: StudentAssessment[];
+  tags: string[];
+}
+
+// Štítky si učitel tvoří sám — měsíční, na vysvědčení, pro rodiče…
+const DEFAULT_TAGS = ["Měsíční", "Na vysvědčení", "Pro rodiče"];
+const TAG_COLORS = ["#6a3fa0", "#2f57a3", "#2c7148", "#8a6520", "#a03a6a", "#1f6f64"];
+const tagColor = (t: string) => TAG_COLORS[Math.abs(hashOf(t)) % TAG_COLORS.length];
+
+// Do jakých měsíců období spadá — pro osu školního roku
+function monthsOfPeriod(period: string): string[] {
+  const p = period.toLowerCase();
+  const all = LESSON_MONTHS;
+  if (p.includes("1. pololetí")) return all.slice(0, 5);
+  if (p.includes("2. pololetí")) return all.slice(5);
+  if (p.includes("1. čtvrtletí")) return all.slice(0, 3);
+  if (p.includes("2. čtvrtletí")) return all.slice(2, 5);
+  if (p.includes("3. čtvrtletí")) return all.slice(5, 8);
+  if (p.includes("4. čtvrtletí")) return all.slice(7);
+  const hit = all.find(m => p.startsWith(m.toLowerCase()));
+  return hit ? [hit] : all;
 }
 
 type HodnoceniPeriod = "mesic" | "ctvrtleti" | "pololeti" | "vlastni";
@@ -5712,10 +5859,10 @@ const TONE_SCALES = [
 ];
 
 function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; onGenerate: (data: { students: StudentAssessment[]; period: string; className: string }) => void }) {
-  const { tpGoals, lessonsDone, goToClasses } = useContext(GoalsContext);
+  const { tpGoals, lessonsDone, goToClasses, classes } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
-  const [selectedClassId, setSelectedClassId] = useState(initialClasses[0]?.id ?? "");
-  const cls = initialClasses.find(c => c.id === selectedClassId) ?? initialClasses[0];
+  const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id ?? "");
+  const cls = classes.find(c => c.id === selectedClassId) ?? classes[0];
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const [period, setPeriod] = useState<HodnoceniPeriod>("mesic");
   const [periodValue, setPeriodValue] = useState(monthOptions[0]);
@@ -5806,7 +5953,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             Třída
           </label>
           <select value={selectedClassId} onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents(new Set()); }} style={selectStyle}>
-            {initialClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
 
@@ -6335,6 +6482,22 @@ function HodnoceniView() {
   const [view, setView] = useState<"list" | "generating" | "result" | "detail">("list");
   const [pendingResult, setPendingResult] = useState<{ students: StudentAssessment[]; period: string; className: string } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [allTags, setAllTags] = useState<string[]>(DEFAULT_TAGS);
+  const [tagFor, setTagFor] = useState<string | null>(null);
+  const [newTag, setNewTag] = useState("");
+  const [filterClass, setFilterClass] = useState("vse");
+  const [filterPeriod, setFilterPeriod] = useState("vse");
+  const [filterTag, setFilterTag] = useState("vse");
+  const [filterMonth, setFilterMonth] = useState<string | null>(null);
+
+  const toggleTag = (id: string, tag: string) => setHodnoceni(prev => prev.map(h =>
+    h.id === id ? { ...h, tags: h.tags.includes(tag) ? h.tags.filter(t => t !== tag) : [...h.tags, tag] } : h));
+
+  const filteredHodnoceni = hodnoceni.filter(h =>
+    (filterClass === "vse" || h.className === filterClass) &&
+    (filterPeriod === "vse" || h.period === filterPeriod) &&
+    (filterTag === "vse" || h.tags.includes(filterTag)) &&
+    (!filterMonth || monthsOfPeriod(h.period).includes(filterMonth)));
 
   if (view === "generating") {
     return (
@@ -6357,7 +6520,7 @@ function HodnoceniView() {
         createdAt={createdAt}
         onBack={() => setView("list")}
         onSave={(students) => {
-          const h: Hodnoceni = { id: "h" + Date.now(), title, className: pendingResult.className, period: pendingResult.period, createdAt, students };
+          const h: Hodnoceni = { id: "h" + Date.now(), title, className: pendingResult.className, period: pendingResult.period, createdAt, students, tags: [] };
           setHodnoceni(prev => [h, ...prev]);
           setPendingResult(null);
           setView("list");
@@ -6422,34 +6585,198 @@ function HodnoceniView() {
           </button>
         </div>
       ) : (
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
-          {hodnoceni.map((h, i) => (
-            <button
+        <>
+        {/* filtr: třída, období a osa školního roku */}
+        <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "16px 20px", marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+            <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={FILTER_SELECT_STYLE}>
+              <option value="vse">Všechny třídy</option>
+              {Array.from(new Set(hodnoceni.map(h => h.className))).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={FILTER_SELECT_STYLE}>
+              <option value="vse">Všechna období</option>
+              {Array.from(new Set(hodnoceni.map(h => h.period))).map(pv => <option key={pv} value={pv}>{pv}</option>)}
+            </select>
+            <select value={filterTag} onChange={e => setFilterTag(e.target.value)} style={FILTER_SELECT_STYLE}>
+              <option value="vse">Všechny štítky</option>
+              {allTags.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            {(filterClass !== "vse" || filterPeriod !== "vse" || filterTag !== "vse" || filterMonth) && (
+              <button
+                onClick={() => { setFilterClass("vse"); setFilterPeriod("vse"); setFilterTag("vse"); setFilterMonth(null); }}
+                style={{
+                  padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)",
+                  background: "rgba(254,226,226,0.5)", cursor: "pointer",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#dc2626", whiteSpace: "nowrap",
+                }}
+              >
+                Zrušit filtr
+              </button>
+            )}
+          </div>
+
+          {/* osa školního roku */}
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 10.5, color: "#8a8a99", margin: "0 0 6px" }}>
+            Školní rok {SCHOOL_YEAR_LABEL}
+          </p>
+          <div style={{ display: "flex", gap: 3 }}>
+            {LESSON_MONTHS.map(m => {
+              const count = hodnoceni.filter(h => monthsOfPeriod(h.period).includes(m)).length;
+              const on = filterMonth === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setFilterMonth(on ? null : m)}
+                  aria-pressed={on}
+                  title={`${m} · ${count} ${count === 1 ? "hodnocení" : "hodnocení"}`}
+                  style={{
+                    flex: 1, padding: "7px 2px 6px", borderRadius: 8, cursor: "pointer",
+                    border: on ? "1.5px solid #7c3aed" : "1.5px solid transparent",
+                    background: on ? "#f3e8ff" : count ? "#ede9fe" : "rgba(236,236,240,0.55)",
+                    color: count ? "#5b21b6" : "#b0b0be",
+                    fontFamily: count ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                    fontWeight: count ? 500 : 400, fontSize: 11,
+                    transition: "background 0.12s, border-color 0.12s",
+                  }}
+                >
+                  {m.slice(0, 3)}
+                  <span style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 10, opacity: 0.8 }}>
+                    {count || "—"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* jednotlivá hodnocení */}
+        {filteredHodnoceni.length === 0 ? (
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", textAlign: "center", padding: "48px 0" }}>
+            Žádné hodnocení neodpovídá filtru.
+          </p>
+        ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filteredHodnoceni.map(h => (
+            <div
               key={h.id}
-              onClick={() => { setSelectedId(h.id); setView("detail"); }}
               style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
-                width: "100%", padding: "16px 20px", background: "transparent", border: "none",
-                borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.07)",
-                cursor: "pointer", textAlign: "left", transition: "background 0.12s",
+                background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)",
+                padding: "14px 18px", display: "flex", alignItems: "center", gap: 14,
+                transition: "border-color 0.12s",
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(236,236,240,0.35)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.22)")}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.09)")}
             >
-              <div>
-                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 3px" }}>
+              <button
+                onClick={() => { setSelectedId(h.id); setView("detail"); }}
+                style={{ flexGrow: 1, minWidth: 0, textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 4px" }}>
                   {h.title}
                 </p>
                 <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", margin: 0 }}>
-                  {h.period} · {h.createdAt} · {h.students.length} {h.students.length === 1 ? "žák" : h.students.length < 5 ? "žáci" : "žáků"}
+                  {h.className} · {h.period} · {h.students.length} {h.students.length === 1 ? "žák" : h.students.length < 5 ? "žáci" : "žáků"} · {h.createdAt}
                 </p>
+              </button>
+
+              <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end", maxWidth: 320 }}>
+                {h.tags.map(t => (
+                  <span
+                    key={t}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "3px 8px 3px 10px", borderRadius: 20,
+                      background: `${tagColor(t)}14`, color: tagColor(t),
+                      fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
+                    }}
+                  >
+                    {t}
+                    <button
+                      onClick={() => toggleTag(h.id, t)}
+                      aria-label={`Odebrat štítek ${t}`}
+                      style={{ border: "none", background: "none", cursor: "pointer", padding: 0, color: "inherit", opacity: 0.6, display: "flex" }}
+                    >
+                      <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                        <path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+                <button
+                  onClick={() => setTagFor(h.id)}
+                  style={{
+                    padding: "3px 10px", borderRadius: 20, cursor: "pointer",
+                    border: "1px dashed rgba(0,0,0,0.2)", background: "transparent", color: "#8a8a99",
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, whiteSpace: "nowrap",
+                  }}
+                >
+                  + štítek
+                </button>
               </div>
+
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: "#b0b0be" }}>
                 <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </button>
+            </div>
           ))}
         </div>
+        )}
+
+        {tagFor && (
+          <Modal title="Štítky hodnocení" onClose={() => { setTagFor(null); setNewTag(""); }} width={420}>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 14px" }}>
+              Štítky si tvoříte sami — podle nich pak hodnocení filtrujete.
+            </p>
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
+              {allTags.map(t => {
+                const on = hodnoceni.find(h => h.id === tagFor)?.tags.includes(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => toggleTag(tagFor, t)}
+                    aria-pressed={on}
+                    style={{
+                      padding: "6px 12px", borderRadius: 20, cursor: "pointer",
+                      border: `1.5px solid ${on ? tagColor(t) : "rgba(0,0,0,0.13)"}`,
+                      background: on ? `${tagColor(t)}14` : "#fff",
+                      color: on ? tagColor(t) : "#5c5c6b",
+                      fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                      fontWeight: on ? 500 : 400, fontSize: 12.5,
+                    }}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={newTag}
+                onChange={e => setNewTag(e.target.value)}
+                placeholder="Nový štítek…"
+                style={{
+                  flexGrow: 1, padding: "9px 12px", borderRadius: 10, boxSizing: "border-box",
+                  border: "1.5px solid rgba(0,0,0,0.13)", outline: "none",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+                }}
+              />
+              <button
+                onClick={() => {
+                  const t = newTag.trim();
+                  if (!t) return;
+                  setAllTags(prev => prev.includes(t) ? prev : [...prev, t]);
+                  toggleTag(tagFor, t);
+                  setNewTag("");
+                }}
+                style={{ ...btnStyle("primary"), whiteSpace: "nowrap" }}
+              >
+                Přidat
+              </button>
+            </div>
+            <ModalActions onCancel={() => { setTagFor(null); setNewTag(""); }} onConfirm={() => { setTagFor(null); setNewTag(""); }} confirmLabel="Hotovo" />
+          </Modal>
+        )}
+        </>
       )}
     </div>
   );
@@ -8265,11 +8592,11 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 
 // Vygenerované hodiny si s sebou nesou i důkazy o učení, aby prototyp
 // nevypadal prázdně — kritéria a úrovně se berou z hodiny samotné.
-function buildEvidenceForGoals(goals: TpGoal[]): EvidenceRecord[] {
+function buildEvidenceForGoals(goals: TpGoal[], classes: Class[]): EvidenceRecord[] {
   const levels = ["Začínám", "Rozvíjím", "Zvládám"];
   const out: EvidenceRecord[] = [];
   goals.slice(0, 4).forEach((g, gi) => {
-    const students = initialClasses.find(c => c.name === g.trida)?.students ?? [];
+    const students = classes.find(c => c.name === g.trida)?.students ?? [];
     const mi = Math.max(0, LESSON_MONTHS.indexOf(g.month));
     const month = mi + 9 > 12 ? mi - 3 : mi + 9;
     const year = mi + 9 > 12 ? SCHOOL_YEAR_START + 1 : SCHOOL_YEAR_START;
@@ -8307,6 +8634,8 @@ export default function App() {
   // jsou to stejná data, jen dvě obrazovky.
   const [planRows, setPlanRows] = useState<TpRow[]>([]);
   const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
+  // Aplikace startuje bez tříd i bez důkazů; ukázková data přidá tlačítko v menu.
+  const [classes, setClasses] = useState<Class[]>([]);
   // které hodiny už jsou odučené — drží se nad navigací, ovlivňuje i kartu plánu
   const [lessonsDone, setLessonsDone] = useState<Record<string, boolean>>({});
   // stupnice, kterou používá škola — profil ji nastavuje pro celou aplikaci
@@ -8315,15 +8644,8 @@ export default function App() {
   const [schoolLevelId, setSchoolLevelId] = useState("začínám");
   const [schoolCustomLevels, setSchoolCustomLevels] = useState<CustomLevel[]>(defaultCustomLevels);
   const [animateIn, setAnimateIn] = useState(false);
-  const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
-    const acc: Record<string, StudentEvidence> = {};
-    sampleEvidenceRecords.forEach(r => {
-      acc[r.studentId] = acc[r.studentId] ?? { audio: 0, photo: 0, note: 0 };
-      acc[r.studentId][r.type] = (acc[r.studentId][r.type] ?? 0) + 1;
-    });
-    return acc;
-  });
-  const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>(sampleEvidenceRecords);
+  const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>({});
+  const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>([]);
   const mainRef = useRef<HTMLElement>(null);
 
   const addStudentEvidence = useCallback((studentId: string, type: "audio" | "photo" | "note") => {
@@ -8376,7 +8698,7 @@ export default function App() {
         return [...prev, ...newGoals.filter(g => !existingIds.has(g.id))];
       });
       // k novým hodinám rovnou i důkazy o učení, ať na ně navazuje zbytek aplikace
-      const generated = buildEvidenceForGoals(fresh);
+      const generated = buildEvidenceForGoals(fresh, classes);
       if (generated.length) {
         setEvidenceRecords(prev => {
           const have = new Set(prev.map(r => r.id));
@@ -8429,6 +8751,8 @@ export default function App() {
     setPlans,
     lessonsDone,
     toggleLessonDone: (id) => setLessonsDone(prev => ({ ...prev, [id]: !prev[id] })),
+    classes,
+    setClasses,
     goToSettings: () => navigate("profil"),
     goToClasses: () => navigate("tridy"),
     openGuide: () => setOnboardingOpen(true),
@@ -8474,8 +8798,32 @@ export default function App() {
     setPlanRows([]);
     setTpGoals([]);
     setLessonsDone({});
-    setEvidenceRecords(prev => prev.filter(r => !r.id.startsWith("gen-") && !r.id.startsWith("ev")));
+    setEvidenceRecords([]);
+    setStudentEvidence({});
+    setClasses([]);
     navigate("tematicky-plan");
+  }
+
+  function addDemoClass() {
+    setClasses(initialClasses);
+    navigate("tridy");
+  }
+
+  function addDemoEvidence() {
+    setClasses(prev => prev.length ? prev : initialClasses);
+    setEvidenceRecords(prev => {
+      const have = new Set(prev.map(r => r.id));
+      return [...prev, ...sampleEvidenceRecords.filter(r => !have.has(r.id))];
+    });
+    setStudentEvidence(prev => {
+      const next = { ...prev };
+      sampleEvidenceRecords.forEach(r => {
+        const cur = next[r.studentId] ?? { audio: 0, photo: 0, note: 0 };
+        next[r.studentId] = { ...cur, [r.type]: (cur[r.type] ?? 0) + 1 };
+      });
+      return next;
+    });
+    navigate("dukazy");
   }
 
   function addDemoPlan() {
@@ -8617,8 +8965,10 @@ export default function App() {
                 {!collapsed && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 4 }}>
                     <button onClick={() => navigate("napady")} style={devBtnStyle}>Nápady</button>
+                    <button onClick={addDemoClass} style={devBtnStyle}>Přidat třídu</button>
+                    <button onClick={addDemoEvidence} style={devBtnStyle}>Přidat důkazy o učení</button>
                     <button onClick={addDemoPlan} style={devBtnStyle}>Přidat plán a hodiny</button>
-                    <button onClick={clearPlanAndLessons} style={devBtnStyle}>Vymazat plán a hodiny</button>
+                    <button onClick={clearPlanAndLessons} style={devBtnStyle}>Vymazat vše</button>
 
                     <button onClick={() => setOnboardingOpen(true)} style={devBtnStyle}>
                       Jak na formativní hodnocení
