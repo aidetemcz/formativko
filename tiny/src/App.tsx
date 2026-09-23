@@ -53,27 +53,17 @@ function er(id: string, studentId: string, studentName: string, className: strin
 }
 
 const sampleEvidenceRecords: EvidenceRecord[] = [
-  er("e1","3a-1","Beneš, Adam","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-10","Výběr výstižných slov","Zvládám"),
-  er("e2","3a-1","Beneš, Adam","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-10","Uspořádání textu","Rozvíjím"),
-  er("e3","3a-2","Blahová, Anežka","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-11","Stavba vět","Zvládám"),
-  er("e4","3a-3","Čermáková, Barbora","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-11","Výběr výstižných slov","Začínám"),
   er("e5","3a-4","Dvořák, Daniel","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-05","Zpaměťové počítání","Zvládám"),
   er("e6","3a-4","Dvořák, Daniel","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-06","Strategie odečítání","Rozvíjím"),
   er("e7","3a-5","Fišerová, Eliška","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-07","Zpaměťové počítání","Rozvíjím"),
-  er("e8","3a-6","Hájek, Filip","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-12","Uspořádání textu","Zvládám"),
-  er("e9","3a-7","Horáková, Gabriela","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-12","Stavba vět","Rozvíjím"),
   er("e10","3a-8","Jelínek, Jan","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-28","Název a funkce orgánů","Zvládám"),
   er("e11","3a-9","Kopecká, Karolína","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-28","Název a funkce orgánů","Rozvíjím"),
   er("e12","3a-10","Kratochvíl, Lukáš","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-29","Popis pohybového aparátu","Začínám"),
-  er("e13","3a-11","Křížková, Marie","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-15","Výběr výstižných slov","Zvládám"),
-  er("e14","3a-12","Macháček, Martin","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-15","Uspořádání textu","Rozvíjím"),
   er("e15","3a-13","Marková, Natálie","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-20","Strategie odečítání","Zvládám"),
   er("e16","3a-14","Novák, Ondřej","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-20"),
   er("e17","3a-15","Pokorná, Petra","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-21"),
   er("e18","3a-16","Procházka, Radek","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-07-10"),
   er("e19","3a-17","Růžičková, Simona","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-07-11"),
-  er("e20","3a-18","Sedláčková, Tereza","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-16"),
-  er("e21","3a-19","Svoboda, Tomáš","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-16"),
   er("e22","3a-20","Šimánková, Veronika","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-05"),
   er("e23","3a-21","Veselý, Vojtěch","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-06"),
   er("e24","3a-1","Beneš, Adam","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-10"),
@@ -83,19 +73,14 @@ const sampleEvidenceRecords: EvidenceRecord[] = [
   er("e28","3a-6","Hájek, Filip","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-15"),
   er("e29","3a-7","Horáková, Gabriela","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-16"),
   er("e30","3a-8","Jelínek, Jan","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-16"),
-  er("e31","3a-9","Kopecká, Karolína","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2027-03-20"),
-  er("e32","3a-10","Kratochvíl, Lukáš","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2027-03-20"),
   er("e33","3a-11","Křížková, Marie","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-12"),
   er("e34","3a-12","Macháček, Martin","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-12"),
   er("e35","3a-13","Marková, Natálie","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-08"),
   er("e36","3a-14","Novák, Ondřej","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-08"),
-  er("e37","3a-15","Pokorná, Petra","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-22"),
-  er("e38","3a-16","Procházka, Radek","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-22"),
   er("e39","3a-17","Růžičková, Simona","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-03"),
   er("e40","3a-18","Sedláčková, Tereza","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-03"),
   er("e41","3a-19","Svoboda, Tomáš","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-14"),
   er("e42","3a-20","Šimánková, Veronika","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-14"),
-  er("e43","3a-21","Veselý, Vojtěch","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-05"),
 
   // druhá sada — různé předměty, kritéria, úrovně, typy
   er("e44","3a-1","Beneš, Adam","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-15","Název a funkce orgánů","Zvládám"),
@@ -104,15 +89,12 @@ const sampleEvidenceRecords: EvidenceRecord[] = [
   er("e47","3a-2","Blahová, Anežka","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-20","Fáze životního cyklu","Rozvíjím"),
   er("e48","3a-3","Čermáková, Barbora","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-30","Strategie odečítání","Rozvíjím"),
   er("e49","3a-3","Čermáková, Barbora","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-22","Podmínky růstu","Začínám"),
-  er("e50","3a-4","Dvořák, Daniel","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-14","Stavba vět","Začínám"),
   er("e51","3a-4","Dvořák, Daniel","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-07-20","Popis pohybového aparátu","Rozvíjím"),
-  er("e52","3a-5","Fišerová, Eliška","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-09","Výběr výstižných slov","Zvládám"),
   er("e53","3a-5","Fišerová, Eliška","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-14","Pojmenování tvarů","Zvládám"),
   er("e54","3a-6","Hájek, Filip","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-01","Zpaměťové počítání","Rozvíjím"),
   er("e55","3a-6","Hájek, Filip","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-10","Název a funkce orgánů","Začínám"),
   er("e56","3a-7","Horáková, Gabriela","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-08","Rozpoznání tvarů","Zvládám"),
   er("e57","3a-7","Horáková, Gabriela","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-18","Podmínky růstu","Rozvíjím"),
-  er("e58","3a-8","Jelínek, Jan","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-13","Stavba vět","Zvládám"),
   er("e59","3a-8","Jelínek, Jan","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-22","Strategie odečítání","Zvládám"),
   er("e60","3a-9","Kopecká, Karolína","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-05-28","Pojmenování tvarů","Rozvíjím"),
   er("e61","3a-9","Kopecká, Karolína","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-25","Fáze životního cyklu","Zvládám"),
@@ -122,62 +104,48 @@ const sampleEvidenceRecords: EvidenceRecord[] = [
   er("e65","3a-11","Křížková, Marie","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-05-30","Pojmenování tvarů","Zvládám"),
   er("e66","3a-12","Macháček, Martin","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-05","Název a funkce orgánů","Rozvíjím"),
   er("e67","3a-12","Macháček, Martin","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-02","Rozpoznání tvarů","Zvládám"),
-  er("e68","3a-13","Marková, Natálie","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-17","Výběr výstižných slov","Rozvíjím"),
   er("e69","3a-13","Marková, Natálie","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-10","Fáze životního cyklu","Začínám"),
-  er("e70","3a-14","Novák, Ondřej","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-14","Stavba vět","Zvládám"),
   er("e71","3a-14","Novák, Ondřej","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-05-25","Pojmenování tvarů","Rozvíjím"),
   er("e72","3a-15","Pokorná, Petra","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-07-08","Název a funkce orgánů","Zvládám"),
   er("e73","3a-15","Pokorná, Petra","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-08","Podmínky růstu","Zvládám"),
   er("e74","3a-16","Procházka, Radek","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-02","Zpaměťové počítání","Začínám"),
   er("e75","3a-16","Procházka, Radek","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2027-06-01","Rozpoznání tvarů","Rozvíjím"),
-  er("e76","3a-17","Růžičková, Simona","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-11","Uspořádání textu","Zvládám"),
   er("e77","3a-17","Růžičková, Simona","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-08-12","Popis pohybového aparátu","Rozvíjím"),
   er("e78","3a-18","Sedláčková, Tereza","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-18","Strategie odečítání","Zvládám"),
   er("e79","3a-18","Sedláčková, Tereza","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-07","Fáze životního cyklu","Rozvíjím"),
   er("e80","3a-19","Svoboda, Tomáš","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-08-25","Zpaměťové počítání","Rozvíjím"),
   er("e81","3a-19","Svoboda, Tomáš","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-07-22","Název a funkce orgánů","Zvládám"),
-  er("e82","3a-20","Šimánková, Veronika","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-09-08","Výběr výstižných slov","Rozvíjím"),
   er("e83","3a-20","Šimánková, Veronika","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-06","Podmínky růstu","Zvládám"),
   er("e84","3a-21","Veselý, Vojtěch","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2026-09-04","Strategie odečítání","Zvládám"),
   er("e85","3a-21","Veselý, Vojtěch","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-04-14","Fáze životního cyklu","Rozvíjím"),
 
   // třetí sada — starší záznamy, různorodé typy (bez kritéria = čistá audio/foto)
   er("e86","3a-1","Beneš, Adam","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-20"),
-  er("e87","3a-2","Blahová, Anežka","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-14"),
   er("e88","3a-3","Čermáková, Barbora","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-10","Pojmenování tvarů","Rozvíjím"),
   er("e89","3a-4","Dvořák, Daniel","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-18"),
   er("e90","3a-5","Fišerová, Eliška","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-05","Zpaměťové počítání","Začínám"),
-  er("e91","3a-6","Hájek, Filip","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-28","Stavba vět","Rozvíjím"),
   er("e92","3a-7","Horáková, Gabriela","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-18"),
   er("e93","3a-8","Jelínek, Jan","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-15","Rozpoznání tvarů","Zvládám"),
   er("e94","3a-9","Kopecká, Karolína","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-20","Strategie odečítání","Zvládám"),
-  er("e95","3a-10","Kratochvíl, Lukáš","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-30"),
   er("e96","3a-11","Křížková, Marie","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-10","Fáze životního cyklu","Zvládám"),
   er("e97","3a-12","Macháček, Martin","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-12"),
   er("e98","3a-13","Marková, Natálie","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-08","Pojmenování tvarů","Rozvíjím"),
   er("e99","3a-14","Novák, Ondřej","3.A","audio","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-16","Podmínky růstu","Začínám"),
   er("e100","3a-15","Pokorná, Petra","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-01"),
-  er("e101","3a-16","Procházka, Radek","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-20","Výběr výstižných slov","Začínám"),
   er("e102","3a-17","Růžičková, Simona","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-08"),
   er("e103","3a-18","Sedláčková, Tereza","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-20","Popis pohybového aparátu","Zvládám"),
-  er("e104","3a-19","Svoboda, Tomáš","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-10"),
   er("e105","3a-20","Šimánková, Veronika","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-25","Název a funkce orgánů","Rozvíjím"),
   er("e106","3a-21","Veselý, Vojtěch","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-08","Zpaměťové počítání","Rozvíjím"),
-  er("e107","3a-1","Beneš, Adam","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-08","Uspořádání textu","Zvládám"),
   er("e108","3a-2","Blahová, Anežka","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-12","Název a funkce orgánů","Zvládám"),
-  er("e109","3a-3","Čermáková, Barbora","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-18"),
   er("e110","3a-4","Dvořák, Daniel","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-20","Rozpoznání tvarů","Zvládám"),
   er("e111","3a-5","Fišerová, Eliška","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-15","Popis pohybového aparátu","Rozvíjím"),
   er("e112","3a-6","Hájek, Filip","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-06","Fáze životního cyklu","Začínám"),
-  er("e113","3a-7","Horáková, Gabriela","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-16","Výběr výstižných slov","Zvládám"),
   er("e114","3a-8","Jelínek, Jan","3.A","photo","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-10"),
   er("e115","3a-9","Kopecká, Karolína","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-18","Pojmenování tvarů","Začínám"),
   er("e116","3a-10","Kratochvíl, Lukáš","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-15","Strategie odečítání","Rozvíjím"),
   er("e117","3a-11","Křížková, Marie","3.A","audio","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-06","Rozpoznání tvarů","Zvládám"),
-  er("e118","3a-12","Macháček, Martin","3.A","photo","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-25","Stavba vět","Rozvíjím"),
   er("e119","3a-13","Marková, Natálie","3.A","audio","tp-prv-1","Dokážu pojmenovat části lidského těla a vysvětlit jejich funkci","Prvouka","2026-11-06","Název a funkce orgánů","Zvládám"),
   er("e120","3a-14","Novák, Ondřej","3.A","photo","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-10"),
-  er("e121","3a-15","Pokorná, Petra","3.A","audio","g1","Dokážu napsat srozumitelný text o mém oblíbeném zvířeti","Čeština","2026-10-24","Uspořádání textu","Začínám"),
   er("e122","3a-16","Procházka, Radek","3.A","photo","tp-prv-2","Dokážu popsat životní cyklus rostliny a podmínky jejího růstu","Prvouka","2027-01-04","Podmínky růstu","Rozvíjím"),
   er("e123","3a-17","Růžičková, Simona","3.A","audio","tp-mat-1","Dokážu sečíst a odečíst čísla do 100 zpaměti","Matematika","2027-02-22","Zpaměťové počítání","Zvládám"),
   er("e124","3a-18","Sedláčková, Tereza","3.A","photo","tp-mat-2","Dokážu rozpoznat a pojmenovat základní geometrické tvary","Matematika","2026-12-12"),
@@ -656,6 +624,47 @@ function EvidenceCard({ ev, hideGoal }: { ev: Evidence; hideGoal?: boolean }) {
 
 type ProfileView = "type" | "goal";
 
+// Předměty v 6. pádu, ať věty od Buddyho zní česky.
+const SUBJECT_LOCATIVE: Record<string, string> = {
+  "Čeština": "češtině",
+  "Matematika": "matematice",
+  "Prvouka": "prvouce",
+  "Anglický jazyk": "angličtině",
+  "Hudební výchova": "hudební výchově",
+  "Výtvarná výchova": "výtvarné výchově",
+  "Tělesná výchova": "tělesné výchově",
+  "Informatika": "informatice",
+};
+const subjectLoc = (s: string) => SUBJECT_LOCATIVE[s] ?? `předmětu ${s}`;
+
+const SHEET_LEVELS = ["Začínám", "Rozvíjím", "Zvládám"] as const;
+const SHEET_LEVEL_STYLE: Record<string, { border: string; bg: string; fg: string }> = {
+  "Začínám": { border: "#dc2626", bg: "#fee2e2", fg: "#991b1b" },
+  "Rozvíjím": { border: "#ca8a04", bg: "#fef9c3", fg: "#854d0e" },
+  "Zvládám": { border: "#16a34a", bg: "#dcfce7", fg: "#166534" },
+};
+
+// Shrnutí od Buddyho: z důkazů se po předmětech poskládá jedna věta o posunu.
+function buddySummary(name: string, records: EvidenceRecord[], subjects: string[]) {
+  return subjects.map(subject => {
+    const recs = records
+      .filter(r => r.subject === subject && r.level)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (recs.length === 0) {
+      return { subject, text: `V ${subjectLoc(subject)} o něm zatím nejsou žádné důkazy o učení.` };
+    }
+    const byCrit: Record<string, EvidenceRecord[]> = {};
+    recs.forEach(r => { (byCrit[r.criterion ?? "–"] ??= []).push(r); });
+    const [crit, items] = Object.entries(byCrit).sort((a, b) => b[1].length - a[1].length)[0];
+    const first = items[0].level!;
+    const last = items[items.length - 1].level!;
+    const text = first === last
+      ? `${name} je v ${subjectLoc(subject)} u kritéria „${crit}" na úrovni ${last.toLowerCase()} — ${items.length} ${items.length === 1 ? "důkaz" : items.length <= 4 ? "důkazy" : "důkazů"}.`
+      : `${name} se v ${subjectLoc(subject)} posouvá u kritéria „${crit}" z ${first.toLowerCase()} na ${last.toLowerCase()}.`;
+    return { subject, text };
+  });
+}
+
 function StudentProfile({
   student,
   className,
@@ -668,14 +677,72 @@ function StudentProfile({
   const { evidenceRecords } = useContext(EvidenceContext);
   const { tpGoals } = useContext(GoalsContext);
   const goalNums = buildGoalNumbers(tpGoals);
-  const studentRecords = [...evidenceRecords]
+  const fullName = `${student.firstName} ${student.lastName}`;
+  const allStudentRecords = [...evidenceRecords]
     .filter(r => r.studentId === student.id)
     .sort((a, b) => b.date.localeCompare(a.date));
-  const [view, setView] = useState<"goal" | "all">("all");
+  const [view, setView] = useState<"goal" | "all" | "sheet">("all");
+
+  // stejný filtr jako na přehledu důkazů, jen s předvybranou třídou a žákem
+  const [filterSubject, setFilterSubject] = useState("vse");
+  const [filterClass, setFilterClass] = useState(className);
+  const [filterStudentId, setFilterStudentId] = useState(student.id);
+  const [filterGoalId, setFilterGoalId] = useState("vse");
+  const [filterPeriod, setFilterPeriod] = useState("vse");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+
+  const allSubjects = Array.from(new Set([...SUBJECTS, ...evidenceRecords.map(r => r.subject)])).sort();
+  const allClasses = Array.from(new Set([...initialClasses.map(c => c.name), ...evidenceRecords.map(r => r.className)])).sort();
+  const studentsOfClass = (initialClasses.find(c => c.name === filterClass)?.students ?? [])
+    .map(st => ({ id: st.id, name: `${st.lastName}, ${st.firstName}` }));
+  const allGoals = [
+    ...tpGoals.map(g => ({ id: g.id, text: g.text })),
+    ...Array.from(new Set(evidenceRecords.map(r => r.goalId)))
+      .filter(id => !tpGoals.find(g => g.id === id))
+      .map(id => ({ id, text: evidenceRecords.find(r => r.goalId === id)?.goalText ?? id })),
+  ];
+
+  const studentRecords = [...evidenceRecords]
+    .filter(r => {
+      if (filterStudentId !== "vse" && r.studentId !== filterStudentId) return false;
+      if (filterClass !== "vse" && r.className !== filterClass) return false;
+      if (filterSubject !== "vse" && r.subject !== filterSubject) return false;
+      if (filterGoalId !== "vse" && r.goalId !== filterGoalId) return false;
+      if (!inSelectedPeriod(r.date, filterPeriod, filterDateFrom, filterDateTo)) return false;
+      return true;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const activeFilters = [filterSubject, filterGoalId, filterPeriod].filter(v => v !== "vse").length;
+  function resetFilters() {
+    setFilterSubject("vse"); setFilterGoalId("vse"); setFilterPeriod("vse");
+    setFilterDateFrom(""); setFilterDateTo("");
+    setFilterClass(className); setFilterStudentId(student.id);
+  }
 
   const byGoal: Record<string, EvidenceRecord[]> = {};
   studentRecords.forEach(r => { (byGoal[r.goalText] ??= []).push(r); });
   const groups = Object.entries(byGoal);
+
+  // předměty do shrnutí: co žák má v důkazech plus co ho čeká podle hodin
+  const summarySubjects = Array.from(new Set([
+    ...allStudentRecords.map(r => r.subject),
+    ...tpGoals.filter(g => g.trida === className).map(g => g.subject),
+  ])).sort();
+  const summary = buddySummary(fullName, allStudentRecords, summarySubjects);
+
+  // list důkazů o učení: jedna vyučovací hodina na řádek, přepínátka pro tohoto žáka
+  const sheetLessons = tpGoals.filter(g =>
+    g.trida === className &&
+    (filterSubject === "vse" || g.subject === filterSubject) &&
+    (filterGoalId === "vse" || g.id === filterGoalId));
+  const latestLevel = (goalId: string) => {
+    const recs = allStudentRecords.filter(r => r.goalId === goalId && r.level);
+    return recs.length ? recs[0].level! : null;
+  };
+  const [sheetLevels, setSheetLevels] = useState<Record<string, string>>({});
+  const [sheetNote, setSheetNote] = useState("");
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -683,11 +750,11 @@ function StudentProfile({
         { label: "Formativní hodnocení" },
         { label: "Třídy", onClick: onBack },
         { label: `Třída ${className}`, onClick: onBack },
-        { label: `${student.firstName} ${student.lastName}` },
+        { label: fullName },
       ]} />
 
       {/* header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{
             width: 48, height: 48, borderRadius: "50%", background: avatarColor(student.lastName),
@@ -697,10 +764,10 @@ function StudentProfile({
             {student.firstName[0]}{student.lastName[0]}
           </div>
           <div>
-            <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 2px" }}>
-              {student.firstName} {student.lastName}
+            <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0 }}>
+              {fullName}
             </h1>
-            <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: "#717182", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
+            <span style={{ padding: "2px 9px", borderRadius: 20, background: "rgba(236,236,240,0.9)", color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12 }}>
               {className}
             </span>
           </div>
@@ -708,7 +775,7 @@ function StudentProfile({
 
         {/* view toggle */}
         <div style={{ display: "flex", gap: 4, background: "rgba(236,236,240,0.6)", borderRadius: 9, padding: 3 }}>
-          {([["all", "Vše"], ["goal", "Podle cíle"]] as const).map(([v, label]) => (
+          {([["all", "Vše"], ["goal", "Podle cíle"], ["sheet", "List důkazů"]] as const).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -729,8 +796,164 @@ function StudentProfile({
         </div>
       </div>
 
-      {/* evidence */}
-      {studentRecords.length === 0 ? (
+      {/* shrnutí od Buddyho */}
+      <div style={{ background: "#faf7ff", borderRadius: 14, border: "1px solid rgba(124,77,189,0.22)", padding: "16px 20px", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <span style={{
+            width: 22, height: 22, borderRadius: "50%", background: "#5b21b6", flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <img src={buddyImg} alt="" style={{ width: 14, height: 14, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          </span>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#5b21b6", margin: 0 }}>
+            Shrnutí od Buddyho
+          </p>
+        </div>
+        {summary.length === 0 ? (
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#5c5c6b", margin: 0, lineHeight: 1.6 }}>
+            Zatím není z čeho shrnovat — nejdřív vytvořte tématický plán a zaznamenejte první důkazy o učení.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {summary.map(({ subject, text }) => (
+              <div key={subject} style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
+                <span style={{
+                  flexShrink: 0, minWidth: 96, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
+                  fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase",
+                }}>
+                  {subject}
+                </span>
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#2f2f3a", lineHeight: 1.6 }}>
+                  {text}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* filtr — stejný jako v důkazech o učení */}
+      <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "16px 20px", marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} style={FILTER_SELECT_STYLE}>
+            <option value="vse">Všechny předměty</option>
+            {allSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+
+          <select value={filterClass} onChange={e => { setFilterClass(e.target.value); setFilterStudentId("vse"); }} style={FILTER_SELECT_STYLE}>
+            <option value="vse">Všechny třídy</option>
+            {allClasses.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <select value={filterStudentId} onChange={e => setFilterStudentId(e.target.value)} style={FILTER_SELECT_STYLE}>
+            <option value="vse">{filterClass === "vse" ? "Všichni žáci" : "Všichni žáci třídy"}</option>
+            {studentsOfClass.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
+          </select>
+
+          <select value={filterGoalId} onChange={e => setFilterGoalId(e.target.value)} style={{ ...FILTER_SELECT_STYLE, flex: "1 1 220px", minWidth: 0 }}>
+            <option value="vse">Všechny vyučovací hodiny</option>
+            {allGoals.map(g => {
+              const num = goalNums.get(g.id);
+              const prefix = num ? `Hodina ${num} · ` : "";
+              const label = prefix + (g.text.length > 52 ? g.text.slice(0, 50) + "…" : g.text);
+              return <option key={g.id} value={g.id}>{label}</option>;
+            })}
+          </select>
+
+          <select value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={FILTER_SELECT_STYLE}>
+            {PERIOD_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+          </select>
+
+          {filterPeriod === "vlastni" && (
+            <>
+              <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} style={{ ...FILTER_SELECT_STYLE, paddingRight: 12, backgroundImage: "none" }} title="Od" />
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>–</span>
+              <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} style={{ ...FILTER_SELECT_STYLE, paddingRight: 12, backgroundImage: "none" }} title="Do" />
+            </>
+          )}
+
+          {activeFilters > 0 && (
+            <button
+              onClick={resetFilters}
+              style={{
+                padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(220,38,38,0.3)",
+                background: "rgba(254,226,226,0.5)", cursor: "pointer",
+                fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#dc2626", whiteSpace: "nowrap",
+              }}
+            >
+              Zrušit ({activeFilters})
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* list důkazů o učení — jedna hodina na řádek, přepínátka pro tohoto žáka */}
+      {view === "sheet" ? (
+        sheetLessons.length === 0 ? (
+          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
+            Zatím žádné vyučovací hodiny — vygenerujte je z tématického plánu.
+          </div>
+        ) : (
+          <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "18px 20px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {sheetLessons.map(g => {
+                const num = goalNums.get(g.id);
+                const level = sheetLevels[g.id] ?? latestLevel(g.id);
+                return (
+                  <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", margin: 0, lineHeight: 1.5 }}>
+                        {g.text}
+                      </p>
+                      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a", margin: "2px 0 0" }}>
+                        {num ? `Hodina ${num} · ` : ""}{g.subject} · {monthLabel(g.month)}
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+                      {SHEET_LEVELS.map(lv => {
+                        const on = level === lv;
+                        const c = SHEET_LEVEL_STYLE[lv];
+                        return (
+                          <button
+                            key={lv}
+                            onClick={() => setSheetLevels(prev => ({ ...prev, [g.id]: on ? "" : lv }))}
+                            aria-pressed={on}
+                            style={{
+                              padding: "6px 13px", borderRadius: 8, border: `1px solid ${c.border}`,
+                              background: on ? c.bg : "#fff", color: c.fg,
+                              fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                              fontWeight: on ? 500 : 400, fontSize: 12, cursor: "pointer",
+                              transition: "background 0.12s",
+                            }}
+                          >
+                            {lv}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <label style={{ display: "block", marginTop: 14 }}>
+              <span style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a", marginBottom: 4 }}>
+                Poznámka
+              </span>
+              <input
+                type="text"
+                value={sheetNote}
+                onChange={e => setSheetNote(e.target.value)}
+                placeholder="Co konkrétně udělal nebo řekl…"
+                style={{
+                  width: "100%", boxSizing: "border-box", fontFamily: "'Inter:Regular', sans-serif",
+                  fontSize: 13, padding: "9px 11px", borderRadius: 9,
+                  border: "1px solid rgba(0,0,0,0.13)", outline: "none",
+                }}
+              />
+            </label>
+          </div>
+        )
+      ) : studentRecords.length === 0 ? (
         <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "28px 24px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182" }}>
           Zatím žádné důkazy nebyly zaznamenány.
         </div>
@@ -2425,14 +2648,7 @@ interface Goal {
   className: string;
 }
 
-const initialGoals: Goal[] = [
-  {
-    id: "g1",
-    text: "Dokážu napsat srozumitelný text o mém oblíbeném zvířeti tak, aby si ho čtenář dokázal představit.",
-    subject: "Čeština",
-    className: "3.A",
-  },
-];
+const initialGoals: Goal[] = [];
 
 function buildGoalNumbers(tpGoals: TpGoal[]): Map<string, number> {
   const m = new Map<string, number>();
@@ -2923,6 +3139,12 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
               return (
                 <FadeIn key={g.id} delay={animateIn && isTp ? 80 * (orderedFiltered.indexOf(g)) : 0}>
                   <div
+                    onClick={e => {
+                      // celá karta vede na detail, jen ovládací prvky a texty si klik nechávají
+                      const t = e.target as HTMLElement;
+                      if (t.closest("button, a, select, input, textarea, [data-no-nav]")) return;
+                      if (isTp) { setSelectedTpGoalId(g.id); setTpEditingLevels(false); } else setSelectedGoalId(g.id);
+                    }}
                     onDragEnter={() => setDragOverId(g.id)}
                     onDragOver={e => e.preventDefault()}
                     onDrop={() => {
@@ -2948,7 +3170,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       position: "relative",
                       display: "flex", alignItems: "flex-start", gap: 10,
                       padding: "18px 52px 18px 12px", transition: "background 0.12s, border-color 0.1s",
-                      opacity: dragGoalRef.current === g.id ? 0.45 : 1,
+                      opacity: dragGoalRef.current === g.id ? 0.45 : 1, cursor: "pointer",
                     }}
                   >
                     {editMode && (
@@ -2963,6 +3185,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                     {/* úchyt pro přetahování — tažení drží jen tato ikona, aby šlo psát do políček */}
                     <div
                       draggable
+                      data-no-nav
                       onDragStart={() => { dragGoalRef.current = g.id; }}
                       onDragEnd={() => { dragGoalRef.current = null; setDragOverId(null); }}
                       title="Přetažením změníte pořadí hodin"
@@ -3073,7 +3296,7 @@ function CileView() {
   const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
-  const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({ g1: { printed: true } });
+  const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({});
   const [listModal, setListModal] = useState<{ kind: "print" | "evidence" | "camera"; goalId: string; isTp: boolean } | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -3994,6 +4217,40 @@ function formatDate(iso: string) {
   return d.toLocaleDateString("cs-CZ", { day: "numeric", month: "long", year: "numeric" });
 }
 
+// Filtr důkazů o učení používá stejné ovládání na přehledu i v profilu žáka.
+const FILTER_SELECT_STYLE: React.CSSProperties = {
+  padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
+  background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+  cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
+  backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+  backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", paddingRight: 30,
+};
+
+const PERIOD_OPTIONS = [
+  { id: "vse", label: "Celé období" },
+  { id: "mesic", label: "Poslední měsíc" },
+  { id: "tri-mesice", label: "Poslední 3 měsíce" },
+  { id: "1-pololeti", label: "1. pololetí" },
+  { id: "2-pololeti", label: "2. pololetí" },
+  { id: "vlastni", label: "Vlastní období" },
+];
+
+function inSelectedPeriod(dateStr: string, period: string, from: string, to: string) {
+  if (period === "vse") return true;
+  const d = new Date(dateStr);
+  const now = new Date();
+  if (period === "mesic") { const m = new Date(now); m.setMonth(m.getMonth() - 1); return d >= m; }
+  if (period === "tri-mesice") { const m = new Date(now); m.setMonth(m.getMonth() - 3); return d >= m; }
+  if (period === "1-pololeti") return d >= new Date("2026-09-01") && d <= new Date("2027-01-31");
+  if (period === "2-pololeti") return d >= new Date("2027-02-01") && d <= new Date("2027-06-30");
+  if (period === "vlastni") {
+    if (from && d < new Date(from)) return false;
+    if (to && d > new Date(to + "T23:59:59")) return false;
+    return true;
+  }
+  return true;
+}
+
 function DukazyView() {
   const { evidenceRecords } = useContext(EvidenceContext);
   const { tpGoals } = useContext(GoalsContext);
@@ -4038,21 +4295,7 @@ function DukazyView() {
     ? Array.from(new Map(evidenceRecords.map(r => [r.studentId, { id: r.studentId, name: r.studentName }])).values()).sort((a, b) => a.name.localeCompare(b.name, "cs"))
     : Array.from(new Map(evidenceRecords.filter(r => r.className === filterClass).map(r => [r.studentId, { id: r.studentId, name: r.studentName }])).values()).sort((a, b) => a.name.localeCompare(b.name, "cs"));
 
-  function inPeriod(dateStr: string) {
-    if (filterPeriod === "vse") return true;
-    const d = new Date(dateStr);
-    const now = new Date();
-    if (filterPeriod === "mesic") { const m = new Date(now); m.setMonth(m.getMonth() - 1); return d >= m; }
-    if (filterPeriod === "tri-mesice") { const m = new Date(now); m.setMonth(m.getMonth() - 3); return d >= m; }
-    if (filterPeriod === "1-pololeti") return d >= new Date("2026-09-01") && d <= new Date("2027-01-31");
-    if (filterPeriod === "2-pololeti") return d >= new Date("2027-02-01") && d <= new Date("2027-06-30");
-    if (filterPeriod === "vlastni") {
-      if (filterDateFrom && d < new Date(filterDateFrom)) return false;
-      if (filterDateTo && d > new Date(filterDateTo + "T23:59:59")) return false;
-      return true;
-    }
-    return true;
-  }
+  const inPeriod = (dateStr: string) => inSelectedPeriod(dateStr, filterPeriod, filterDateFrom, filterDateTo);
 
   const filtered = [...evidenceRecords]
     .filter(r => {
@@ -4077,22 +4320,8 @@ function DukazyView() {
     setFilterDateFrom(""); setFilterDateTo(""); setSearch("");
   }
 
-  const selStyle: React.CSSProperties = {
-    padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.12)",
-    background: "#fff", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
-    cursor: "pointer", outline: "none", appearance: "none" as any, WebkitAppearance: "none",
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23717182' stroke-width='1.33' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center", paddingRight: 30,
-  };
-
-  const periodOptions = [
-    { id: "vse", label: "Celé období" },
-    { id: "mesic", label: "Poslední měsíc" },
-    { id: "tri-mesice", label: "Poslední 3 měsíce" },
-    { id: "1-pololeti", label: "1. pololetí" },
-    { id: "2-pololeti", label: "2. pololetí" },
-    { id: "vlastni", label: "Vlastní období" },
-  ];
+  const selStyle = FILTER_SELECT_STYLE;
+  const periodOptions = PERIOD_OPTIONS;
 
   return (
     <div style={{ padding: "32px 40px", minHeight: "100%" }}>
@@ -5033,18 +5262,8 @@ interface TpPlan {
   savedAt: string;
 }
 
-const initialPlans: TpPlan[] = [
-  {
-    id: "tp1",
-    name: "Čeština plán",
-    predmet: "Český jazyk",
-    trida: "3.A",
-    period: "3 měsíce",
-    unit: "měsíc",
-    rows: buildRows("3 měsíce", "měsíc"),
-    savedAt: "12. 9. 2026",
-  },
-];
+// Aplikace startuje prázdná — plán i hodiny vzniknou až generováním.
+const initialPlans: TpPlan[] = [];
 
 function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v: string) => void; color?: string }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -5109,7 +5328,7 @@ function TematickyPlanView() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // result controls
-  const [predmet, setPredmet] = useState("Český jazyk");
+  const [predmet, setPredmet] = useState("Čeština");
   const [trida, setTrida] = useState("3.A");
   const [unit, setUnit] = useState("měsíc");
   const [period, setPeriod] = useState("3 měsíce");
@@ -5580,7 +5799,7 @@ function TematickyPlanView() {
         <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.08)", padding: "18px 20px", marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             {[
-              { label: "Předmět", val: predmet, set: setPredmet, opts: ["Český jazyk", "Matematika", "Prvouka", "Anglický jazyk", "Výtvarná výchova"] },
+              { label: "Předmět", val: predmet, set: setPredmet, opts: subjectOptions },
               { label: "Třída", val: trida, set: setTrida, opts: ["1.A", "2.A", "3.A", "4.A", "5.A"] },
               { label: "Časová jednotka", val: unit, set: setUnit, opts: ["týden", "14 dní", "měsíc"] },
               { label: "Období", val: period, set: setPeriod, opts: ["3 měsíce", "1. pololetí", "2. pololetí", "celý rok"] },
@@ -5807,13 +6026,19 @@ function TematickyPlanView() {
                         }}
                       >
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                          {/* drag handle for month */}
-                          <span style={{ color: "#0a0a0a", opacity: isMonthHovered ? 1 : 0.55, transition: "opacity 0.14s", display: "flex" }}>
-                            <DragGrip size={14} opacity={isMonthHovered ? 0.4 : 0.18} />
-                          </span>
-                          <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
-                            {row.cas}
-                          </span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            {/* úchyt pro přetažení měsíce — vlevo od jeho názvu */}
+                            <span style={{ color: "#0a0a0a", opacity: isMonthHovered ? 1 : 0.55, transition: "opacity 0.14s", display: "flex" }}>
+                              <DragGrip size={14} opacity={isMonthHovered ? 0.4 : 0.18} />
+                            </span>
+                            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
+                              {row.cas}
+                            </span>
+                          </div>
+                          <BuddyButton
+                            title={`Poslat ${row.cas} do chatu s Buddym`}
+                            onClick={e => { e.stopPropagation(); openBuddy(`${monthLabel(row.cas)} v plánu ${predmet} · ${trida}`); }}
+                          />
                         </div>
                       </td>
                     )}
@@ -5955,7 +6180,23 @@ function TematickyPlanView() {
 
         <FadeIn delay={180}>
           <button
-            onClick={() => { if (text.trim() || file) setView("generating"); }}
+            onClick={() => {
+              if (!text.trim() && !file) return;
+              // prototyp generuje vždy češtinu pro 3.A — plán rovnou vznikne i v seznamu
+              const rows = buildRows(period, unit);
+              setPredmet("Čeština");
+              setTrida("3.A");
+              setEditRows(rows);
+              if (!selectedPlanId) {
+                const id = "tp" + Date.now();
+                setSelectedPlanId(id);
+                setPlans(prev => [...prev, {
+                  id, name: text.trim() || "Čeština 3.A", predmet: "Čeština", trida: "3.A",
+                  period, unit, rows, savedAt: new Date().toLocaleDateString("cs-CZ"),
+                }]);
+              }
+              setView("generating");
+            }}
             disabled={!text.trim() && !file}
             style={{
               ...btnStyle("primary"),
@@ -6472,6 +6713,36 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// Vygenerované hodiny si s sebou nesou i důkazy o učení, aby prototyp
+// nevypadal prázdně — kritéria a úrovně se berou z hodiny samotné.
+function buildEvidenceForGoals(goals: TpGoal[]): EvidenceRecord[] {
+  const levels = ["Začínám", "Rozvíjím", "Zvládám"];
+  const out: EvidenceRecord[] = [];
+  goals.slice(0, 4).forEach((g, gi) => {
+    const students = initialClasses.find(c => c.name === g.trida)?.students ?? [];
+    const mi = Math.max(0, LESSON_MONTHS.indexOf(g.month));
+    const month = mi + 9 > 12 ? mi - 3 : mi + 9;
+    const year = mi + 9 > 12 ? SCHOOL_YEAR_START + 1 : SCHOOL_YEAR_START;
+    students.forEach((st, si) => {
+      if ((si + gi) % 3 === 0) return; // ne každý žák má důkaz ke každé hodině
+      const crit = g.criteria[(si + gi) % Math.max(1, g.criteria.length)];
+      const day = 3 + ((si * 3 + gi) % 12);
+      const start = (si + gi * 2) % (levels.length - 1);
+      // dva důkazy ke stejnému kritériu, aby byl na žákovi vidět posun
+      [0, 1].forEach(k => {
+        out.push(er(
+          `gen-${g.id}-${st.id}-${k}`, st.id, `${st.lastName}, ${st.firstName}`, g.trida,
+          (si + gi + k) % 2 === 0 ? "audio" : "photo",
+          g.id, g.text, g.subject,
+          `${year}-${String(month).padStart(2, "0")}-${String(day + k * 9).padStart(2, "0")}`,
+          crit?.label, levels[start + k],
+        ));
+      });
+    });
+  });
+  return out;
+}
+
 export default function App() {
   const [active, setActive] = useState<NavItem>("tematicky-plan");
   const [navKey, setNavKey] = useState(0);
@@ -6483,7 +6754,7 @@ export default function App() {
   const [tpGoals, setTpGoals] = useState<TpGoal[]>([]);
   // Řádky tématického plánu žijí tady, aby je viděl plán i seznam hodin —
   // jsou to stejná data, jen dvě obrazovky.
-  const [planRows, setPlanRows] = useState<TpRow[]>(() => buildRows("celý rok", "měsíc"));
+  const [planRows, setPlanRows] = useState<TpRow[]>([]);
   const [animateIn, setAnimateIn] = useState(false);
   const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
     const acc: Record<string, StudentEvidence> = {};
@@ -6521,10 +6792,27 @@ export default function App() {
     tpGoals,
     animateIn,
     addTpGoals: (newGoals) => {
+      const fresh = newGoals.filter(g => !tpGoals.some(x => x.id === g.id));
       setTpGoals(prev => {
         const existingIds = new Set(prev.map(g => g.id));
         return [...prev, ...newGoals.filter(g => !existingIds.has(g.id))];
       });
+      // k novým hodinám rovnou i důkazy o učení, ať na ně navazuje zbytek aplikace
+      const generated = buildEvidenceForGoals(fresh);
+      if (generated.length) {
+        setEvidenceRecords(prev => {
+          const have = new Set(prev.map(r => r.id));
+          return [...prev, ...generated.filter(r => !have.has(r.id))];
+        });
+        setStudentEvidence(prev => {
+          const next = { ...prev };
+          generated.forEach(r => {
+            const cur = next[r.studentId] ?? { audio: 0, photo: 0 };
+            next[r.studentId] = { ...cur, [r.type]: cur[r.type] + 1 };
+          });
+          return next;
+        });
+      }
       setAnimateIn(true);
       setTimeout(() => setAnimateIn(false), 3000);
     },
