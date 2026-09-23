@@ -848,7 +848,7 @@ function StudentProfile({
             {/* co Buddymu chybí, aby uměl navrhnout hodnocení */}
             {(openQuestions.length > 0 || missingSubjects.length > 0) && (
               <div style={{ borderTop: "1px solid rgba(124,77,189,0.18)", paddingTop: 12 }}>
-                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
                   Odpovězte Buddymu
                 </p>
                 <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
@@ -979,10 +979,23 @@ function PersonAvatar({ size = 40 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true" style={{ display: "block", borderRadius: "50%" }}>
       <circle cx="32" cy="32" r="32" fill="#e8ddf5" />
-      <path d="M32 12c-7 0-11.5 4.6-11.5 11.2 0 2 .3 3.6.8 5-1.3.5-2 1.7-1.6 3 .4 1.5 1.5 2.4 2.6 2.2C24 38 27.6 41 32 41s8-3 9.7-7.6c1.1.2 2.2-.7 2.6-2.2.4-1.3-.3-2.5-1.6-3 .5-1.4.8-3 .8-5C43.5 16.6 39 12 32 12z" fill="#f3d9c6" />
-      <path d="M20 24c0-8 5.5-13 12-13s12 5 12 13c0 1-.2 2.2-.5 3-.5-3.4-1.6-5.6-3.2-6.8-2.6 1.6-6.6 2.3-11 1.5-2.4-.4-4 .4-5 2.1-.9 1.5-1.4 3-1.6 4.4-.5-1-.7-2.5-.7-4.2z" fill="#4a3555" />
-      <path d="M12 60c1.6-8.6 8.8-13.6 20-13.6S50.4 51.4 52 60H12z" fill="#7c4dbd" />
-      <path d="M26 46.8c1.8 2.6 4 3.9 6 3.9s4.2-1.3 6-3.9l-1.4-2.4c-1.4.9-3 1.4-4.6 1.4s-3.2-.5-4.6-1.4z" fill="#f3d9c6" />
+      {/* krk spojuje hlavu s rameny */}
+      <path d="M26 36h12v12H26z" fill="#e8bfa4" />
+      {/* ramena */}
+      <path d="M11 62c1.2-9.6 9.4-15.4 21-15.4S51.8 52.4 53 62z" fill="#7c4dbd" />
+      {/* límec */}
+      <path d="M26 44.6c1.6 2.6 3.6 3.9 6 3.9s4.4-1.3 6-3.9l3.4 1.6c-2.4 3.7-5.6 5.6-9.4 5.6s-7-1.9-9.4-5.6z" fill="#f2ecfa" />
+      {/* hlava */}
+      <ellipse cx="32" cy="27" rx="12.6" ry="14" fill="#f3d9c6" />
+      {/* uši */}
+      <circle cx="19.6" cy="28" r="2.4" fill="#e8bfa4" />
+      <circle cx="44.4" cy="28" r="2.4" fill="#e8bfa4" />
+      {/* vlasy */}
+      <path d="M32 11c7.4 0 12.6 5 12.6 12.4 0 1.6-.2 3-.5 4.2-.5-3.6-1.5-6-3-7.4-3 1.8-7.6 2.6-12.7 1.7-2.7-.5-4.6.4-5.7 2.4-.9 1.6-1.4 2.4-1.8 3.9-.4-1.4-.5-3-.5-4.8C19.4 16 24.6 11 32 11z" fill="#4a3555" />
+      {/* oči a úsměv */}
+      <circle cx="27.4" cy="27.4" r="1.5" fill="#4a3555" />
+      <circle cx="36.6" cy="27.4" r="1.5" fill="#4a3555" />
+      <path d="M28.4 33.2c1 1.1 2.2 1.7 3.6 1.7s2.6-.6 3.6-1.7" stroke="#b9866a" strokeWidth="1.5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -1044,7 +1057,7 @@ function ProfilView() {
         </section>
 
         <section>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
             Úrovně hodnocení školy
             <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je. Vyberte metodiku, kterou používá vaše škola, nebo si napište vlastní stupnici." />
           </p>
@@ -1052,7 +1065,7 @@ function ProfilView() {
             Tahle stupnice platí pro celou aplikaci — pro všechny vyučovací hodiny i pro sběr důkazů o učení.
           </p>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "10px 13px", lineHeight: 1.55, margin: "0 0 16px" }}>
-            Nastavte ji na začátku roku. Pozdější změna přepíše úrovně u všech vyučovacích hodin i u už zaznamenaných důkazů a nelze ji vzít zpět.
+            Nastavte ji na začátku roku. Pozdější změna se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále, takže je nepůjde porovnat s novými.
           </p>
 
           {editingLevels ? (
@@ -1103,10 +1116,10 @@ function ProfilView() {
       {confirmLevel && (
         <Modal title="Opravdu změnit úrovně hodnocení?" onClose={() => setConfirmLevel(null)} width={460}>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", lineHeight: 1.65, margin: "0 0 10px" }}>
-            Nová stupnice se použije u všech vyučovacích hodin a přepíše úrovně u už zaznamenaných důkazů o učení.
+            Nová stupnice se použije u vyučovacích hodin, které teprve vzniknou.
           </p>
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#991b1b", lineHeight: 1.65, margin: 0 }}>
-            Tuhle změnu nelze vzít zpět.
+            Už odučené hodiny a zaznamenané důkazy zůstanou na staré škále — zpětně je přepsat nejde, a tím pádem je nepůjde porovnat s novými.
           </p>
           <ModalActions
             onCancel={() => setConfirmLevel(null)}
@@ -1200,7 +1213,7 @@ function NapadyView() {
           </div>
         ) : (
           <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "20px 22px" }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
               Dnešní dávka · otázka {answered.size + 1} z {total}
             </p>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 17, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
@@ -1492,7 +1505,7 @@ function ClassesView() {
 
             {/* school systems */}
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 10px" }}>
                 Nahrát ze školního systému
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1524,7 +1537,7 @@ function ClassesView() {
 
             {/* drag & drop zone */}
             <div style={{ marginBottom: 8 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 10px" }}>
                 Nebo nahrát soubor
               </p>
               <div
@@ -1749,7 +1762,7 @@ function ClassesView() {
         ];
         return (
           <div style={{ marginTop: 28 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Připravenost k hodnocení
               <InfoHint text="Počítá se z odučených hodin — u kolika z nich má žák zaznamenanou úroveň. Klepnutím na jméno se dostanete k jeho důkazům." />
             </p>
@@ -2117,7 +2130,7 @@ function PrintModal({ onClose, students, goal, onPrinted }: {
       >
         {/* sheet header */}
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>
             Tabulka hodnocení · Čeština · 3.A
           </p>
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
@@ -2176,7 +2189,7 @@ function PrintModal({ onClose, students, goal, onPrinted }: {
 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)" }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", margin: "0 0 10px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
             Legenda úrovní hodnocení
           </p>
           <div style={{ display: "flex", gap: 24 }}>
@@ -2374,7 +2387,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* sheet header: title left, action buttons + close right */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 4px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 4px" }}>
               Důkazy o učení · Tabulka hodnocení
             </p>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
@@ -2601,7 +2614,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 10px" }}>
               Legenda úrovní hodnocení
             </p>
             <div style={{ display: "flex", gap: 20 }}>
@@ -2877,7 +2890,7 @@ function PlanPreviewIllustration() {
   const head: React.CSSProperties = {
     padding: "9px 10px", textAlign: "left", background: "#fafafa",
     fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5,
-    color: "#8a8a99", letterSpacing: "0.07em",
+    color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.07em",
     borderBottom: "1px solid rgba(0,0,0,0.08)", whiteSpace: "nowrap",
   };
   return (
@@ -2935,7 +2948,7 @@ function LessonPreviewIllustration() {
       border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
       transform: "rotate(1deg)", padding: "16px 18px",
     }}>
-      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", margin: "0 0 6px" }}>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 6px" }}>
         Výukový cíl
       </p>
       <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
@@ -2946,7 +2959,7 @@ function LessonPreviewIllustration() {
           <span key={t} style={{ padding: "3px 9px", borderRadius: 20, background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 10.5 }}>{t}</span>
         ))}
       </div>
-      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", margin: "0 0 8px" }}>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 8px" }}>
         Kritéria hodnocení
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -3072,7 +3085,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
 
       <FadeIn delay={100}>
         <div style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
             Výukový cíl
             <InfoHint text="Výukový cíl říká, co má žák na konci hodiny umět. Formuluje se z pohledu žáka, konkrétně a tak, aby šlo poznat, že ho zvládl." />
           </p>
@@ -3103,7 +3116,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* criteria */}
         <FadeIn delay={500}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Kritéria hodnocení
               <InfoHint text="Kritéria jsou konkrétní pozorovatelné projevy, podle kterých poznáte, jak je žák na cestě k cíli daleko." />
             </p>
@@ -3117,7 +3130,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* levels */}
         <FadeIn delay={1900}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Úrovně hodnocení
               <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je — například začínám, rozvíjím, zvládám." />
             </p>
@@ -3536,8 +3549,8 @@ function InfoHint({ text }: { text: string }) {
         style={{
           width: 20, height: 20, borderRadius: "50%", padding: 0, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "transparent", border: "1.3px solid rgba(0,0,0,0.2)", color: "#8a8a99",
-          fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, lineHeight: 1,
+          background: "transparent", border: "1px solid rgba(0,0,0,0.22)", color: "#8a8a99",
+          fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, fontSize: 11.5, lineHeight: 1,
           transition: "border-color 0.12s, color 0.12s",
         }}
         onFocus={() => setOpen(true)}
@@ -3615,7 +3628,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
       {grouped.map(({ month, items }, gi) => (
         <div key={`${month || "__none"}-${gi}`} style={{ marginBottom: 24 }}>
           {month && (
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#6b6b7a", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
               {month}
             </p>
           )}
@@ -3882,7 +3895,7 @@ function CileView() {
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 32 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Výukový cíl
               <InfoHint text="Výukový cíl říká, co má žák na konci hodiny umět. Formuluje se z pohledu žáka, konkrétně a tak, aby šlo poznat, že ho zvládl." />
             </p>
@@ -3967,7 +3980,7 @@ function CileView() {
         <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
           <section>
             <AIHint message="Chci upravit kritéria hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
                 Kritéria hodnocení
                 <InfoHint text="Kritéria jsou konkrétní pozorovatelné projevy, podle kterých poznáte, jak je žák na cestě k cíli daleko. Měla by jít vidět nebo slyšet přímo v hodině." />
               </p>
@@ -3979,9 +3992,9 @@ function CileView() {
           </section>
 
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Úrovně hodnocení
-              <InfoHint text="Úrovně nastavuje škola v Nastavení a platí pro celou aplikaci. Kdyby se měnily po hodině, nedaly by se výsledky žáků porovnat." />
+              <InfoHint text="Úrovně nastavuje škola v nastavení a platí pro celou aplikaci. Změna se zpětně nepropíše do už odučených hodin ani do zaznamenaných důkazů." />
             </p>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
               Stupnice je společná pro celou vaši výuku — mění se v Nastavení, ne u jednotlivé hodiny.
@@ -4007,7 +4020,7 @@ function CileView() {
               </button>
             </div>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "9px 12px", lineHeight: 1.55, margin: "10px 0 0" }}>
-              Změna stupnice přepíše úrovně u všech vyučovacích hodin i u už zaznamenaných důkazů o učení. Nastavte ji na začátku roku a pak ji radši neměňte.
+              Změna stupnice se zpětně nepropíše — už odučené hodiny a zaznamenané důkazy zůstanou na staré škále a nepůjdou s novými porovnat. Nastavte ji na začátku roku.
             </p>
           </section>
         </div>
@@ -4030,7 +4043,7 @@ function CileView() {
 
         <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
         <div style={{ maxWidth: 560, flex: "1 1 500px", minWidth: 0 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 8px" }}>
             Vytvořit hodinu
           </p>
           <h1 style={{
@@ -4103,7 +4116,7 @@ function CileView() {
           <div style={{ flex: 1 }}>
             <p style={{
               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-              fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 8px",
+              fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 8px",
             }}>
               Výzkumný cíl
             </p>
@@ -4182,7 +4195,7 @@ function CileView() {
             <AIHint message="Chci upravit kritéria hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px",
+                fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px",
               }}>
                 Kritéria hodnocení
               </p>
@@ -4208,7 +4221,7 @@ function CileView() {
             <AIHint message="Chci upravit úrovně hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 12px",
+                fontSize: 13, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 12px",
               }}>
                 Úrovně hodnocení
               </p>
@@ -5038,7 +5051,7 @@ function AddEvidenceModal({ student, className, record, preset, onClose }: {
   const selStyle: React.CSSProperties = { ...FILTER_SELECT_STYLE, width: "100%", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-    fontSize: 11, color: "#717182", letterSpacing: "0.05em", marginBottom: 6,
+    fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6,
   };
 
   return (
@@ -5555,7 +5568,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
               Třída
             </label>
             <select
@@ -5569,7 +5582,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
           </div>
 
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>
               Výukový cíl
             </label>
             <select
@@ -6965,7 +6978,7 @@ function TematickyPlanView() {
                       </svg>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em" }}>
+                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                         Tématický plán
                       </span>
                       <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.3 }}>
@@ -7102,7 +7115,7 @@ function TematickyPlanView() {
     const thStyle: React.CSSProperties = {
       padding: "11px 14px", textAlign: "left",
       fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
-      color: "#6b6b7a", letterSpacing: "0.06em",
+      color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em",
       background: "#fafafa", borderBottom: "1px solid rgba(0,0,0,0.08)",
       borderRight: "1px solid rgba(0,0,0,0.05)",
       whiteSpace: "nowrap", userSelect: "none",
@@ -7135,7 +7148,7 @@ function TematickyPlanView() {
         {/* header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginTop: 28, marginBottom: 28 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#6b6b7a", margin: "0 0 4px", letterSpacing: "0.06em" }}>Tématický plán</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#6b6b7a", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
             <input
               value={text}
               onChange={e => setText(e.target.value)}
@@ -7213,7 +7226,7 @@ function TematickyPlanView() {
               { label: "Formulace cílů", val: cilOsoba === "zak" ? "Žák…" : "Já…", set: (v: string) => applyCilOsoba(v === "Já…" ? "ja" : "zak"), opts: ["Žák…", "Já…"] },
             ].map(({ label, val, set, opts }) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>{label}</span>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
                 <select value={val} onChange={e => set(e.target.value)} style={selectStyle}>
                   {opts.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -7222,7 +7235,7 @@ function TematickyPlanView() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
+            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
             {tpColumns.map(col => {
               const on = cols.has(col.id);
               const locked = col.id === "cile" || col.id === "casJednotka";
@@ -7261,13 +7274,13 @@ function TematickyPlanView() {
             <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
               {showSkola && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>Název školy</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Název školy</span>
                   <input value={nazevSkoly} onChange={e => setNazevSkoly(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
               {showVyucujici && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>Vyučující</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Vyučující</span>
                   <input value={vyucujici} onChange={e => setVyucujici(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
@@ -7493,7 +7506,7 @@ function TematickyPlanView() {
       <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
       <div style={{ maxWidth: 580, flex: "1 1 520px", minWidth: 0 }}>
         <FadeIn delay={0}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 8px" }}>
             Vytvořit nový plán
           </p>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 30, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.25 }}>
@@ -7807,7 +7820,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
         {context.length > 0 && (
           <div style={{ padding: "10px 14px 0", background: "#fff", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#6b6b7a", letterSpacing: "0.06em" }}>
+              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Kontext
               </span>
               <button
@@ -7936,7 +7949,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       subtitle: "Přístup vede žáka k lásce k učivu – zabývá se jeho motivací se učit, pokroky, které dělá a sebehodnocením svého posunu.",
       content: (
         <div style={{ marginTop: 56 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#b0b0be", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
             Jak to funguje?
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, maxWidth: 900, margin: "0 auto" }}>
@@ -8422,7 +8435,7 @@ export default function App() {
               <p style={{
                 padding: "0 8px", margin: "12px 0 4px",
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 10, color: "#b0b0be", letterSpacing: "0.07em",
+                fontSize: 10, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.07em",
               }}>{label}</p>
             ) : <div style={{ height: 8 }} />;
 
@@ -8503,22 +8516,18 @@ export default function App() {
         >
           <PersonAvatar size={30} />
           {!collapsed && (
-            <span style={{ display: "flex", flexDirection: "column", minWidth: 0, flexGrow: 1 }}>
-              <span style={{
-                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
-                {teacherName}
-              </span>
-              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
-                Nastavení
-              </span>
+            <span style={{
+              flexGrow: 1, minWidth: 0,
+              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
+              lineHeight: 1.35, wordBreak: "break-word",
+            }}>
+              {teacherName}
             </span>
           )}
           {!collapsed && (
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: active === "profil" ? "#0a0a0a" : "#b0b0be" }}>
-              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/>
-              <path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V20a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H10a1.6 1.6 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V10a1.6 1.6 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: active === "profil" ? "#0a0a0a" : "#b0b0be" }}>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/>
             </svg>
           )}
         </button>
