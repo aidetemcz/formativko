@@ -5701,6 +5701,13 @@ function readinessOf(studentId: string, className: string, tpGoals: TpGoal[], le
   return { level: share >= 0.9 ? 2 : share >= 0.4 ? 1 : 0, count: recs.length, covered, taught: taught.length };
 }
 
+// Škály, kterými učitel ladí tón zpětné vazby
+const TONE_SCALES = [
+  { id: "formalita", left: "Profesionální", right: "Přátelská" },
+  { id: "delka", left: "Stručná", right: "Podrobná" },
+  { id: "osobnost", left: "Obecná", right: "Osobní" },
+];
+
 function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; onGenerate: (data: { students: StudentAssessment[]; period: string; className: string }) => void }) {
   const { tpGoals, lessonsDone } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
@@ -5712,6 +5719,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   const [customFrom, setCustomFrom] = useState("2026-09-01");
   const [customTo, setCustomTo] = useState(new Date().toISOString().slice(0, 10));
   const [instruction, setInstruction] = useState("");
+  const [tone, setTone] = useState<Record<string, number>>({ formalita: 50, delka: 50, osobnost: 60 });
   const [generating, setGenerating] = useState(false);
 
   const allSelected = cls.students.length > 0 && selectedStudents.size === cls.students.length;
@@ -5774,11 +5782,12 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
       </h1>
       <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 28px", lineHeight: 1.55, maxWidth: 560 }}>
         Buddy navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
-        U koho jich má málo, radši ho zatím nevybírejte.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 760 }}>
-        {/* class picker */}
+        {/* třída a období vedle sebe */}
+        <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 240px", minWidth: 0 }}>
         <div>
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
             Třída
@@ -5786,6 +5795,64 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           <select value={selectedClassId} onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents(new Set()); }} style={selectStyle}>
             {initialClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+        </div>
+
+          </div>
+          <div style={{ flex: "1 1 380px", minWidth: 0 }}>
+        <div>
+          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 10 }}>
+            Časové období
+          </label>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            {(["mesic", "ctvrtleti", "pololeti", "vlastni"] as HodnoceniPeriod[]).map(p => (
+              <button
+                key={p}
+                onClick={() => handlePeriodChange(p)}
+                style={{
+                  padding: "6px 14px", borderRadius: 20, border: "1.5px solid",
+                  borderColor: period === p ? "#0a0a0a" : "rgba(0,0,0,0.13)",
+                  background: period === p ? "#0a0a0a" : "#fff",
+                  color: period === p ? "#fff" : "#717182",
+                  fontFamily: period === p ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                  fontSize: 13, cursor: "pointer", transition: "all 0.12s",
+                }}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
+          </div>
+          {period === "vlastni" ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Od</label>
+                <input
+                  type="date"
+                  value={customFrom}
+                  max={customTo}
+                  onChange={e => setCustomFrom(e.target.value)}
+                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
+                />
+              </div>
+              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, paddingTop: 20 }}>—</div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Do</label>
+                <input
+                  type="date"
+                  value={customTo}
+                  min={customFrom}
+                  onChange={e => setCustomTo(e.target.value)}
+                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+          ) : (
+            <select value={periodValue} onChange={e => setPeriodValue(e.target.value)} style={selectStyle}>
+              {periodSelectOptions.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          )}
+        </div>
+
+          </div>
         </div>
 
         {/* student list */}
@@ -5856,70 +5923,48 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           </div>
         </div>
 
-        {/* period */}
+        {/* jak má zpětná vazba znít */}
         <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 10 }}>
-            Časové období
+          <label style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 12 }}>
+            <span style={{ color: "#7c3aed", display: "flex" }}><SparkleIcon /></span>
+            Jak chci, aby zpětná vazba zněla
           </label>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-            {(["mesic", "ctvrtleti", "pololeti", "vlastni"] as HodnoceniPeriod[]).map(p => (
-              <button
-                key={p}
-                onClick={() => handlePeriodChange(p)}
-                style={{
-                  padding: "6px 14px", borderRadius: 20, border: "1.5px solid",
-                  borderColor: period === p ? "#0a0a0a" : "rgba(0,0,0,0.13)",
-                  background: period === p ? "#0a0a0a" : "#fff",
-                  color: period === p ? "#fff" : "#717182",
-                  fontFamily: period === p ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                  fontSize: 13, cursor: "pointer", transition: "all 0.12s",
-                }}
-              >
-                {periodLabels[p]}
-              </button>
+          <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.09)", borderRadius: 12, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
+            {TONE_SCALES.map(sc => (
+              <div key={sc.id}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] <= 40 ? "#0a0a0a" : "#8a8a99" }}>{sc.left}</span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: tone[sc.id] >= 60 ? "#0a0a0a" : "#8a8a99" }}>{sc.right}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={10}
+                  value={tone[sc.id]}
+                  aria-label={`${sc.left} až ${sc.right}`}
+                  onChange={e => setTone(prev => ({ ...prev, [sc.id]: Number(e.target.value) }))}
+                  style={{ width: "100%", accentColor: "#7c3aed", cursor: "pointer" }}
+                />
+              </div>
             ))}
           </div>
-          {period === "vlastni" ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Od</label>
-                <input
-                  type="date"
-                  value={customFrom}
-                  max={customTo}
-                  onChange={e => setCustomFrom(e.target.value)}
-                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
-                />
-              </div>
-              <div style={{ flexShrink: 0, color: "#b0b0be", fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, paddingTop: 20 }}>—</div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", marginBottom: 4 }}>Do</label>
-                <input
-                  type="date"
-                  value={customTo}
-                  min={customFrom}
-                  onChange={e => setCustomTo(e.target.value)}
-                  style={{ ...selectStyle, width: "100%", boxSizing: "border-box" }}
-                />
-              </div>
-            </div>
-          ) : (
-            <select value={periodValue} onChange={e => setPeriodValue(e.target.value)} style={selectStyle}>
-              {periodSelectOptions.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          )}
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5b21b6", background: "#faf5ff", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 10, padding: "9px 12px", lineHeight: 1.55, margin: "10px 0 0" }}>
+            Ať nastavíte cokoli, Buddy píše podle metodiky formativního hodnocení — popisuje pokrok, drží se doložených faktů a nikdy žáka neshazuje.
+          </p>
         </div>
 
-        {/* ai instruction */}
+        {/* volný pokyn */}
         <div>
-          <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
+            <span style={{ color: "#7c3aed", display: "flex" }}><SparkleIcon /></span>
             Pokyn pro Buddyho
-            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, color: "#717182", marginLeft: 6 }}>(volitelné)</span>
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, color: "#717182" }}>(volitelné)</span>
           </label>
           <textarea
             value={instruction}
             onChange={e => setInstruction(e.target.value)}
-            placeholder="Např. Zaměř se na pokrok žáka, piš přátelsky a povzbudivě..."
+            placeholder="Např. Zmiň u každého žáka jeden konkrétní pokrok a jeden další krok…"
             rows={3}
             style={{
               width: "100%", resize: "vertical", padding: "10px 14px", boxSizing: "border-box",
@@ -5930,7 +5975,6 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           />
         </div>
 
-        {/* generate button */}
         <button
           onClick={handleGenerate}
           disabled={selectedStudents.size === 0 || generating}
@@ -5960,7 +6004,14 @@ function HodnoceniResultPage({
   onBack: () => void; onSave?: (students: StudentAssessment[]) => void;
 }) {
   const openBuddy = useContext(BuddyContext);
+  const { evidenceRecords } = useContext(EvidenceContext);
+  const { tpGoals } = useContext(GoalsContext);
+  const goalNums = buildGoalNumbers(tpGoals);
   const [students, setStudents] = useState(initialStudents);
+  // čerstvě vygenerované hodnocení rovnou otevře Buddyho, ať je po ruce
+  useEffect(() => {
+    if (!readOnly) openBuddy(`Hodnocení ${className} · ${period}`);
+  }, []);
   const [activeId, setActiveId] = useState(initialStudents[0]?.studentId ?? "");
   const [copied, setCopied] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -6013,13 +6064,6 @@ function HodnoceniResultPage({
           {title}
         </h1>
         <div style={{ display: "flex", gap: 8, flexShrink: 0, position: "relative" }}>
-          {actionBtn("Poslat Buddymu", () => openBuddy(`Hodnocení ${className} · ${period}`), <SparkleIcon />)}
-          {actionBtn(copied ? "Zkopírováno" : "Kopírovat", copyActive, (
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <rect x="5.5" y="5.5" width="8" height="9" rx="1.3" stroke="currentColor" strokeWidth="1.3"/>
-              <path d="M10.5 5.5v-2a1.3 1.3 0 0 0-1.3-1.3H3.8a1.3 1.3 0 0 0-1.3 1.3v5.4a1.3 1.3 0 0 0 1.3 1.3h1.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-            </svg>
-          ))}
           <div style={{ position: "relative" }}>
             {actionBtn("Exportovat", () => setExportOpen(o => !o), (
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -6126,6 +6170,22 @@ function HodnoceniResultPage({
               <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", flexGrow: 1 }}>
                 {active.studentName}
               </span>
+              <button
+                onClick={copyActive}
+                title="Kopírovat text hodnocení"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "5px 11px", borderRadius: 20, cursor: "pointer",
+                  border: "1px solid rgba(0,0,0,0.13)", background: "#fff", color: copied ? "#15803d" : "#5c5c6b",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, whiteSpace: "nowrap",
+                }}
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="5.5" y="5.5" width="8" height="9" rx="1.3" stroke="currentColor" strokeWidth="1.3"/>
+                  <path d="M10.5 5.5v-2a1.3 1.3 0 0 0-1.3-1.3H3.8a1.3 1.3 0 0 0-1.3 1.3v5.4a1.3 1.3 0 0 0 1.3 1.3h1.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                </svg>
+                {copied ? "Zkopírováno" : "Kopírovat"}
+              </button>
               <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99" }}>
                 {idx + 1} z {students.length}
               </span>
@@ -6175,25 +6235,74 @@ function HodnoceniResultPage({
               </p>
             )}
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0be", margin: 0, flexGrow: 1 }}>
-                Text navrhl Buddy na základě zaznamenaných důkazů o učení.
-              </p>
-              <button
-                onClick={() => openBuddy(`Hodnocení: ${active.studentName}`)}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "5px 11px", borderRadius: 20, cursor: "pointer",
-                  border: "1px solid rgba(124,58,237,0.35)", background: "#fff", color: "#5b21b6",
-                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#f3e8ff")}
-                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
-              >
+            {/* jak má Buddy text přepsat */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5b21b6" }}>
                 <SparkleIcon />
-                Přepsat jinak
-              </button>
+                Přepsat:
+              </span>
+              {["Zkrátit", "Prodloužit", "Konkrétněji", "Vlídněji", "Věcněji"].map(lbl => (
+                <button
+                  key={lbl}
+                  onClick={() => openBuddy(`${lbl} hodnocení: ${active.studentName}`)}
+                  style={{
+                    padding: "5px 11px", borderRadius: 20, cursor: "pointer",
+                    border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#5b21b6",
+                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
+                    transition: "background 0.12s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#f3e8ff")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                >
+                  {lbl}
+                </button>
+              ))}
             </div>
+
+            {/* z čeho hodnocení vychází */}
+            {(() => {
+              const basis = evidenceRecords
+                .filter(r => r.studentId === active.studentId)
+                .sort((a, b) => b.date.localeCompare(a.date))
+                .slice(0, 5);
+              return (
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 8px" }}>
+                    Napsáno z těchto důkazů o učení
+                  </p>
+                  {basis.length === 0 ? (
+                    <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a8a99", margin: 0 }}>
+                      U tohohle žáka zatím nejsou žádné důkazy — text je proto obecný.
+                    </p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {basis.map(r => {
+                        const k = EVIDENCE_KINDS[evidenceKind(r)];
+                        const num = goalNums.get(r.goalId);
+                        return (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{
+                              width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: k.bg, color: k.color,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                            }}>
+                              <EvidenceKindIcon kind={evidenceKind(r)} size={12} />
+                            </span>
+                            <SubjectChip subject={r.subject} />
+                            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#5c5c6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {num ? `Hodina ${num} · ` : ""}{r.criterion ?? r.goalText}
+                              {r.level ? ` — ${r.level.toLowerCase()}` : ""}
+                            </span>
+                            <span style={{ marginLeft: "auto", flexShrink: 0, fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
+                              {formatDate(r.date)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>
