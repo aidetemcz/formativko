@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useContext, createContext, useCallback } from "react";
 import { initialClasses, type Class, type Student } from "./data";
-import buddyImg from "./assets/buddy.png";
 
 const BuddyContext = createContext<(msg: string) => void>(() => {});
 
@@ -655,22 +654,28 @@ const SHEET_LEVEL_STYLE: Record<string, { border: string; bg: string; fg: string
 // Shrnutí od Buddyho: z důkazů se po předmětech poskládá jedna věta o posunu.
 function buddySummary(name: string, records: EvidenceRecord[], subjects: string[]) {
   return subjects.map(subject => {
-    const recs = records
-      .filter(r => r.subject === subject && r.level)
-      .sort((a, b) => a.date.localeCompare(b.date));
+    const all = records.filter(r => r.subject === subject);
+    const recs = all.filter(r => r.level).sort((a, b) => a.date.localeCompare(b.date));
+    if (all.length === 0) {
+      return { subject, count: 0, text: "Zatím žádné důkazy o učení.", missing: true };
+    }
     if (recs.length === 0) {
-      return { subject, text: `V ${subjectLoc(subject)} o něm zatím nejsou žádné důkazy o učení.` };
+      return { subject, count: all.length, text: `${all.length} ${pluralDukaz(all.length)}, zatím ale žádný s určenou úrovní.`, missing: false };
     }
     const byCrit: Record<string, EvidenceRecord[]> = {};
-    recs.forEach(r => { (byCrit[r.criterion ?? "–"] ??= []).push(r); });
+    recs.forEach(r => { (byCrit[r.criterion ?? "\u2013"] ??= []).push(r); });
     const [crit, items] = Object.entries(byCrit).sort((a, b) => b[1].length - a[1].length)[0];
     const first = items[0].level!;
     const last = items[items.length - 1].level!;
     const text = first === last
-      ? `${name} je v ${subjectLoc(subject)} u kritéria „${crit}" na úrovni ${last.toLowerCase()} — ${items.length} ${items.length === 1 ? "důkaz" : items.length <= 4 ? "důkazy" : "důkazů"}.`
-      : `${name} se v ${subjectLoc(subject)} posouvá u kritéria „${crit}" z ${first.toLowerCase()} na ${last.toLowerCase()}.`;
-    return { subject, text };
-  });
+      ? `U krit\u00e9ria \u201e${crit}\u201c je na \u00farovni ${last.toLowerCase()} \u2014 ${all.length} ${pluralDukaz(all.length)}.`
+      : `U krit\u00e9ria \u201e${crit}\u201c se posouv\u00e1 z ${first.toLowerCase()} na ${last.toLowerCase()} \u2014 ${all.length} ${pluralDukaz(all.length)}.`;
+    return { subject, count: all.length, text, missing: false };
+  }).sort((a, b) => a.count - b.count);
+}
+
+function pluralDukaz(n: number) {
+  return n === 1 ? "d\u016fkaz" : n <= 4 ? "d\u016fkazy" : "d\u016fkaz\u016f";
 }
 
 function StudentProfile({
@@ -736,6 +741,14 @@ function StudentProfile({
     ...tpGoals.filter(g => g.trida === className).map(g => g.subject),
   ])).sort();
   const summary = buddySummary(fullName, allStudentRecords, summarySubjects);
+  const missingSubjects = summary.filter(x => x.missing).map(x => x.subject);
+  // kritéria, kde Buddymu chybí úroveň, aby uměl navrhnout hodnocení
+  const openQuestions = tpGoals
+    .filter(g => g.trida === className)
+    .flatMap(g => g.criteria.map(c => ({ goalId: g.id, criterion: c.label, subject: g.subject })))
+    .filter(q => !allStudentRecords.some(r => r.goalId === q.goalId && r.criterion === q.criterion && r.level))
+    .slice(0, 3);
+  const [preset, setPreset] = useState<AddEvidencePreset | null>(null);
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -782,32 +795,84 @@ function StudentProfile({
             width: 22, height: 22, borderRadius: "50%", background: "#5b21b6", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <img src={buddyImg} alt="" style={{ width: 14, height: 14, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+            <span style={{ color: "#fff", display: "flex" }}><BuddyMark size={14} mono /></span>
           </span>
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#5b21b6", margin: 0 }}>
             Shrnutí od Buddyho
           </p>
         </div>
+
         {summary.length === 0 ? (
           <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#5c5c6b", margin: 0, lineHeight: 1.6 }}>
             Zatím není z čeho shrnovat — nejdřív vytvořte tématický plán a zaznamenejte první důkazy o učení.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {summary.map(({ subject, text }) => (
-              <div key={subject} style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-                <span style={{
-                  flexShrink: 0, minWidth: 96, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                  fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase",
-                }}>
-                  {subject}
-                </span>
-                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#2f2f3a", lineHeight: 1.6 }}>
-                  {text}
-                </span>
+          <>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#2f2f3a", margin: "0 0 14px", lineHeight: 1.65 }}>
+              U {student.firstName}a je nyní <strong style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500 }}>{allStudentRecords.length} {pluralDukaz(allStudentRecords.length)} o učení</strong>.
+              {missingSubjects.length > 0
+                ? ` Z ${missingSubjects.map(subjectLoc).join(" a ")} zatím nemáte žádný — doporučil bych je doplnit, než budete generovat hodnocení.`
+                : ` Nejméně jich máte z ${subjectLoc(summary[0].subject)} — tam bych ještě přidal.`}
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+              {summary.map(({ subject, text, missing }) => (
+                <div key={subject} style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
+                  <span style={{ flexShrink: 0 }}><SubjectChip subject={subject} /></span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: missing ? "#8a8a99" : "#2f2f3a", lineHeight: 1.6 }}>
+                    {text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* co Buddymu chybí, aby uměl navrhnout hodnocení */}
+            {(openQuestions.length > 0 || missingSubjects.length > 0) && (
+              <div style={{ borderTop: "1px solid rgba(124,77,189,0.18)", paddingTop: 12 }}>
+                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase", margin: "0 0 8px" }}>
+                  Odpovězte Buddymu
+                </p>
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {openQuestions.map(q => (
+                    <button
+                      key={q.goalId + q.criterion}
+                      onClick={() => setPreset({ kind: "uroven", goalId: q.goalId, criterion: q.criterion, subject: q.subject })}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 7,
+                        padding: "7px 12px", borderRadius: 20, cursor: "pointer",
+                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#5b21b6",
+                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, textAlign: "left",
+                        transition: "background 0.12s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#f3e8ff")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                    >
+                      <SubjectIcon subject={q.subject} size={12} />
+                      Na jaké úrovni je {student.firstName} v „{q.criterion}"?
+                    </button>
+                  ))}
+                  {missingSubjects.slice(0, 2).map(sub => (
+                    <button
+                      key={sub}
+                      onClick={() => setPreset({ kind: "uroven", subject: sub })}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 7,
+                        padding: "7px 12px", borderRadius: 20, cursor: "pointer",
+                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#5b21b6",
+                        fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5,
+                        transition: "background 0.12s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#f3e8ff")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                    >
+                      <SubjectIcon subject={sub} size={12} />
+                      Doplnit důkaz z {subjectLoc(sub)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 
@@ -877,6 +942,7 @@ function StudentProfile({
       )}
 
       {addOpen && <AddEvidenceModal student={student} className={className} onClose={() => setAddOpen(false)} />}
+      {preset && <AddEvidenceModal student={student} className={className} preset={preset} onClose={() => setPreset(null)} />}
       {editRecord && <AddEvidenceModal student={student} className={className} record={editRecord} onClose={() => setEditRecord(null)} />}
     </div>
   );
@@ -2406,87 +2472,6 @@ const generatedCriteria = [
   { n: 6, label: "Vlastní hlas a zaujetí", desc: "Žák téma zpracovává se zřetelným osobním vztahem nebo nadšením, které čtenář nebo posluchač zaznamená." },
 ];
 
-// Obrázky pro prázdné stavy a úvodní stránku — kreslené, ne fotorealistické,
-// aby seděly k mid-fi prototypu.
-function PlanIllustration({ size = 200 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 0.78} viewBox="0 0 260 200" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
-      <ellipse cx="130" cy="178" rx="96" ry="12" fill="#efeaf8" />
-      <g transform="rotate(-7 78 104)">
-        <rect x="34" y="42" width="102" height="126" rx="8" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
-        <rect x="34" y="42" width="102" height="22" rx="8" fill="#ede5fb" />
-        <rect x="34" y="56" width="102" height="8" fill="#ede5fb" />
-        <rect x="46" y="78" width="60" height="6" rx="3" fill="rgba(0,0,0,0.13)" />
-        <rect x="46" y="94" width="78" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-        <rect x="46" y="110" width="70" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-        <rect x="46" y="126" width="52" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-        <rect x="46" y="142" width="64" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-      </g>
-      <g transform="rotate(6 186 100)">
-        <rect x="140" y="30" width="96" height="120" rx="8" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
-        <rect x="140" y="30" width="96" height="20" rx="8" fill="#e3edfd" />
-        <rect x="140" y="42" width="96" height="8" fill="#e3edfd" />
-        <rect x="152" y="64" width="46" height="6" rx="3" fill="rgba(0,0,0,0.13)" />
-        <rect x="152" y="80" width="68" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-        <rect x="152" y="96" width="58" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-        <rect x="152" y="112" width="72" height="6" rx="3" fill="rgba(0,0,0,0.09)" />
-      </g>
-      <path d="M126 14c0 0 1 12-6 18 7 6 6 18 6 18s-1-12 6-18c-7-6-6-18-6-18z" fill="#7c4dbd" />
-      <path d="M208 154c0 0 .7 8-4 12 4.7 4 4 12 4 12s-.7-8 4-12c-4.7-4-4-12-4-12z" fill="#a855f7" opacity="0.7" />
-      <circle cx="52" cy="26" r="7" fill="#c4b5fd" opacity="0.8" />
-    </svg>
-  );
-}
-
-function LessonsIllustration({ size = 200 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 0.78} viewBox="0 0 260 200" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
-      <ellipse cx="130" cy="178" rx="92" ry="12" fill="#e8eefb" />
-      {[0, 1, 2].map(i => (
-        <g key={i} transform={`translate(0 ${i * 42})`}>
-          <rect x={44 + i * 4} y="44" width="172" height="34" rx="9" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
-          <rect x={56 + i * 4} y="52" width="18" height="18" rx="5" fill="#e3edfd" stroke="rgba(59,130,246,0.3)" strokeWidth="1.5" />
-          <rect x={84 + i * 4} y="55" width={94 - i * 14} height="5" rx="2.5" fill="rgba(0,0,0,0.14)" />
-          <rect x={84 + i * 4} y="65" width={58 - i * 8} height="5" rx="2.5" fill="rgba(0,0,0,0.08)" />
-        </g>
-      ))}
-      <path d="M36 22c0 0 .9 11-5.4 16.5C36.9 44 36 55 36 55s-.9-11 5.4-16.5C35.1 33 36 22 36 22z" fill="#7c4dbd" />
-      <circle cx="226" cy="30" r="6" fill="#bfdbfe" />
-    </svg>
-  );
-}
-
-function TeachingIllustration({ size = 280 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 0.88} viewBox="0 0 300 264" fill="none" aria-hidden="true" style={{ display: "block", margin: "0 auto" }}>
-      <ellipse cx="150" cy="236" rx="112" ry="14" fill="#efeaf8" />
-      {/* tabule */}
-      <rect x="40" y="26" width="220" height="132" rx="10" fill="#fff" stroke="rgba(0,0,0,0.12)" strokeWidth="2" />
-      <rect x="40" y="26" width="220" height="132" rx="10" fill="#faf7ff" />
-      <rect x="64" y="52" width="84" height="7" rx="3.5" fill="#c4b5fd" />
-      <rect x="64" y="72" width="150" height="6" rx="3" fill="rgba(0,0,0,0.11)" />
-      <rect x="64" y="88" width="122" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
-      <rect x="64" y="104" width="138" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
-      <rect x="64" y="120" width="96" height="6" rx="3" fill="rgba(0,0,0,0.08)" />
-      <rect x="34" y="158" width="232" height="8" rx="4" fill="rgba(0,0,0,0.10)" />
-      {/* žáci v lavici */}
-      <g>
-        <circle cx="86" cy="192" r="15" fill="#f0a8c0" />
-        <path d="M66 224c0-11 9-18 20-18s20 7 20 18z" fill="#e9dcfa" />
-        <circle cx="150" cy="186" r="17" fill="#8ec9a8" />
-        <path d="M127 224c0-13 10-21 23-21s23 8 23 21z" fill="#dbeafe" />
-        <circle cx="214" cy="192" r="15" fill="#f5c98a" />
-        <path d="M194 224c0-11 9-18 20-18s20 7 20 18z" fill="#e9dcfa" />
-      </g>
-      {/* jiskry */}
-      <path d="M262 30c0 0 1.1 13-6.4 19.5C263.1 56 262 69 262 69s-1.1-13-6.4-19.5C263.1 43 262 30 262 30z" fill="#7c4dbd" />
-      <path d="M28 96c0 0 .7 8-4 12 4.7 4 4 12 4 12s-.7-8-4-12c4.7-4 4-12 4-12z" fill="#a855f7" opacity="0.65" />
-      <circle cx="276" cy="120" r="6" fill="#c4b5fd" />
-      <circle cx="22" cy="44" r="8" fill="#bfdbfe" />
-    </svg>
-  );
-}
-
 // Náhled toho, co z popisu vznikne — zjednodušená tabulka plánu.
 function PlanPreviewIllustration() {
   const rows = [
@@ -2509,7 +2494,7 @@ function PlanPreviewIllustration() {
   };
   return (
     <div style={{
-      width: 330, borderRadius: 14, overflow: "hidden", background: "#fff",
+      width: 360, borderRadius: 14, overflow: "hidden", background: "#fff",
       border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
       transform: "rotate(-1.2deg)",
     }}>
@@ -2558,7 +2543,7 @@ function LessonPreviewIllustration() {
   ];
   return (
     <div style={{
-      width: 320, borderRadius: 14, overflow: "hidden", background: "#fff",
+      width: 340, borderRadius: 14, overflow: "hidden", background: "#fff",
       border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
       transform: "rotate(1deg)", padding: "16px 18px",
     }}>
@@ -2602,6 +2587,74 @@ function LessonPreviewIllustration() {
             </span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// Značka Buddyho — vrstvený štít, zvenku tmavě fialový, uvnitř světlý.
+function BuddyMark({ size = 28, mono }: { size?: number; mono?: boolean }) {
+  const LAYERS = ["#5b2d72", "#6d4488", "#85609c", "#9c7cb0", "#b599c4", "#cbb6d6", "#ded2e8", "#f2eefc"];
+  const R = 26;
+  return (
+    <svg width={size} height={size * 384 / 400} viewBox="0 0 400 384" fill="none" aria-hidden="true" style={{ display: "block" }}>
+      {LAYERS.map((c, i) => {
+        const inset = i * 7;
+        const l = inset + R;
+        const r = 400 - inset - R;
+        const apex = 12 + i * 28 + R;
+        const shoulder = apex + (r - l) / 2;
+        const col = mono ? "currentColor" : c;
+        return (
+          <polygon
+            key={i}
+            points={`${l},400 ${l},${shoulder} ${(l + r) / 2},${apex} ${r},${shoulder} ${r},400`}
+            fill={col}
+            stroke={col}
+            strokeWidth={R * 2}
+            strokeLinejoin="round"
+            opacity={mono ? (i + 1) / LAYERS.length : 1}
+          />
+        );
+      })}
+      <circle cx="143" cy="338" r="30" fill={mono ? "currentColor" : "#5b2d72"} />
+      <circle cx="265" cy="338" r="30" fill={mono ? "currentColor" : "#5b2d72"} />
+    </svg>
+  );
+}
+
+// Náhled hotového hodnocení — co ze zaznamenaných důkazů vznikne.
+function AssessmentPreviewIllustration() {
+  return (
+    <div style={{
+      width: 360, borderRadius: 14, background: "#fff", margin: "0 auto",
+      border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
+      padding: "16px 18px", textAlign: "left",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+        <span style={{
+          width: 28, height: 28, borderRadius: "50%", background: "#10b981", flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#fff",
+        }}>AB</span>
+        <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Beneš, Adam</span>
+        <span style={{ marginLeft: "auto" }}><SubjectChip subject="Čeština" /></span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {[100, 92, 78].map((w, i) => (
+          <span key={i} style={{ height: 7, width: `${w}%`, borderRadius: 4, background: "rgba(0,0,0,0.07)", display: "block" }} />
+        ))}
+        <span style={{ height: 7, width: "46%", borderRadius: 4, background: "rgba(0,0,0,0.07)", display: "block" }} />
+      </div>
+      <div style={{ display: "flex", gap: 5, marginTop: 14, flexWrap: "wrap" }}>
+        {(["Zvládám", "Rozvíjím", "Zvládám"] as const).map((lv, i) => {
+          const c = EVIDENCE_LEVEL_COLORS[lv];
+          return (
+            <span key={i} style={{ padding: "2px 9px", borderRadius: 20, background: c.bg, color: c.color, fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10.5 }}>
+              {lv}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -4076,8 +4129,10 @@ function CileView() {
 
       {filtered.length === 0 ? (
         allGoals.length === 0 ? (
-          <div style={{ padding: "48px 0 72px", textAlign: "center" }}>
-            <LessonsIllustration size={240} />
+          <div style={{ padding: "44px 0 72px", textAlign: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+              <LessonPreviewIllustration />
+            </div>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
               Hodiny vzniknou z vašeho plánu
             </p>
@@ -4546,23 +4601,26 @@ function inSelectedPeriod(dateStr: string, period: string, from: string, to: str
   return true;
 }
 
+// Předvyplnění modalu, když ho otevře návrh od Buddyho
+type AddEvidencePreset = { kind?: EvidenceKind; goalId?: string; criterion?: string; subject?: string };
+
 // Přidání nebo úprava jednoho důkazu o učení u konkrétního žáka.
-function AddEvidenceModal({ student, className, record, onClose }: {
-  student: Student; className: string; record?: EvidenceRecord | null; onClose: () => void;
+function AddEvidenceModal({ student, className, record, preset, onClose }: {
+  student: Student; className: string; record?: EvidenceRecord | null; preset?: AddEvidencePreset | null; onClose: () => void;
 }) {
   const { tpGoals } = useContext(GoalsContext);
   const { addEvidenceRecords, addStudentEvidence, updateEvidenceRecord, evidenceRecords } = useContext(EvidenceContext);
   const lessons = tpGoals.filter(g => g.trida === className);
-  const [kind, setKind] = useState<EvidenceKind>(record ? evidenceKind(record) : "uroven");
+  const [kind, setKind] = useState<EvidenceKind>(record ? evidenceKind(record) : preset?.kind ?? "uroven");
   const [level, setLevel] = useState(record?.level ?? "");
-  const [criterion, setCriterion] = useState(record?.criterion ?? "");
+  const [criterion, setCriterion] = useState(record?.criterion ?? preset?.criterion ?? "");
   const [note, setNote] = useState(record ? evidenceNoteText(record) : "");
   const [fileName, setFileName] = useState(record && record.type === "photo" ? evidencePhotoName(record) : "");
   const [recording, setRecording] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [date, setDate] = useState(record?.date ?? (() => new Date().toISOString().slice(0, 10))());
-  const [goalId, setGoalId] = useState(record?.goalId ?? lessons[0]?.id ?? "");
-  const [subject, setSubject] = useState(record?.subject ?? lessons[0]?.subject ?? subjectOptions[0]);
+  const [goalId, setGoalId] = useState(record?.goalId ?? preset?.goalId ?? lessons.find(g => !preset?.subject || g.subject === preset.subject)?.id ?? lessons[0]?.id ?? "");
+  const [subject, setSubject] = useState(record?.subject ?? preset?.subject ?? lessons[0]?.subject ?? subjectOptions[0]);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -5622,22 +5680,22 @@ function HodnoceniView() {
       </div>
 
       {hodnoceni.length === 0 ? (
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(0,0,0,0.09)", padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(236,236,240,0.85)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-              <path d="M8 1.333L9.857 5.1l4.143.6-3 2.924.708 4.109L8 10.667l-3.708 1.966L5 8.624 2 5.7l4.143-.6L8 1.333z" stroke="#717182" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+        <div style={{ padding: "44px 0 72px", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+            <AssessmentPreviewIllustration />
           </div>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: "0 0 6px" }}>
-            Zatím žádná hodnocení
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
+            Slovní hodnocení psané za vás
           </p>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: "0 0 20px", lineHeight: 1.5 }}>
-            Vygenerujte první hodnocení na základě zaznamenaných důkazů o učení.
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", margin: "0 auto 22px", lineHeight: 1.65, maxWidth: 430 }}>
+            Z důkazů o učení, které jste u žáků nasbírali, sestaví Buddy návrh hodnocení pro celou
+            třídu najednou. Vy ho pak jen projdete a doladíte vlastními slovy.
           </p>
           <button
             onClick={() => setView("generating")}
-            style={{ ...btnStyle("ghost"), padding: "8px 18px", borderRadius: 10, fontSize: 13.5 }}
+            style={{ ...btnStyle("primary"), display: "inline-flex", alignItems: "center", gap: 7 }}
           >
+            <SparkleIcon />
             Vygenerovat hodnocení
           </button>
         </div>
@@ -6166,8 +6224,10 @@ function TematickyPlanView() {
         </div>
 
         {plans.length === 0 ? (
-          <div style={{ padding: "64px 0 80px", textAlign: "center" }}>
-            <PlanIllustration size={240} />
+          <div style={{ padding: "56px 0 80px", textAlign: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+              <PlanPreviewIllustration />
+            </div>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 17, color: "#0a0a0a", margin: "18px 0 8px" }}>
               Začněte tím, co budete učit
             </p>
@@ -6978,7 +7038,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
             border: "1.5px solid rgba(120,80,180,0.15)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
-            <img src={buddyImg} alt="Buddy" style={{ width: 24, height: 24, objectFit: "contain" }} />
+            <BuddyMark size={24} />
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>Buddy</p>
@@ -7001,7 +7061,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
               <div key={m.id} style={{ display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", alignItems: "flex-end", gap: 8 }}>
                 {m.role === "buddy" && (
                   <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
+                    <BuddyMark size={18} />
                   </div>
                 )}
                 {isAudio ? (
@@ -7046,7 +7106,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
           {typing && (
             <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f3f0fa", border: "1px solid rgba(120,80,180,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <img src={buddyImg} alt="" style={{ width: 18, height: 18, objectFit: "contain" }} />
+                <BuddyMark size={18} />
               </div>
               <div style={{ padding: "10px 14px", borderRadius: "16px 16px 16px 4px", background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", display: "flex", gap: 4, alignItems: "center" }}>
                 {[0, 1, 2].map(i => (
@@ -7273,7 +7333,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
 
           {/* buddy intro */}
           <div style={{ marginTop: 32, display: "inline-flex", alignItems: "flex-end", gap: 10, background: "#faf9ff", border: "1.5px solid rgba(124,77,189,0.12)", borderRadius: 14, padding: "10px 14px 10px 14px" }}>
-            <img src={buddyImg} alt="Buddy" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+            <span style={{ flexShrink: 0, display: "flex" }}><BuddyMark size={36} /></span>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#3d3d52", lineHeight: 1.5, margin: 0, maxWidth: 380 }}>
               <span style={{ fontWeight: 600, color: "#7c4dbd" }}>Buddy</span> je tu vždy pro vás — pomůže s cíli, kritérii i hodnocením a vaši práci zjednoduší na minimum.
             </p>
@@ -7785,7 +7845,7 @@ export default function App() {
           onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         >
-          <img src={buddyImg} alt="Buddy" style={{ width: 28, height: 28, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          <span style={{ color: "#fff", display: "flex" }}><BuddyMark size={28} mono /></span>
         </button>
       )}
     </div>
