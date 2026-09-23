@@ -815,12 +815,12 @@ function StudentProfile({
       <div style={{ background: "#faf7ff", borderRadius: 14, border: "1px solid rgba(124,77,189,0.22)", padding: "16px 20px", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <span style={{
-            width: 22, height: 22, borderRadius: "50%", background: "#5b21b6", flexShrink: 0,
+            width: 22, height: 22, borderRadius: "50%", background: "#633572", flexShrink: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <img src={buddyImg} alt="" style={{ width: 15, height: 15, objectFit: "contain" }} />
           </span>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#5b21b6", margin: 0 }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#633572", margin: 0 }}>
             Shrnutí od Buddyho
           </p>
         </div>
@@ -863,7 +863,7 @@ function StudentProfile({
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 7,
                         padding: "7px 12px", borderRadius: 20, cursor: "pointer",
-                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#5b21b6",
+                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#633572",
                         fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, textAlign: "left",
                         transition: "background 0.12s",
                       }}
@@ -881,7 +881,7 @@ function StudentProfile({
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 7,
                         padding: "7px 12px", borderRadius: 20, cursor: "pointer",
-                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#5b21b6",
+                        border: "1px solid rgba(124,77,189,0.35)", background: "#fff", color: "#633572",
                         fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5,
                         transition: "background 0.12s",
                       }}
@@ -3621,7 +3621,7 @@ function PageHelp({ text, buddy }: { text: string; buddy: string }) {
       <button
         onClick={() => openBuddy(buddy)}
         style={linkStyle}
-        onMouseEnter={e => { e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.color = "#5b21b6"; }}
+        onMouseEnter={e => { e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.color = "#633572"; }}
         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)"; e.currentTarget.style.color = "#8a8a99"; }}
       >
         <SparkleIcon />
@@ -4529,7 +4529,7 @@ function CileView() {
           padding: "10px 14px", borderRadius: 11,
           background: "rgba(124,77,189,0.06)", border: "1px solid rgba(124,77,189,0.22)",
         }}>
-          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#5b21b6" }}>
+          <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#633572" }}>
             {selectedIds.size === 0
               ? "Zaškrtněte hodiny, které chcete odstranit."
               : `Vybráno ${selectedIds.size} ${selectedIds.size === 1 ? "hodina" : selectedIds.size <= 4 ? "hodiny" : "hodin"}`}
@@ -4754,10 +4754,10 @@ const EVIDENCE_LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
 
 type EvidenceKind = "uroven" | "foto" | "audio" | "poznamka";
 const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; bg: string; color: string }> = {
-  uroven:   { label: "Úroveň",   bg: "#d6f0e0", color: "#1f6b41" },
-  foto:     { label: "Foto",     bg: "#d6eaf2", color: "#145f76" },
-  audio:    { label: "Audio",    bg: "#e5ddf8", color: "#4f31a0" },
-  poznamka: { label: "Poznámka", bg: "#fbe8d2", color: "#8a5314" },
+  uroven:   { label: "Úroveň",   bg: "#c6ebd5", color: "#15603a" },
+  foto:     { label: "Foto",     bg: "#c7e4ef", color: "#0d5468" },
+  audio:    { label: "Audio",    bg: "#dccff7", color: "#4526a0" },
+  poznamka: { label: "Poznámka", bg: "#fbdfbc", color: "#8a4c0a" },
 };
 function evidenceKind(r: EvidenceRecord): EvidenceKind {
   if (r.criterion) return "uroven";
@@ -5843,7 +5843,7 @@ function readinessOf(studentId: string, className: string, tpGoals: TpGoal[], le
     .filter(g => lessonsDone[g.id] || records.some(r => r.goalId === g.id))
     .map(g => g.id);
   if (taught.length === 0) {
-    return { level: recs.length >= 6 ? 2 : recs.length >= 2 ? 1 : 0, count: recs.length, covered: 0, taught: 0 };
+    return { level: recs.length >= 4 ? 2 : recs.length >= 2 ? 1 : 0, count: recs.length, covered: 0, taught: 0 };
   }
   const covered = taught.filter(gid => recs.some(r => r.goalId === gid && r.level)).length;
   const share = covered / taught.length;
@@ -5861,8 +5861,8 @@ const TONE_SCALES = [
 function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; onGenerate: (data: { students: StudentAssessment[]; period: string; className: string }) => void }) {
   const { tpGoals, lessonsDone, goToClasses, classes } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
-  const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id ?? "");
-  const cls = classes.find(c => c.id === selectedClassId) ?? classes[0];
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const cls = classes.find(c => c.id === selectedClassId) ?? null;
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const [period, setPeriod] = useState<HodnoceniPeriod>("mesic");
   const [periodValue, setPeriodValue] = useState(monthOptions[0]);
@@ -5873,7 +5873,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   const [subject, setSubject] = useState("vse");
   const [generating, setGenerating] = useState(false);
 
-  const allSelected = cls.students.length > 0 && selectedStudents.size === cls.students.length;
+  const allSelected = !!cls && cls.students.length > 0 && selectedStudents.size === cls.students.length;
 
   function toggleStudent(id: string) {
     setSelectedStudents(prev => {
@@ -5884,7 +5884,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
   }
 
   function toggleAll() {
-    if (allSelected) setSelectedStudents(new Set());
+    if (allSelected || !cls) setSelectedStudents(new Set());
     else setSelectedStudents(new Set(cls.students.map(s => s.id)));
   }
 
@@ -5902,7 +5902,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
     : periodValue;
 
   function handleGenerate() {
-    if (selectedStudents.size === 0) return;
+    if (selectedStudents.size === 0 || !cls) return;
     setGenerating(true);
     setTimeout(() => {
       const selectedList = cls.students.filter(s => selectedStudents.has(s.id));
@@ -5953,6 +5953,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             Třída
           </label>
           <select value={selectedClassId} onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents(new Set()); }} style={selectStyle}>
+            <option value="">Vyberte třídu…</option>
             {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
@@ -5961,6 +5962,14 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         </div>
 
         {/* student list */}
+        {!cls ? (
+          <div style={{
+            background: "#fff", border: "1.5px dashed rgba(0,0,0,0.14)", borderRadius: 12,
+            padding: "22px 20px", fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#8a8a99",
+          }}>
+            Nejdřív vyberte třídu — pak si vyberete žáky, které chcete hodnotit.
+          </div>
+        ) : (
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <label style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>
@@ -6030,7 +6039,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                       onKeyDown={e => { if (e.key === "Enter") { e.stopPropagation(); goToClasses(); } }}
                       style={{
                         flexShrink: 0, padding: "3px 10px", borderRadius: 20, cursor: "pointer",
-                        border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#5b21b6",
+                        border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#633572",
                         fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, whiteSpace: "nowrap",
                       }}
                     >
@@ -6042,6 +6051,7 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
             })}
           </div>
         </div>
+        )}
 
         {/* časové období */}
         <div>
@@ -6425,7 +6435,7 @@ function HodnoceniResultPage({
 
             {/* jak má Buddy text přepsat */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#5b21b6" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#633572" }}>
                 <SparkleIcon />
                 Přepsat:
               </span>
@@ -6435,7 +6445,7 @@ function HodnoceniResultPage({
                   onClick={() => openBuddy(`${lbl} hodnocení: ${active.studentName}`)}
                   style={{
                     padding: "5px 11px", borderRadius: 20, cursor: "pointer",
-                    border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#5b21b6",
+                    border: "1px solid rgba(124,58,237,0.3)", background: "#fff", color: "#633572",
                     fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
                     transition: "background 0.12s",
                   }}
@@ -6633,7 +6643,7 @@ function HodnoceniView() {
                     flex: 1, padding: "7px 2px 6px", borderRadius: 8, cursor: "pointer",
                     border: on ? "1.5px solid #7c3aed" : "1.5px solid transparent",
                     background: on ? "#f3e8ff" : count ? "#ede9fe" : "rgba(236,236,240,0.55)",
-                    color: count ? "#5b21b6" : "#b0b0be",
+                    color: count ? "#633572" : "#b0b0be",
                     fontFamily: count ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                     fontWeight: count ? 500 : 400, fontSize: 11,
                     transition: "background 0.12s, border-color 0.12s",
@@ -7135,7 +7145,7 @@ function GenerateLessonsModal({ months, countFor, onClose, onConfirm }: {
                   padding: "6px 12px", borderRadius: 20, cursor: "pointer",
                   border: on ? "1.5px solid #7c3aed" : "1.5px solid rgba(0,0,0,0.12)",
                   background: on ? "#f3e8ff" : "#fff",
-                  color: on ? "#5b21b6" : "#5c5c6b",
+                  color: on ? "#633572" : "#5c5c6b",
                   fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
                   fontWeight: on ? 500 : 400, fontSize: 12.5,
                   transition: "background 0.12s, border-color 0.12s",
@@ -8185,15 +8195,18 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
           borderBottom: "1px solid rgba(0,0,0,0.07)", background: "#fff", flexShrink: 0,
         }}>
           <div style={{
-            width: 36, height: 36, borderRadius: "50%", background: "#f3f0fa",
-            border: "1.5px solid rgba(120,80,180,0.15)",
+            position: "relative", width: 36, height: 36, borderRadius: "50%", background: "#633572",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <img src={buddyImg} alt="Buddy" style={{ width: 24, height: 24, objectFit: "contain" }} />
+            <span style={{
+              position: "absolute", right: -1, bottom: -1, width: 10, height: 10, borderRadius: "50%",
+              background: "#22c55e", border: "2px solid #fff", display: "block",
+            }} />
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: 0 }}>Buddy</p>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#9b72d0", margin: 0 }}>Váš pomocník</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a6aa0", margin: 0 }}>Váš pomocník s formativním hodnocením</p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#b0b0be", padding: 4, borderRadius: 6 }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -8281,9 +8294,13 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
               </span>
               <button
                 onClick={onClearContext}
-                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a" }}
+                title="Smazat kontext"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#6b6b7a" }}
               >
-                Vyprázdnit
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d={ICON_TRASH} stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Smazat
               </button>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -8601,8 +8618,8 @@ function buildEvidenceForGoals(goals: TpGoal[], classes: Class[]): EvidenceRecor
     const month = mi + 9 > 12 ? mi - 3 : mi + 9;
     const year = mi + 9 > 12 ? SCHOOL_YEAR_START + 1 : SCHOOL_YEAR_START;
     students.forEach((st, si) => {
-      // pokrytí se liší žák od žáka: pár připravených, pár skoro, pár bez důkazů
-      if (gi >= [4, 4, 3, 2, 0][si % 5]) return;
+      // třetina žáků má pokryto vše, třetina většinu, třetina skoro nic
+      if (gi >= [4, 3, 1][si % 3]) return;
       const crit = g.criteria[(si + gi) % Math.max(1, g.criteria.length)];
       const day = 3 + ((si * 3 + gi) % 12);
       const start = (si + gi * 2) % (levels.length - 1);
@@ -8811,13 +8828,24 @@ export default function App() {
 
   function addDemoEvidence() {
     setClasses(prev => prev.length ? prev : initialClasses);
+    // třetina žáků dostane všechny své důkazy, třetina část, třetina skoro nic
+    const seen: Record<string, number> = {};
+    const limitFor = (studentId: string) => {
+      const idx = initialClasses[0]?.students.findIndex(st => st.id === studentId) ?? 0;
+      return [99, 3, 1][Math.max(0, idx) % 3];
+    };
+    const picked = sampleEvidenceRecords.filter(r => {
+      const n = (seen[r.studentId] ?? 0) + 1;
+      seen[r.studentId] = n;
+      return n <= limitFor(r.studentId);
+    });
     setEvidenceRecords(prev => {
       const have = new Set(prev.map(r => r.id));
-      return [...prev, ...sampleEvidenceRecords.filter(r => !have.has(r.id))];
+      return [...prev, ...picked.filter(r => !have.has(r.id))];
     });
     setStudentEvidence(prev => {
       const next = { ...prev };
-      sampleEvidenceRecords.forEach(r => {
+      picked.forEach(r => {
         const cur = next[r.studentId] ?? { audio: 0, photo: 0, note: 0 };
         next[r.studentId] = { ...cur, [r.type]: (cur[r.type] ?? 0) + 1 };
       });
@@ -9038,13 +9066,13 @@ export default function App() {
       {/* buddy button — hidden when chat is open */}
       {!buddyOpen && (
         <button
-          title="Buddy"
+          title="Buddy — váš pomocník s formativním hodnocením"
           onClick={() => setBuddyOpen(true)}
           style={{
-            position: "fixed", top: 12, right: 16, zIndex: 200,
+            position: "fixed", top: 26, right: 40, zIndex: 200,
             width: 44, height: 44, borderRadius: "50%",
-            background: "#5b21b6",
-            boxShadow: "0 2px 10px rgba(91,33,182,0.3), 0 1px 3px rgba(0,0,0,0.12)",
+            background: "#633572",
+            boxShadow: "0 2px 10px rgba(99,53,114,0.3), 0 1px 3px rgba(0,0,0,0.12)",
             border: "none",
             cursor: "pointer", padding: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -9054,6 +9082,11 @@ export default function App() {
           onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
         >
           <img src={buddyImg} alt="Buddy" style={{ width: 26, height: 26, objectFit: "contain" }} />
+          {/* zelená tečka: Buddy je pořád po ruce */}
+          <span style={{
+            position: "absolute", right: 2, bottom: 2, width: 11, height: 11, borderRadius: "50%",
+            background: "#22c55e", border: "2px solid #f5f5f7", display: "block",
+          }} />
         </button>
       )}
     </div>
