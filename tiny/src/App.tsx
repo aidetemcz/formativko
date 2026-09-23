@@ -26,6 +26,8 @@ interface GoalsCtx {
   setPlans: React.Dispatch<React.SetStateAction<TpPlan[]>>;
   lessonsDone: Record<string, boolean>;
   toggleLessonDone: (id: string) => void;
+  goToSettings: () => void;
+  openGuide: () => void;
   teacherName: string;
   setTeacherName: (v: string) => void;
   schoolName: string;
@@ -43,6 +45,7 @@ const GoalsContext = createContext<GoalsCtx>({
   planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
   plans: [], setPlans: () => {},
   lessonsDone: {}, toggleLessonDone: () => {},
+  goToSettings: () => {}, openGuide: () => {},
   teacherName: "", setTeacherName: () => {},
   schoolName: "", setSchoolName: () => {},
   schoolLevelId: "začínám", setSchoolLevelId: () => {},
@@ -845,7 +848,7 @@ function StudentProfile({
             {/* co Buddymu chybí, aby uměl navrhnout hodnocení */}
             {(openQuestions.length > 0 || missingSubjects.length > 0) && (
               <div style={{ borderTop: "1px solid rgba(124,77,189,0.18)", paddingTop: 12 }}>
-                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase", margin: "0 0 8px" }}>
+                <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", margin: "0 0 8px" }}>
                   Odpovězte Buddymu
                 </p>
                 <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
@@ -971,17 +974,27 @@ function StudentProfile({
   );
 }
 
-// Profil učitele — jméno, škola a hlavně úrovně hodnocení, které škola používá.
+// Ilustrovaná profilovka — v prototypu kreslená, ne skutečná fotka.
+function PersonAvatar({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true" style={{ display: "block", borderRadius: "50%" }}>
+      <circle cx="32" cy="32" r="32" fill="#e8ddf5" />
+      <path d="M32 12c-7 0-11.5 4.6-11.5 11.2 0 2 .3 3.6.8 5-1.3.5-2 1.7-1.6 3 .4 1.5 1.5 2.4 2.6 2.2C24 38 27.6 41 32 41s8-3 9.7-7.6c1.1.2 2.2-.7 2.6-2.2.4-1.3-.3-2.5-1.6-3 .5-1.4.8-3 .8-5C43.5 16.6 39 12 32 12z" fill="#f3d9c6" />
+      <path d="M20 24c0-8 5.5-13 12-13s12 5 12 13c0 1-.2 2.2-.5 3-.5-3.4-1.6-5.6-3.2-6.8-2.6 1.6-6.6 2.3-11 1.5-2.4-.4-4 .4-5 2.1-.9 1.5-1.4 3-1.6 4.4-.5-1-.7-2.5-.7-4.2z" fill="#4a3555" />
+      <path d="M12 60c1.6-8.6 8.8-13.6 20-13.6S50.4 51.4 52 60H12z" fill="#7c4dbd" />
+      <path d="M26 46.8c1.8 2.6 4 3.9 6 3.9s4.2-1.3 6-3.9l-1.4-2.4c-1.4.9-3 1.4-4.6 1.4s-3.2-.5-4.6-1.4z" fill="#f3d9c6" />
+    </svg>
+  );
+}
+
+// Nastavení učitele — jméno, škola a úrovně hodnocení pro celou aplikaci.
 function ProfilView() {
   const {
     schoolLevelId, setSchoolLevelId, schoolCustomLevels, setSchoolCustomLevels,
-    teacherName, setTeacherName, schoolName, setSchoolName,
+    teacherName, setTeacherName, schoolName,
   } = useContext(GoalsContext);
   const [editingLevels, setEditingLevels] = useState(false);
-  const jmeno = teacherName;
-  const setJmeno = setTeacherName;
-  const skola = schoolName;
-  const setSkola = setSchoolName;
+  const [confirmLevel, setConfirmLevel] = useState<string | null>(null);
   const opt = levelOptions.find(o => o.id === schoolLevelId) ?? levelOptions[1];
 
   const fieldStyle: React.CSSProperties = {
@@ -991,59 +1004,61 @@ function ProfilView() {
   };
   const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-    fontSize: 11, color: "#717182", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6,
+    fontSize: 12, color: "#717182", marginBottom: 6,
   };
 
   return (
     <div style={{ padding: "32px 40px" }}>
-      <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Můj profil" }]} />
+      <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Nastavení" }]} />
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
-        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
-          Můj profil
-          <InfoHint text="Co si nastavíte tady, platí pro celou vaši výuku — nové vyučovací hodiny i tabulky hodnocení dostanou rovnou tyhle úrovně." />
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0 }}>
+          Nastavení
         </h1>
       </div>
 
       <div style={{ maxWidth: 720, display: "flex", flexDirection: "column", gap: 28 }}>
-        <section style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "18px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: "50%", background: avatarColor(jmeno), flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#fff",
-            }}>
-              {jmeno.split(" ").slice(-2).map(w => w[0]).join("")}
-            </div>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.55 }}>
-              Jméno a škola se propíšou do tématických plánů a tištěných tabulek hodnocení.
-            </p>
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <label style={{ flex: 1 }}>
+        <section style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "20px 22px", display: "flex", gap: 28, alignItems: "flex-start" }}>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
+            <label style={{ display: "block" }}>
               <span style={labelStyle}>Jméno</span>
-              <input value={jmeno} onChange={e => setJmeno(e.target.value)} style={fieldStyle} />
+              <input value={teacherName} onChange={e => setTeacherName(e.target.value)} style={fieldStyle} />
             </label>
-            <label style={{ flex: 1 }}>
+            <div>
               <span style={labelStyle}>Škola</span>
-              <input value={skola} onChange={e => setSkola(e.target.value)} style={fieldStyle} />
-            </label>
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a", margin: "0 0 4px" }}>
+                {schoolName}
+              </p>
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a8a99", margin: 0, lineHeight: 1.5 }}>
+                Školu nastavuje správce účtu, sami ji nepřepíšete.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <PersonAvatar size={92} />
+            <button style={{ ...btnStyle("ghost"), fontSize: 12, padding: "6px 12px" }}>
+              Změnit fotku
+            </button>
           </div>
         </section>
 
         <section>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
             Úrovně hodnocení školy
             <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je. Vyberte metodiku, kterou používá vaše škola, nebo si napište vlastní stupnici." />
           </p>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
-            Tuhle stupnici dostanou všechny nové vyučovací hodiny. U jednotlivé hodiny ji pak můžete přepsat.
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 14px" }}>
+            Tahle stupnice platí pro celou aplikaci — pro všechny vyučovací hodiny i pro sběr důkazů o učení.
+          </p>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "10px 13px", lineHeight: 1.55, margin: "0 0 16px" }}>
+            Nastavte ji na začátku roku. Pozdější změna přepíše úrovně u všech vyučovacích hodin i u už zaznamenaných důkazů a nelze ji vzít zpět.
           </p>
 
           {editingLevels ? (
             <LevelPicker
               current={schoolLevelId}
-              onDone={id => { setSchoolLevelId(id); setEditingLevels(false); }}
+              onDone={id => { if (id === schoolLevelId) { setEditingLevels(false); } else { setConfirmLevel(id); } }}
               onSaveCustom={setSchoolCustomLevels}
               savedCustomLevels={schoolCustomLevels}
             />
@@ -1084,11 +1099,27 @@ function ProfilView() {
           )}
         </section>
       </div>
+
+      {confirmLevel && (
+        <Modal title="Opravdu změnit úrovně hodnocení?" onClose={() => setConfirmLevel(null)} width={460}>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", lineHeight: 1.65, margin: "0 0 10px" }}>
+            Nová stupnice se použije u všech vyučovacích hodin a přepíše úrovně u už zaznamenaných důkazů o učení.
+          </p>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#991b1b", lineHeight: 1.65, margin: 0 }}>
+            Tuhle změnu nelze vzít zpět.
+          </p>
+          <ModalActions
+            onCancel={() => setConfirmLevel(null)}
+            onConfirm={() => { setSchoolLevelId(confirmLevel); setConfirmLevel(null); setEditingLevels(false); }}
+            confirmLabel="Změnit úrovně"
+            danger
+          />
+        </Modal>
+      )}
     </div>
   );
 }
 
-// Nápady — fronta otázek, na které Buddy čeká, aby uměl navrhnout hodnocení.
 function NapadyView() {
   const { tpGoals, lessonsDone } = useContext(GoalsContext);
   const { evidenceRecords, addEvidenceRecords, addStudentEvidence } = useContext(EvidenceContext);
@@ -1140,8 +1171,11 @@ function NapadyView() {
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
         <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
-          Nápady od Buddyho
-          <InfoHint text="Buddy se ptá na to, co mu chybí, aby uměl navrhnout hodnocení. Každá odpověď je rovnou důkaz o učení." />
+          Nápady
+          <PageHelp
+            text="Buddy se ptá na to, co mu chybí, aby uměl navrhnout hodnocení. Každá odpověď je rovnou důkaz o učení."
+            buddy="Nápady"
+          />
         </h1>
       </div>
 
@@ -1166,7 +1200,7 @@ function NapadyView() {
           </div>
         ) : (
           <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "20px 22px" }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", textTransform: "uppercase", margin: "0 0 8px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#7c4dbd", letterSpacing: "0.05em", margin: "0 0 8px" }}>
               Dnešní dávka · otázka {answered.size + 1} z {total}
             </p>
             <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 17, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
@@ -1376,6 +1410,10 @@ function ClassesView() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
             Třídy
+            <PageHelp
+              text="Třídy a žáci, u kterých sbíráte důkazy o učení. V detailu třídy uvidíte, kdo je připravený na hodnocení a komu ještě důkazy chybí."
+              buddy="Třídy"
+            />
           </h1>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div style={{ position: "relative" }}>
@@ -1454,7 +1492,7 @@ function ClassesView() {
 
             {/* school systems */}
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", margin: "0 0 10px" }}>
                 Nahrát ze školního systému
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1486,7 +1524,7 @@ function ClassesView() {
 
             {/* drag & drop zone */}
             <div style={{ marginBottom: 8 }}>
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 10px" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", margin: "0 0 10px" }}>
                 Nebo nahrát soubor
               </p>
               <div
@@ -1711,7 +1749,7 @@ function ClassesView() {
         ];
         return (
           <div style={{ marginTop: 28 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Připravenost k hodnocení
               <InfoHint text="Počítá se z odučených hodin — u kolika z nich má žák zaznamenanou úroveň. Klepnutím na jméno se dostanete k jeho důkazům." />
             </p>
@@ -2079,7 +2117,7 @@ function PrintModal({ onClose, students, goal, onPrinted }: {
       >
         {/* sheet header */}
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 4px" }}>
             Tabulka hodnocení · Čeština · 3.A
           </p>
           <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
@@ -2138,7 +2176,7 @@ function PrintModal({ onClose, students, goal, onPrinted }: {
 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)" }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", margin: "0 0 10px" }}>
             Legenda úrovní hodnocení
           </p>
           <div style={{ display: "flex", gap: 24 }}>
@@ -2336,7 +2374,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* sheet header: title left, action buttons + close right */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 4px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 4px" }}>
               Důkazy o učení · Tabulka hodnocení
             </p>
             <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.4 }}>
@@ -2563,7 +2601,7 @@ function EvidenceModal({ onClose, students, goal, goalId, subject, className }: 
         {/* legend */}
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#717182", letterSpacing: "0.06em", margin: "0 0 10px" }}>
               Legenda úrovní hodnocení
             </p>
             <div style={{ display: "flex", gap: 20 }}>
@@ -2839,7 +2877,7 @@ function PlanPreviewIllustration() {
   const head: React.CSSProperties = {
     padding: "9px 10px", textAlign: "left", background: "#fafafa",
     fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5,
-    color: "#8a8a99", textTransform: "uppercase", letterSpacing: "0.07em",
+    color: "#8a8a99", letterSpacing: "0.07em",
     borderBottom: "1px solid rgba(0,0,0,0.08)", whiteSpace: "nowrap",
   };
   return (
@@ -2897,7 +2935,7 @@ function LessonPreviewIllustration() {
       border: "1.5px solid rgba(0,0,0,0.09)", boxShadow: "0 8px 28px rgba(0,0,0,0.07)",
       transform: "rotate(1deg)", padding: "16px 18px",
     }}>
-      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 6px" }}>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", margin: "0 0 6px" }}>
         Výukový cíl
       </p>
       <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.45 }}>
@@ -2908,7 +2946,7 @@ function LessonPreviewIllustration() {
           <span key={t} style={{ padding: "3px 9px", borderRadius: 20, background: CHIP_BG, color: CHIP_FG, fontFamily: "'Inter:Regular', sans-serif", fontSize: 10.5 }}>{t}</span>
         ))}
       </div>
-      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 8px" }}>
+      <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#8a8a99", letterSpacing: "0.07em", margin: "0 0 8px" }}>
         Kritéria hodnocení
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -2960,12 +2998,11 @@ function AssessmentPreviewIllustration() {
         <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Beneš, Adam</span>
         <span style={{ marginLeft: "auto" }}><SubjectChip subject="Čeština" /></span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {[100, 92, 78].map((w, i) => (
-          <span key={i} style={{ height: 7, width: `${w}%`, borderRadius: 4, background: "rgba(0,0,0,0.07)", display: "block" }} />
-        ))}
-        <span style={{ height: 7, width: "46%", borderRadius: 4, background: "rgba(0,0,0,0.07)", display: "block" }} />
-      </div>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#3f3f4b", lineHeight: 1.65, margin: 0 }}>
+        Adam v tomto období udělal velký kus práce. Části slova už rozliší sám a bez nápovědy,
+        u předpon si ještě občas není jistý. V diktátu si dvakrát sám našel a opravil chybu —
+        to je velký posun. Doporučuji dál číst nahlas a povídat si o přečteném.
+      </p>
       <div style={{ display: "flex", gap: 5, marginTop: 14, flexWrap: "wrap" }}>
         {(["Zvládám", "Rozvíjím", "Zvládám"] as const).map((lv, i) => {
           const c = EVIDENCE_LEVEL_COLORS[lv];
@@ -3035,7 +3072,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
 
       <FadeIn delay={100}>
         <div style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
             Výukový cíl
             <InfoHint text="Výukový cíl říká, co má žák na konci hodiny umět. Formuluje se z pohledu žáka, konkrétně a tak, aby šlo poznat, že ho zvládl." />
           </p>
@@ -3066,7 +3103,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* criteria */}
         <FadeIn delay={500}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Kritéria hodnocení
               <InfoHint text="Kritéria jsou konkrétní pozorovatelné projevy, podle kterých poznáte, jak je žák na cestě k cíli daleko." />
             </p>
@@ -3080,7 +3117,7 @@ function GoalGeneratorPage({ input, onBack, onSave }: { input: string; onBack: (
         {/* levels */}
         <FadeIn delay={1900}>
           <section>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Úrovně hodnocení
               <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je — například začínám, rozvíjím, zvládám." />
             </p>
@@ -3450,6 +3487,41 @@ function LessonActionButton({ title, onClick, path, done }: { title: string; onC
   );
 }
 
+// Nápověda u nadpisu stránky: vysvětlivka, dotaz Buddymu a návod
+function PageHelp({ text, buddy }: { text: string; buddy: string }) {
+  const openBuddy = useContext(BuddyContext);
+  const { openGuide } = useContext(GoalsContext);
+  const linkStyle: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", gap: 5,
+    padding: "4px 10px", borderRadius: 20, cursor: "pointer",
+    border: "1px solid rgba(0,0,0,0.12)", background: "transparent", color: "#8a8a99",
+    fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, whiteSpace: "nowrap",
+    transition: "background 0.12s, border-color 0.12s, color 0.12s",
+  };
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <InfoHint text={text} />
+      <button
+        onClick={() => openBuddy(buddy)}
+        style={linkStyle}
+        onMouseEnter={e => { e.currentTarget.style.background = "#f3e8ff"; e.currentTarget.style.borderColor = "#7c3aed"; e.currentTarget.style.color = "#5b21b6"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)"; e.currentTarget.style.color = "#8a8a99"; }}
+      >
+        <SparkleIcon />
+        Zeptat se Buddyho
+      </button>
+      <button
+        onClick={openGuide}
+        style={linkStyle}
+        onMouseEnter={e => { e.currentTarget.style.background = "rgba(236,236,240,0.7)"; e.currentTarget.style.color = "#5c5c6b"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8a8a99"; }}
+      >
+        Jak na to
+      </button>
+    </span>
+  );
+}
+
 // Vysvětlivka schovaná pod otazníkem u nadpisu
 function InfoHint({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
@@ -3491,13 +3563,12 @@ function InfoHint({ text }: { text: string }) {
   );
 }
 
-function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setTpEditingLevels, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions, onLessonAction, editMode, selectedIds, onToggleSelect, lessonsDone, onToggleDone }: {
+function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpGoalId, setSelectedGoalId, btnStyle, onPatch, evidenceCountFor, statusFor, classOptions, onLessonAction, editMode, selectedIds, onToggleSelect, lessonsDone, onToggleDone }: {
   filtered: AnyGoal[];
   animateIn: boolean;
   tpGoals: TpGoal[];
   removeTpGoal: (id: string) => void;
   setSelectedTpGoalId: (id: string) => void;
-  setTpEditingLevels: (v: boolean) => void;
   setSelectedGoalId: (id: string) => void;
   btnStyle: (v: "primary" | "ghost" | "danger") => React.CSSProperties;
   onPatch: (id: string, isTp: boolean, patch: Record<string, string>) => void;
@@ -3544,7 +3615,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
       {grouped.map(({ month, items }, gi) => (
         <div key={`${month || "__none"}-${gi}`} style={{ marginBottom: 24 }}>
           {month && (
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#6b6b7a", letterSpacing: "0.09em", margin: "0 0 10px 2px" }}>
               {month}
             </p>
           )}
@@ -3562,7 +3633,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                       // celá karta vede na detail, jen ovládací prvky a texty si klik nechávají
                       const t = e.target as HTMLElement;
                       if (t.closest("button, a, select, input, textarea, [data-no-nav]")) return;
-                      if (isTp) { setSelectedTpGoalId(g.id); setTpEditingLevels(false); } else setSelectedGoalId(g.id);
+                      if (isTp) { setSelectedTpGoalId(g.id); } else setSelectedGoalId(g.id);
                     }}
                     onDragEnter={() => setDragOverId(g.id)}
                     onDragOver={e => e.preventDefault()}
@@ -3676,7 +3747,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch", marginTop: 2 }}>
                       <button
-                        onClick={() => isTp ? (setSelectedTpGoalId(g.id), setTpEditingLevels(false)) : setSelectedGoalId(g.id)}
+                        onClick={() => isTp ? setSelectedTpGoalId(g.id) : setSelectedGoalId(g.id)}
                         style={{ ...btnStyle("ghost"), fontSize: 12, padding: "6px 14px" }}
                       >
                         Detail
@@ -3705,32 +3776,23 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
                     {/* odučeno — ovlivní i postup na kartě tématického plánu */}
                     <button
                       onClick={() => onToggleDone(g.id)}
-                      title={lessonsDone[g.id] ? "Hodina je probraná" : "Označit hodinu jako probranou"}
+                      title={lessonsDone[g.id] ? "Hodina je probraná — kliknutím zrušíte" : "Označit hodinu jako probranou"}
+                      aria-label={lessonsDone[g.id] ? "Hodina je probraná" : "Označit hodinu jako probranou"}
                       aria-pressed={!!lessonsDone[g.id]}
                       style={{
-                        flexShrink: 0, alignSelf: "center", display: "flex", alignItems: "center", gap: 7,
-                        padding: "7px 10px", borderRadius: 10, cursor: "pointer",
-                        border: lessonsDone[g.id] ? "1.5px solid #16a34a" : "1.5px solid rgba(0,0,0,0.12)",
-                        background: lessonsDone[g.id] ? "#dcfce7" : "#fff",
-                        color: lessonsDone[g.id] ? "#166534" : "#8a8a99",
-                        fontFamily: lessonsDone[g.id] ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                        fontWeight: lessonsDone[g.id] ? 500 : 400, fontSize: 11.5, whiteSpace: "nowrap",
+                        flexShrink: 0, alignSelf: "center", width: 30, height: 30, borderRadius: "50%",
+                        display: "flex", alignItems: "center", justifyContent: "center", padding: 0, cursor: "pointer",
+                        border: lessonsDone[g.id] ? "none" : "1.5px solid rgba(0,0,0,0.16)",
+                        background: lessonsDone[g.id] ? "#16a34a" : "#fff",
+                        color: lessonsDone[g.id] ? "#fff" : "#c4c4ce",
                         transition: "background 0.12s, border-color 0.12s, color 0.12s",
                       }}
+                      onMouseEnter={e => { if (!lessonsDone[g.id]) { e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.color = "#16a34a"; } }}
+                      onMouseLeave={e => { if (!lessonsDone[g.id]) { e.currentTarget.style.borderColor = "rgba(0,0,0,0.16)"; e.currentTarget.style.color = "#c4c4ce"; } }}
                     >
-                      <span style={{
-                        width: 17, height: 17, borderRadius: 5, flexShrink: 0,
-                        border: lessonsDone[g.id] ? "none" : "1.5px solid rgba(0,0,0,0.22)",
-                        background: lessonsDone[g.id] ? "#16a34a" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        {lessonsDone[g.id] && (
-                          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M3 8.4l3.2 3.2L13 4.8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                      </span>
-                      Probráno
+                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M3 8.4l3.2 3.2L13 4.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                     </button>
                   </div>
                 </FadeIn>
@@ -3744,7 +3806,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 }
 
 function CileView() {
-  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone, schoolLevelId, schoolCustomLevels } = useContext(GoalsContext);
+  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone, schoolLevelId, schoolCustomLevels, goToSettings } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
   const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({});
@@ -3766,8 +3828,8 @@ function CileView() {
   const [search, setSearch] = useState("");
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedTpGoalId, setSelectedTpGoalId] = useState<string | null>(null);
-  const [tpEditingLevels, setTpEditingLevels] = useState(false);
-  const [tpSelectedLevelId, setTpSelectedLevelId] = useState(schoolLevelId);
+
+  const tpSelectedLevelId = schoolLevelId;
   const [tpPrintOpen, setTpPrintOpen] = useState(false);
   const [tpCameraOpen, setTpCameraOpen] = useState(false);
   const [tpEvidenceOpen, setTpEvidenceOpen] = useState(false);
@@ -3820,7 +3882,7 @@ function CileView() {
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 32 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
               Výukový cíl
               <InfoHint text="Výukový cíl říká, co má žák na konci hodiny umět. Formuluje se z pohledu žáka, konkrétně a tak, aby šlo poznat, že ho zvládl." />
             </p>
@@ -3905,7 +3967,7 @@ function CileView() {
         <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
           <section>
             <AIHint message="Chci upravit kritéria hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
                 Kritéria hodnocení
                 <InfoHint text="Kritéria jsou konkrétní pozorovatelné projevy, podle kterých poznáte, jak je žák na cestě k cíli daleko. Měla by jít vidět nebo slyšet přímo v hodině." />
               </p>
@@ -3917,57 +3979,36 @@ function CileView() {
           </section>
 
           <section>
-            <AIHint message="Chci upravit úrovně hodnocení">
-              <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 12px", display: "flex", alignItems: "center" }}>
-                Úrovně hodnocení
-                <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je — například začínám, rozvíjím, zvládám. Používají se u každého kritéria." />
-              </p>
-            </AIHint>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
-              Úrovně popisují, na jaké úrovni zvládnutí se žák na cestě k cíli nachází. Vyberte si z přednastavených úrovní hodnocení podle vytvořených metodik, nebo si nastavte vlastní.
+            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+              Úrovně hodnocení
+              <InfoHint text="Úrovně nastavuje škola v Nastavení a platí pro celou aplikaci. Kdyby se měnily po hodině, nedaly by se výsledky žáků porovnat." />
             </p>
-            {tpEditingLevels ? (
-              <LevelPicker
-                current={tpSelectedLevelId}
-                onDone={(id) => { setTpSelectedLevelId(id); setTpEditingLevels(false); }}
-                onSaveCustom={setSavedCustomLevels}
-                savedCustomLevels={savedCustomLevels}
-              />
-            ) : tpSelectedLevelId === "vlastní" ? (
-              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Vlastní úrovně</span>
-                  <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                    <IconEdit />Upravit
-                  </button>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {savedCustomLevels.map((lv, i) => (
-                    <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                      <span style={{ flexShrink: 0, padding: "2px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#0a0a0a", whiteSpace: "nowrap" }}>
-                        {lv.name || `Úroveň ${i + 1}`}
-                      </span>
-                      {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.5 }}>{lv.desc}</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2, background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+              Stupnice je společná pro celou vaši výuku — mění se v Nastavení, ne u jednotlivé hodiny.
+            </p>
+            <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2, background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
+                </span>
+                <span>
+                  <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>
+                    {schoolLevelId === "vlastní" ? "Vlastní úrovně" : tpOpt.name}
                   </span>
-                  <span>
-                    <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>{tpOpt.name}</span>
-                    <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>{tpOpt.desc}</span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>
+                    {schoolLevelId === "vlastní"
+                      ? schoolCustomLevels.map(lv => lv.name).filter(Boolean).join(" · ")
+                      : tpOpt.desc}
                   </span>
-                </div>
-                <button onClick={() => setTpEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                  <IconEdit />Upravit
-                </button>
+                </span>
               </div>
-            )}
+              <button onClick={goToSettings} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0, whiteSpace: "nowrap" }}>
+                Změnit v nastavení
+              </button>
+            </div>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#8a6a1f", background: "#fffbeb", border: "1px solid rgba(180,83,9,0.22)", borderRadius: 10, padding: "9px 12px", lineHeight: 1.55, margin: "10px 0 0" }}>
+              Změna stupnice přepíše úrovně u všech vyučovacích hodin i u už zaznamenaných důkazů o učení. Nastavte ji na začátku roku a pak ji radši neměňte.
+            </p>
           </section>
         </div>
       </div>
@@ -3989,7 +4030,7 @@ function CileView() {
 
         <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
         <div style={{ maxWidth: 560, flex: "1 1 500px", minWidth: 0 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", margin: "0 0 8px" }}>
             Vytvořit hodinu
           </p>
           <h1 style={{
@@ -4062,8 +4103,7 @@ function CileView() {
           <div style={{ flex: 1 }}>
             <p style={{
               fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-              fontSize: 11, color: "#717182", letterSpacing: "0.06em",
-              textTransform: "uppercase", margin: "0 0 8px",
+              fontSize: 11, color: "#717182", letterSpacing: "0.06em", margin: "0 0 8px",
             }}>
               Výzkumný cíl
             </p>
@@ -4142,8 +4182,7 @@ function CileView() {
             <AIHint message="Chci upravit kritéria hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em",
-                textTransform: "uppercase", margin: "0 0 6px",
+                fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 6px",
               }}>
                 Kritéria hodnocení
               </p>
@@ -4169,8 +4208,7 @@ function CileView() {
             <AIHint message="Chci upravit úrovně hodnocení">
               <p style={{
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 13, color: "#717182", letterSpacing: "0.04em",
-                textTransform: "uppercase", margin: "0 0 12px",
+                fontSize: 13, color: "#717182", letterSpacing: "0.04em", margin: "0 0 12px",
               }}>
                 Úrovně hodnocení
               </p>
@@ -4337,7 +4375,10 @@ function CileView() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
           Vyučovací hodiny
-          <InfoHint text="Cíl, měsíc, rozsah hodin a výstup jsou stejná data jako v tématickém plánu — úprava tady se hned projeví i tam. Předmět a třída se nastavují pro celý plán." />
+          <PageHelp
+            text="Jedna hodina = jeden výukový cíl a kritéria, podle kterých poznáte, že ho žák zvládl. Cíl, měsíc a rozsah jsou stejná data jako v tématickém plánu, úprava se projeví i tam."
+            buddy="Vyučovací hodiny"
+          />
         </h1>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
@@ -4484,7 +4525,6 @@ function CileView() {
           tpGoals={tpGoals}
           removeTpGoal={removeTpGoal}
           setSelectedTpGoalId={id => setSelectedTpGoalId(id)}
-          setTpEditingLevels={setTpEditingLevels}
           setSelectedGoalId={id => setSelectedGoalId(id)}
           btnStyle={btnStyle}
           classOptions={initialClasses.map(c => c.name)}
@@ -4596,10 +4636,10 @@ const EVIDENCE_LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
 
 type EvidenceKind = "uroven" | "foto" | "audio" | "poznamka";
 const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; bg: string; color: string }> = {
-  uroven:   { label: "Úroveň",   bg: "#eef5f0", color: "#3f7a56" },
-  foto:     { label: "Foto",     bg: "#eef3f6", color: "#3d6f83" },
-  audio:    { label: "Audio",    bg: "#f1eff7", color: "#5e5185" },
-  poznamka: { label: "Poznámka", bg: "#f7f2ec", color: "#8a6a45" },
+  uroven:   { label: "Úroveň",   bg: "#e3f3e9", color: "#2b7a4e" },
+  foto:     { label: "Foto",     bg: "#e2f0f5", color: "#1f6a80" },
+  audio:    { label: "Audio",    bg: "#ece7f8", color: "#5a3fa0" },
+  poznamka: { label: "Poznámka", bg: "#f9eee0", color: "#8a5a1f" },
 };
 function evidenceKind(r: EvidenceRecord): EvidenceKind {
   if (r.criterion) return "uroven";
@@ -4820,40 +4860,40 @@ function EvidenceRecordCard({ r, goalNums, hideStudent, onEdit, onDelete }: {
 // barevná ikona. Důkazy o učení jsou naopak inverzní (tmavé pozadí, bílá ikona),
 // aby šlo obojí na první pohled rozlišit.
 const SUBJECT_STYLES: Record<string, { bg: string; color: string; icon: React.ReactNode }> = {
-  "Čeština": { bg: "#f4effa", color: "#6b4f96", icon: (
+  "Čeština": { bg: "#f0e8fb", color: "#6a3fa0", icon: (
     <><path d="M2.5 3.5h4a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0-1.5-1.5h-4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <path d="M13.5 3.5h-4a2 2 0 0 0-2 2v7a1.5 1.5 0 0 1 1.5-1.5h4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></>
   )},
-  "Matematika": { bg: "#eef2fa", color: "#3f5d99", icon: (
+  "Matematika": { bg: "#e6eefb", color: "#2f57a3", icon: (
     <><path d="M2.5 4.5h4M4.5 2.5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M9.5 4.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M2.8 10.2l2.8 2.8M5.6 10.2l-2.8 2.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M9.5 10.3h4M9.5 12.7h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></>
   )},
-  "Prvouka": { bg: "#eef6f0", color: "#35684a", icon: (
+  "Prvouka": { bg: "#e4f4ea", color: "#2c7148", icon: (
     <><path d="M8 14V7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     <path d="M8 7.5c0-2.6 2.6-4.2 4.7-3.7C12.7 6.4 10.6 8 8 7.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <path d="M8 10.2c0-2.1-2.6-3.6-4.7-3.1C3.3 9.6 5.4 10.7 8 10.2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></>
   )},
-  "Anglický jazyk": { bg: "#faf4e8", color: "#7a5c30", icon: (
+  "Anglický jazyk": { bg: "#fbf0dc", color: "#8a6520", icon: (
     <><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M2.2 8h11.6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M8 2c1.8 2 2.7 4 2.7 6s-.9 4-2.7 6C6.2 12 5.3 10 5.3 8S6.2 4 8 2z" stroke="currentColor" strokeWidth="1.2"/></>
   )},
-  "Hudební výchova": { bg: "#faeff4", color: "#8f4f70", icon: (
+  "Hudební výchova": { bg: "#fbe8f0", color: "#a03a6a", icon: (
     <><path d="M6 12V3.8l7-1.3V10" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
     <circle cx="4.3" cy="12.2" r="1.8" stroke="currentColor" strokeWidth="1.3"/>
     <circle cx="11.3" cy="10.2" r="1.8" stroke="currentColor" strokeWidth="1.3"/></>
   )},
-  "Výtvarná výchova": { bg: "#faf1ea", color: "#8f5a3a", icon: (
+  "Výtvarná výchova": { bg: "#fbeade", color: "#a0542a", icon: (
     <><path d="M8 2a6 6 0 0 0 0 12c.9 0 1.4-.6 1.4-1.3 0-.4-.2-.7-.4-.9-.2-.3-.4-.5-.4-.9 0-.7.6-1.2 1.3-1.2h1.2A3 3 0 0 0 14 6.7C14 4.1 11.3 2 8 2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
     <circle cx="5.3" cy="7" r="0.9" fill="currentColor"/><circle cx="8" cy="5.2" r="0.9" fill="currentColor"/><circle cx="10.8" cy="7" r="0.9" fill="currentColor"/></>
   )},
-  "Tělesná výchova": { bg: "#eaf6f4", color: "#34675f", icon: (
+  "Tělesná výchova": { bg: "#ddf2ee", color: "#1f6f64", icon: (
     <><circle cx="9.5" cy="3.3" r="1.6" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M9 6.2L6.7 8l1.4 2.2L7 14M9 6.2l2.6 1.6.9 2.4M9 6.2L5.6 7.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></>
   )},
-  "Informatika": { bg: "#f0f2f5", color: "#4a5568", icon: (
+  "Informatika": { bg: "#eaeef4", color: "#3d4c63", icon: (
     <><rect x="2" y="3" width="12" height="8" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
     <path d="M5.5 14h5M8 11v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></>
   )},
@@ -4998,7 +5038,7 @@ function AddEvidenceModal({ student, className, record, preset, onClose }: {
   const selStyle: React.CSSProperties = { ...FILTER_SELECT_STYLE, width: "100%", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-    fontSize: 11, color: "#717182", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6,
+    fontSize: 11, color: "#717182", letterSpacing: "0.05em", marginBottom: 6,
   };
 
   return (
@@ -5314,6 +5354,10 @@ function DukazyView() {
         <div>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 2px" }}>
             Důkazy o učení
+            <PageHelp
+              text="Důkaz o učení je konkrétní stopa toho, co žák umí — zaznamenaná úroveň u kritéria, fotka práce, nahrávka rozhovoru nebo vaše poznámka. Z důkazů pak vzniká slovní hodnocení."
+              buddy="Důkazy o učení"
+            />
           </h1>
           <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}>
             {filtered.length} {filtered.length === 1 ? "záznam" : filtered.length >= 2 && filtered.length <= 4 ? "záznamy" : "záznamů"}
@@ -5511,7 +5555,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", marginBottom: 6 }}>
               Třída
             </label>
             <select
@@ -5525,7 +5569,7 @@ function GoalSelectorModal({ tpGoals, onClose, onConfirm }: {
           </div>
 
           <div>
-            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>
+            <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#717182", letterSpacing: "0.04em", marginBottom: 6 }}>
               Výukový cíl
             </label>
             <select
@@ -5624,7 +5668,29 @@ function generateAssessment(firstName: string, lastName: string, index: number):
   return fn(firstName);
 }
 
+// Jak je žák připravený na hodnocení — stejná logika jako semafor ve třídě.
+const READINESS = [
+  { label: "Není připravený", color: "#dc2626", bg: "#fef2f2" },
+  { label: "Ještě pár důkazů", color: "#b45309", bg: "#fffbeb" },
+  { label: "Připravený", color: "#15803d", bg: "#f0fdf4" },
+];
+function readinessOf(studentId: string, className: string, tpGoals: TpGoal[], lessonsDone: Record<string, boolean>, records: EvidenceRecord[]) {
+  const recs = records.filter(r => r.studentId === studentId);
+  const taught = tpGoals
+    .filter(g => g.trida === className)
+    .filter(g => lessonsDone[g.id] || records.some(r => r.goalId === g.id))
+    .map(g => g.id);
+  if (taught.length === 0) {
+    return { level: recs.length >= 6 ? 2 : recs.length >= 2 ? 1 : 0, count: recs.length, covered: 0, taught: 0 };
+  }
+  const covered = taught.filter(gid => recs.some(r => r.goalId === gid && r.level)).length;
+  const share = covered / taught.length;
+  return { level: share >= 0.9 ? 2 : share >= 0.4 ? 1 : 0, count: recs.length, covered, taught: taught.length };
+}
+
 function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; onGenerate: (data: { students: StudentAssessment[]; period: string; className: string }) => void }) {
+  const { tpGoals, lessonsDone } = useContext(GoalsContext);
+  const { evidenceRecords } = useContext(EvidenceContext);
   const [selectedClassId, setSelectedClassId] = useState(initialClasses[0]?.id ?? "");
   const cls = initialClasses.find(c => c.id === selectedClassId) ?? initialClasses[0];
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
@@ -5690,14 +5756,15 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
         { label: "Hodnocení", onClick: onBack },
         { label: "Nové hodnocení" },
       ]} />
-      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 6px" }}>
+      <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: "0 0 4px" }}>
         Vygenerovat hodnocení
       </h1>
-      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 32px", lineHeight: 1.5 }}>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#717182", margin: "0 0 28px", lineHeight: 1.55, maxWidth: 560 }}>
         Buddy navrhne slovní hodnocení žáků na základě zaznamenaných důkazů o učení.
+        U koho jich má málo, radši ho zatím nevybírejte.
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 760 }}>
         {/* class picker */}
         <div>
           <label style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 8 }}>
@@ -5719,13 +5786,23 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                 </span>
               )}
             </label>
-            <button onClick={toggleAll} style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}>
-              {allSelected ? "Zrušit výběr" : "Vybrat všechny"}
-            </button>
+            <span style={{ display: "flex", gap: 14 }}>
+              <button
+                onClick={() => setSelectedStudents(new Set(cls.students.filter(st => readinessOf(st.id, cls.name, tpGoals, lessonsDone, evidenceRecords).level === 2).map(st => st.id)))}
+                style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#15803d", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}
+              >
+                Vybrat připravené
+              </button>
+              <button onClick={toggleAll} style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", padding: 0 }}>
+                {allSelected ? "Zrušit výběr" : "Vybrat všechny"}
+              </button>
+            </span>
           </div>
-          <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.09)", borderRadius: 12, overflow: "hidden", maxHeight: 240, overflowY: "auto" }}>
+          <div style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.09)", borderRadius: 12, overflow: "hidden", maxHeight: 300, overflowY: "auto" }}>
             {cls.students.map((st, i) => {
               const checked = selectedStudents.has(st.id);
+              const rd = readinessOf(st.id, cls.name, tpGoals, lessonsDone, evidenceRecords);
+              const rs = READINESS[rd.level];
               return (
                 <button
                   key={st.id}
@@ -5746,8 +5823,19 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
                   }}>
                     {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </span>
-                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a" }}>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a", flexGrow: 1 }}>
                     {st.firstName} {st.lastName}
+                  </span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99", whiteSpace: "nowrap" }}>
+                    {rd.count} {rd.count === 1 ? "důkaz" : rd.count <= 4 ? "důkazy" : "důkazů"}
+                  </span>
+                  <span style={{
+                    flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "3px 10px", borderRadius: 20, background: rs.bg, color: rs.color,
+                    fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
+                  }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: rs.color, display: "block" }} />
+                    {rs.label}
                   </span>
                 </button>
               );
@@ -5834,14 +5922,16 @@ function HodnoceniGeneratorPage({ onBack, onGenerate }: { onBack: () => void; on
           onClick={handleGenerate}
           disabled={selectedStudents.size === 0 || generating}
           style={{
-            width: "100%", padding: "14px 24px",
+            alignSelf: "flex-start", padding: "12px 22px",
+            display: "flex", alignItems: "center", gap: 8,
             background: selectedStudents.size === 0 ? "rgba(10,10,10,0.3)" : "#0a0a0a",
-            color: "#fff", border: "none", borderRadius: 14, cursor: selectedStudents.size === 0 ? "default" : "pointer",
-            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 16,
+            color: "#fff", border: "none", borderRadius: 12, cursor: selectedStudents.size === 0 ? "default" : "pointer",
+            fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 14.5,
             transition: "background 0.15s", opacity: generating ? 0.6 : 1,
           }}
         >
-          {generating ? "Generuji..." : "Generovat návrh hodnocení"}
+          <SparkleIcon />
+          {generating ? "Generuji…" : `Generovat návrh${selectedStudents.size ? ` pro ${selectedStudents.size} ${selectedStudents.size === 1 ? "žáka" : selectedStudents.size <= 4 ? "žáky" : "žáků"}` : ""}`}
         </button>
       </div>
     </div>
@@ -5856,14 +5946,46 @@ function HodnoceniResultPage({
   title: string; createdAt: string; readOnly?: boolean;
   onBack: () => void; onSave?: (students: StudentAssessment[]) => void;
 }) {
+  const openBuddy = useContext(BuddyContext);
   const [students, setStudents] = useState(initialStudents);
   const [activeId, setActiveId] = useState(initialStudents[0]?.studentId ?? "");
+  const [copied, setCopied] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [editing, setEditing] = useState(!readOnly);
 
   const active = students.find(s => s.studentId === activeId) ?? students[0];
+  const idx = students.findIndex(s => s.studentId === active?.studentId);
 
   function updateText(id: string, text: string) {
     setStudents(prev => prev.map(s => s.studentId === id ? { ...s, text } : s));
   }
+
+  function copyActive() {
+    if (!active) return;
+    navigator.clipboard?.writeText(active.text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  }
+
+  const chip = (label: string, value: string) => (
+    <span style={{
+      display: "inline-flex", alignItems: "baseline", gap: 6,
+      padding: "5px 12px", borderRadius: 20, background: "rgba(236,236,240,0.9)",
+    }}>
+      <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>{label}</span>
+      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12.5, color: "#0a0a0a" }}>{value}</span>
+    </span>
+  );
+
+  const actionBtn = (label: string, onClick: () => void, node?: React.ReactNode) => (
+    <button
+      onClick={onClick}
+      style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}
+    >
+      {node}
+      {label}
+    </button>
+  );
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -5873,74 +5995,192 @@ function HodnoceniResultPage({
         { label: title },
       ]} />
 
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, color: "#0a0a0a", margin: "0 0 4px" }}>
-            {title}
-          </h1>
-          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0 }}>
-            {className} · {period} · {createdAt}
-          </p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 10 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0 }}>
+          {title}
+        </h1>
+        <div style={{ display: "flex", gap: 8, flexShrink: 0, position: "relative" }}>
+          {actionBtn("Poslat Buddymu", () => openBuddy(`Hodnocení ${className} · ${period}`), <SparkleIcon />)}
+          {actionBtn(copied ? "Zkopírováno" : "Kopírovat", copyActive, (
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="5.5" y="5.5" width="8" height="9" rx="1.3" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M10.5 5.5v-2a1.3 1.3 0 0 0-1.3-1.3H3.8a1.3 1.3 0 0 0-1.3 1.3v5.4a1.3 1.3 0 0 0 1.3 1.3h1.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+          ))}
+          <div style={{ position: "relative" }}>
+            {actionBtn("Exportovat", () => setExportOpen(o => !o), (
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 2v7.5M5.3 7l2.7 2.7L10.7 7M2.5 12.5v0.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-0.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            ))}
+            {exportOpen && (
+              <div style={{
+                position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 30, minWidth: 150,
+                background: "#fff", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)", overflow: "hidden",
+              }}>
+                {["PDF", "Word", "Do schránky celé"].map(fmt => (
+                  <button
+                    key={fmt}
+                    onClick={() => {
+                      setExportOpen(false);
+                      if (fmt === "Do schránky celé") {
+                        navigator.clipboard?.writeText(students.map(x => `${x.studentName}\n${x.text}`).join("\n\n")).catch(() => {});
+                      }
+                    }}
+                    style={{
+                      display: "block", width: "100%", padding: "9px 14px", border: "none", background: "none",
+                      cursor: "pointer", textAlign: "left",
+                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f7")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "none")}
+                  >
+                    {fmt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {readOnly
+            ? actionBtn(editing ? "Hotovo" : "Upravit", () => setEditing(e => !e), <IconEdit />)
+            : onSave && (
+              <button onClick={() => onSave(students)} style={{ ...btnStyle("primary"), whiteSpace: "nowrap" }}>
+                Uložit hodnocení
+              </button>
+            )}
         </div>
-        {!readOnly && onSave && (
-          <button
-            onClick={() => onSave(students)}
-            style={{ ...btnStyle("primary"), padding: "9px 20px", borderRadius: 10, fontSize: 14, flexShrink: 0 }}
-          >
-            Uložit hodnocení
-          </button>
-        )}
       </div>
 
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-        {/* student list sidebar */}
-        <div style={{ width: 200, flexShrink: 0, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
-          {students.map((s, i) => (
-            <button
-              key={s.studentId}
-              onClick={() => setActiveId(s.studentId)}
-              style={{
-                display: "block", width: "100%", textAlign: "left",
-                padding: "10px 14px", border: "none",
-                borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.06)",
-                background: s.studentId === activeId ? "rgba(10,10,10,0.05)" : "transparent",
-                fontFamily: s.studentId === activeId ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-                fontWeight: s.studentId === activeId ? 500 : 400,
-                fontSize: 13, color: "#0a0a0a", cursor: "pointer", transition: "background 0.1s",
-              }}
-            >
-              {s.studentName}
-            </button>
-          ))}
+      {/* na čem hodnocení stojí */}
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 24 }}>
+        {chip("Třída", className)}
+        {chip("Období", period)}
+        {chip("Žáků", String(students.length))}
+        {chip("Vytvořeno", createdAt)}
+      </div>
+
+      <div style={{ display: "flex", gap: 20, alignItems: "flex-start", maxWidth: 1080 }}>
+        {/* seznam žáků */}
+        <div style={{ width: 230, flexShrink: 0, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", overflow: "hidden" }}>
+          {students.map((st, i) => {
+            const on = st.studentId === active?.studentId;
+            return (
+              <button
+                key={st.studentId}
+                onClick={() => setActiveId(st.studentId)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left",
+                  padding: "9px 12px", border: "none",
+                  borderTop: i === 0 ? "none" : "1px solid rgba(0,0,0,0.06)",
+                  borderLeft: on ? "3px solid #0a0a0a" : "3px solid transparent",
+                  background: on ? "rgba(10,10,10,0.04)" : "transparent",
+                  cursor: "pointer", transition: "background 0.1s",
+                }}
+                onMouseEnter={e => { if (!on) e.currentTarget.style.background = "rgba(236,236,240,0.5)"; }}
+                onMouseLeave={e => { if (!on) e.currentTarget.style.background = "transparent"; }}
+              >
+                <span style={{
+                  width: 24, height: 24, borderRadius: "50%", flexShrink: 0, background: avatarColor(st.studentName),
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 9.5, color: "#fff",
+                }}>
+                  {st.studentName.split(" ").map(w => w[0]).slice(0, 2).join("")}
+                </span>
+                <span style={{
+                  fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                  fontWeight: on ? 500 : 400, fontSize: 13, color: "#0a0a0a",
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  {st.studentName}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* assessment text */}
+        {/* text hodnocení */}
         {active && (
-          <div style={{ flex: 1, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: 24 }}>
-            <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 10px" }}>
-              {active.studentName}
-            </p>
-            {readOnly ? (
-              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a", lineHeight: 1.75, margin: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, background: "#fff", borderRadius: 14, border: "1px solid rgba(0,0,0,0.09)", padding: "22px 26px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <span style={{
+                width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: avatarColor(active.studentName),
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#fff",
+              }}>
+                {active.studentName.split(" ").map(w => w[0]).slice(0, 2).join("")}
+              </span>
+              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", flexGrow: 1 }}>
+                {active.studentName}
+              </span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11.5, color: "#8a8a99" }}>
+                {idx + 1} z {students.length}
+              </span>
+              <span style={{ display: "flex", gap: 4 }}>
+                <button
+                  onClick={() => setActiveId(students[Math.max(0, idx - 1)]?.studentId ?? activeId)}
+                  aria-label="Předchozí žák"
+                  style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(0,0,0,0.12)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#5c5c6b" }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                <button
+                  onClick={() => setActiveId(students[Math.min(students.length - 1, idx + 1)]?.studentId ?? activeId)}
+                  aria-label="Další žák"
+                  style={{ width: 26, height: 26, borderRadius: 8, border: "1px solid rgba(0,0,0,0.12)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#5c5c6b" }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </span>
+            </div>
+
+            {editing ? (
+              <textarea
+                value={active.text}
+                onChange={e => updateText(active.studentId, e.target.value)}
+                rows={9}
+                style={{
+                  width: "100%", resize: "vertical", padding: "12px 14px", boxSizing: "border-box",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 14.5, color: "#0a0a0a",
+                  background: "#fafafa", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 10,
+                  outline: "none", lineHeight: 1.8,
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.25)"; e.currentTarget.style.background = "#fff"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)"; e.currentTarget.style.background = "#fafafa"; }}
+              />
+            ) : (
+              <p
+                style={{
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 14.5, color: "#0a0a0a",
+                  lineHeight: 1.8, margin: 0, padding: "12px 14px", borderRadius: 10,
+                  border: "1.5px solid transparent", transition: "background 0.12s",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(236,236,240,0.5)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              >
                 {active.text}
               </p>
-            ) : (
-              <>
-                <textarea
-                  value={active.text}
-                  onChange={e => updateText(active.studentId, e.target.value)}
-                  rows={8}
-                  style={{
-                    width: "100%", resize: "vertical", padding: "0", boxSizing: "border-box",
-                    fontFamily: "'Inter:Regular', sans-serif", fontSize: 14, color: "#0a0a0a",
-                    background: "transparent", border: "none", outline: "none", lineHeight: 1.75,
-                  }}
-                />
-                <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0be", margin: "12px 0 0", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 10 }}>
-                  Text navrhl Buddy na základě zaznamenaných důkazů o učení. Můžete ho upravit.
-                </p>
-              </>
             )}
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+              <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#b0b0be", margin: 0, flexGrow: 1 }}>
+                Text navrhl Buddy na základě zaznamenaných důkazů o učení.
+              </p>
+              <button
+                onClick={() => openBuddy(`Hodnocení: ${active.studentName}`)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "5px 11px", borderRadius: 20, cursor: "pointer",
+                  border: "1px solid rgba(124,58,237,0.35)", background: "#fff", color: "#5b21b6",
+                  fontFamily: "'Inter:Regular', sans-serif", fontSize: 12,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#f3e8ff")}
+                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+              >
+                <SparkleIcon />
+                Přepsat jinak
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -6005,14 +6245,16 @@ function HodnoceniView() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
           Hodnocení
+          <PageHelp
+            text="Slovní hodnocení, které Buddy sestaví z důkazů o učení. Popisuje pokrok žáka vlastními slovy místo známky — vy si ho pak upravíte a exportujete."
+            buddy="Hodnocení"
+          />
         </h1>
         <button
           onClick={() => setView("generating")}
           style={{ ...btnStyle("primary"), padding: "8px 16px", borderRadius: 10, fontSize: 13.5, display: "flex", alignItems: "center", gap: 7 }}
         >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1.333L9.857 5.1l4.143.6-3 2.924.708 4.109L8 10.667l-3.708 1.966L5 8.624 2 5.7l4.143-.6L8 1.333z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <SparkleIcon />
           Vygenerovat hodnocení
         </button>
       </div>
@@ -6359,6 +6601,100 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
   );
 }
 
+// Z kolika řádků plánu se mají udělat vyučovací hodiny
+function GenerateLessonsModal({ months, countFor, onClose, onConfirm }: {
+  months: string[];
+  countFor: (month: string) => number;
+  onClose: () => void;
+  onConfirm: (months: string[] | undefined) => void;
+}) {
+  const [mode, setMode] = useState<"vse" | "vyber">("vse");
+  const [picked, setPicked] = useState<Set<string>>(new Set(months.slice(0, 1)));
+  const total = months.reduce((n, m) => n + countFor(m), 0);
+  const pickedCount = months.filter(m => picked.has(m)).reduce((n, m) => n + countFor(m), 0);
+  const count = mode === "vse" ? total : pickedCount;
+
+  return (
+    <Modal title="Generovat plán hodin" onClose={onClose} width={520}>
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+        Z každého řádku plánu vznikne jedna vyučovací hodina i s kritérii hodnocení.
+        Můžete je vytvořit pro celý plán, nebo jen pro některé časové jednotky.
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {([["vse", `Celý plán — ${total} ${total === 1 ? "hodina" : total <= 4 ? "hodiny" : "hodin"}`],
+           ["vyber", "Jen vybrané časové jednotky"]] as const).map(([m, label]) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            style={{
+              display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left",
+              padding: "12px 14px", borderRadius: 12, cursor: "pointer",
+              border: mode === m ? "1.5px solid #7c3aed" : "1.5px solid rgba(0,0,0,0.12)",
+              background: mode === m ? "#faf5ff" : "#fff",
+              transition: "border-color 0.12s, background 0.12s",
+            }}
+          >
+            <span style={{
+              width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+              border: mode === m ? "none" : "1.5px solid rgba(0,0,0,0.25)",
+              background: mode === m ? "#7c3aed" : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {mode === m && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />}
+            </span>
+            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a" }}>{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {mode === "vyber" && (
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", margin: "14px 0 0" }}>
+          {months.map(m => {
+            const on = picked.has(m);
+            return (
+              <button
+                key={m}
+                onClick={() => setPicked(prev => {
+                  const next = new Set(prev);
+                  next.has(m) ? next.delete(m) : next.add(m);
+                  return next;
+                })}
+                aria-pressed={on}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "6px 12px", borderRadius: 20, cursor: "pointer",
+                  border: on ? "1.5px solid #7c3aed" : "1.5px solid rgba(0,0,0,0.12)",
+                  background: on ? "#f3e8ff" : "#fff",
+                  color: on ? "#5b21b6" : "#5c5c6b",
+                  fontFamily: on ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+                  fontWeight: on ? 500 : 400, fontSize: 12.5,
+                  transition: "background 0.12s, border-color 0.12s",
+                }}
+              >
+                {m}
+                <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontWeight: 400, fontSize: 11, opacity: 0.75 }}>
+                  {countFor(m)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5, color: "#717182", margin: "16px 0 0" }}>
+        Vznikne {count} {count === 1 ? "vyučovací hodina" : count <= 4 ? "vyučovací hodiny" : "vyučovacích hodin"}.
+      </p>
+
+      <ModalActions
+        onCancel={onClose}
+        onConfirm={() => onConfirm(mode === "vse" ? undefined : months.filter(m => picked.has(m)))}
+        confirmLabel="Generovat"
+      />
+    </Modal>
+  );
+}
+
 function TematickyPlanView() {
   const openBuddy = useContext(BuddyContext);
   const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow, tpGoals, lessonsDone, schoolName, teacherName } = useContext(GoalsContext);
@@ -6401,6 +6737,7 @@ function TematickyPlanView() {
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   // Z jaké osoby mají být cíle formulované. Ovlivňuje generování nových cílů.
   const [cilOsoba, setCilOsoba] = useState<"zak" | "ja">("zak");
   function applyCilOsoba(osoba: "zak" | "ja") {
@@ -6464,9 +6801,10 @@ function TematickyPlanView() {
     });
   }
 
-  function handleGenerateCriteria() {
+  function handleGenerateCriteria(onlyMonths?: string[]) {
     const newGoals: TpGoal[] = editRows
       .filter(r => r.cile.trim())
+      .filter(r => !onlyMonths || onlyMonths.includes(r.cas))
       .map(r => ({
         id: r._id,
         text: r.cile,
@@ -6551,6 +6889,10 @@ function TematickyPlanView() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 28, marginBottom: 28 }}>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
             Tématický plán
+            <PageHelp
+              text="Tématický plán je rozvrh učiva na celý rok — co se kdy probírá a jaký je cíl každé hodiny. Je to základ, ze kterého vzniknou vyučovací hodiny i důkazy o učení."
+              buddy="Tématický plán"
+            />
           </h1>
           <button
             onClick={() => { setText(""); setSelectedPlanId(null); setView("form"); }}
@@ -6623,7 +6965,7 @@ function TematickyPlanView() {
                       </svg>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#717182", letterSpacing: "0.06em" }}>
                         Tématický plán
                       </span>
                       <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#0a0a0a", margin: 0, lineHeight: 1.3 }}>
@@ -6760,7 +7102,7 @@ function TematickyPlanView() {
     const thStyle: React.CSSProperties = {
       padding: "11px 14px", textAlign: "left",
       fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11,
-      color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em",
+      color: "#6b6b7a", letterSpacing: "0.06em",
       background: "#fafafa", borderBottom: "1px solid rgba(0,0,0,0.08)",
       borderRight: "1px solid rgba(0,0,0,0.05)",
       whiteSpace: "nowrap", userSelect: "none",
@@ -6793,7 +7135,7 @@ function TematickyPlanView() {
         {/* header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginTop: 28, marginBottom: 28 }}>
           <div>
-            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#6b6b7a", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tématický plán</p>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#6b6b7a", margin: "0 0 4px", letterSpacing: "0.06em" }}>Tématický plán</p>
             <input
               value={text}
               onChange={e => setText(e.target.value)}
@@ -6843,6 +7185,16 @@ function TematickyPlanView() {
                 </div>
               )}
             </div>
+            <button
+              onClick={() => setGenerateOpen(true)}
+              style={{
+                ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6,
+                background: "#7c3aed", color: "#fff",
+              }}
+            >
+              <SparkleIcon />
+              Generovat plán hodin
+            </button>
             <button onClick={savePlan} style={{ ...btnStyle("primary"), display: "flex", alignItems: "center", gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.333 10v2.667A1.333 1.333 0 0112 14H4a1.333 1.333 0 01-1.333-1.333V10M5.333 6.667L8 9.333l2.667-2.666M8 9.333V2" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/></svg>
               {selectedPlanId ? "Uložit změny" : "Uložit plán"}
@@ -6861,7 +7213,7 @@ function TematickyPlanView() {
               { label: "Formulace cílů", val: cilOsoba === "zak" ? "Žák…" : "Já…", set: (v: string) => applyCilOsoba(v === "Já…" ? "ja" : "zak"), opts: ["Žák…", "Já…"] },
             ].map(({ label, val, set, opts }) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>{label}</span>
                 <select value={val} onChange={e => set(e.target.value)} style={selectStyle}>
                   {opts.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -6870,7 +7222,7 @@ function TematickyPlanView() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
+            <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em", marginRight: 4 }}>Sloupce</span>
             {tpColumns.map(col => {
               const on = cols.has(col.id);
               const locked = col.id === "cile" || col.id === "casJednotka";
@@ -6909,13 +7261,13 @@ function TematickyPlanView() {
             <div style={{ display: "flex", gap: 16, marginTop: 14, flexWrap: "wrap" }}>
               {showSkola && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Název školy</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>Název školy</span>
                   <input value={nazevSkoly} onChange={e => setNazevSkoly(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
               {showVyucujici && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", textTransform: "uppercase", letterSpacing: "0.05em" }}>Vyučující</span>
+                  <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontSize: 11, color: "#717182", letterSpacing: "0.05em" }}>Vyučující</span>
                   <input value={vyucujici} onChange={e => setVyucujici(e.target.value)} style={{ ...selectStyle, minWidth: 200 }} />
                 </div>
               )}
@@ -6928,6 +7280,15 @@ function TematickyPlanView() {
             {showSkola && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Škola:</strong> {nazevSkoly}</span>}
             {showVyucujici && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182" }}><strong style={{ fontFamily: "'Inter:Medium', sans-serif", color: "#0a0a0a" }}>Vyučující:</strong> {vyucujici}</span>}
           </div>
+        )}
+
+        {generateOpen && (
+          <GenerateLessonsModal
+            months={Array.from(new Set(editRows.filter(r => r.cile.trim()).map(r => r.cas)))}
+            countFor={m => editRows.filter(r => r.cile.trim() && r.cas === m).length}
+            onClose={() => setGenerateOpen(false)}
+            onConfirm={months => { setGenerateOpen(false); handleGenerateCriteria(months); }}
+          />
         )}
 
         {/* table with draggable columns */}
@@ -6968,23 +7329,6 @@ function TematickyPlanView() {
                           style={{ width: 20, height: 20 }}
                         />
                       </span>
-                      {colId === "cile" && (
-                        <button
-                          onClick={e => { e.stopPropagation(); handleGenerateCriteria(); }}
-                          title="Generovat plán hodin"
-                          style={{
-                            ...btnStyle("primary"),
-                            display: "inline-flex", alignItems: "center", gap: 6,
-                            marginTop: 8, padding: "7px 14px", fontSize: 12,
-                            background: "#7c3aed", color: "#fff",
-                            whiteSpace: "nowrap",
-                            textTransform: "none", letterSpacing: "normal",
-                          }}
-                        >
-                          <SparkleIcon />
-                          Generovat plán hodin
-                        </button>
-                      )}
                     </th>
                   );
                 })}
@@ -7149,7 +7493,7 @@ function TematickyPlanView() {
       <div style={{ display: "flex", gap: 48, alignItems: "flex-start", marginTop: 32, maxWidth: 1060 }}>
       <div style={{ maxWidth: 580, flex: "1 1 520px", minWidth: 0 }}>
         <FadeIn delay={0}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 11, color: "#8a8a99", letterSpacing: "0.09em", margin: "0 0 8px" }}>
             Vytvořit nový plán
           </p>
           <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 30, color: "#0a0a0a", margin: "0 0 10px", lineHeight: 1.25 }}>
@@ -7463,7 +7807,7 @@ function BuddyChat({ open, onClose, trigger, context, onRemoveContext, onClearCo
         {context.length > 0 && (
           <div style={{ padding: "10px 14px 0", background: "#fff", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#6b6b7a", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 10, color: "#6b6b7a", letterSpacing: "0.06em" }}>
                 Kontext
               </span>
               <button
@@ -7592,7 +7936,7 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
       subtitle: "Přístup vede žáka k lásce k učivu – zabývá se jeho motivací se učit, pokroky, které dělá a sebehodnocením svého posunu.",
       content: (
         <div style={{ marginTop: 56 }}>
-          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#b0b0be", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#b0b0be", letterSpacing: "0.08em", margin: "0 0 28px", textAlign: "center" }}>
             Jak to funguje?
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, maxWidth: 900, margin: "0 auto" }}>
@@ -7943,6 +8287,8 @@ export default function App() {
     setPlans,
     lessonsDone,
     toggleLessonDone: (id) => setLessonsDone(prev => ({ ...prev, [id]: !prev[id] })),
+    goToSettings: () => navigate("profil"),
+    openGuide: () => setOnboardingOpen(true),
     teacherName,
     setTeacherName,
     schoolName,
@@ -8076,7 +8422,7 @@ export default function App() {
               <p style={{
                 padding: "0 8px", margin: "12px 0 4px",
                 fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
-                fontSize: 10, color: "#b0b0be", letterSpacing: "0.07em", textTransform: "uppercase",
+                fontSize: 10, color: "#b0b0be", letterSpacing: "0.07em",
               }}>{label}</p>
             ) : <div style={{ height: 8 }} />;
 
@@ -8130,25 +8476,11 @@ export default function App() {
                     <button onClick={() => navigate("napady")} style={devBtnStyle}>Nápady</button>
                     <button onClick={addDemoPlan} style={devBtnStyle}>Přidat plán a hodiny</button>
                     <button onClick={clearPlanAndLessons} style={devBtnStyle}>Vymazat plán a hodiny</button>
-                  </div>
-                )}
 
-                {!collapsed && (
-                  <button
-                    onClick={() => setOnboardingOpen(true)}
-                    style={{
-                      display: "flex", alignItems: "center",
-                      padding: "7px 8px", borderRadius: 9, border: "none",
-                      background: "transparent", color: "#b0b0be",
-                      fontFamily: "'Inter:Regular', sans-serif", fontSize: 12.5,
-                      cursor: "pointer", width: "100%", textAlign: "left",
-                      transition: "color 0.12s",
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = "#717182")}
-                    onMouseLeave={e => (e.currentTarget.style.color = "#b0b0be")}
-                  >
-                    Jak na formativní hodnocení
-                  </button>
+                    <button onClick={() => setOnboardingOpen(true)} style={devBtnStyle}>
+                      Jak na formativní hodnocení
+                    </button>
+                  </div>
                 )}
               </>
             );
@@ -8158,7 +8490,7 @@ export default function App() {
         {/* user */}
         <button
           onClick={() => navigate("profil")}
-          title={collapsed ? "Můj profil" : undefined}
+          title={collapsed ? "Nastavení" : undefined}
           style={{
             borderTop: "1px solid rgba(0,0,0,0.08)", borderLeft: "none", borderRight: "none", borderBottom: "none",
             padding: collapsed ? "12px 8px" : "12px 16px", display: "flex", alignItems: "center",
@@ -8169,22 +8501,25 @@ export default function App() {
           onMouseEnter={e => { if (active !== "profil") e.currentTarget.style.background = "rgba(236,236,240,0.45)"; }}
           onMouseLeave={e => { if (active !== "profil") e.currentTarget.style.background = "transparent"; }}
         >
-          <div style={{
-            width: 28, height: 28, borderRadius: "50%", background: "rgba(236,236,240,0.85)",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#717182" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="7" r="4" stroke="#717182" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+          <PersonAvatar size={30} />
           {!collapsed && (
-            <span style={{
-              fontFamily: active === "profil" ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
-              fontWeight: active === "profil" ? 500 : 400, fontSize: 13, color: "#0a0a0a",
-            }}>
-              Můj profil
+            <span style={{ display: "flex", flexDirection: "column", minWidth: 0, flexGrow: 1 }}>
+              <span style={{
+                fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {teacherName}
+              </span>
+              <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 11, color: "#8a8a99" }}>
+                Nastavení
+              </span>
             </span>
+          )}
+          {!collapsed && (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: active === "profil" ? "#0a0a0a" : "#b0b0be" }}>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/>
+              <path d="M19.4 14a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V20a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H10a1.6 1.6 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V10a1.6 1.6 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           )}
         </button>
       </aside>
