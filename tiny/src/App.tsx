@@ -25,6 +25,14 @@ interface GoalsCtx {
   setPlans: React.Dispatch<React.SetStateAction<TpPlan[]>>;
   lessonsDone: Record<string, boolean>;
   toggleLessonDone: (id: string) => void;
+  teacherName: string;
+  setTeacherName: (v: string) => void;
+  schoolName: string;
+  setSchoolName: (v: string) => void;
+  schoolLevelId: string;
+  setSchoolLevelId: (id: string) => void;
+  schoolCustomLevels: CustomLevel[];
+  setSchoolCustomLevels: (levels: CustomLevel[]) => void;
   updatePlanRow: (rowId: string, patch: Partial<TpRow>) => void;
   navigateCile: () => void;
   animateIn: boolean;
@@ -34,6 +42,10 @@ const GoalsContext = createContext<GoalsCtx>({
   planRows: [], setPlanRows: () => {}, updatePlanRow: () => {},
   plans: [], setPlans: () => {},
   lessonsDone: {}, toggleLessonDone: () => {},
+  teacherName: "", setTeacherName: () => {},
+  schoolName: "", setSchoolName: () => {},
+  schoolLevelId: "začínám", setSchoolLevelId: () => {},
+  schoolCustomLevels: [], setSchoolCustomLevels: () => {},
   navigateCile: () => {}, animateIn: false,
 });
 
@@ -412,7 +424,7 @@ function Breadcrumb({ crumbs }: { crumbs: { label: string; onClick?: () => void 
 
 // ─── nav data ─────────────────────────────────────────────────────────────────
 
-type NavItem = "tridy" | "cile" | "dukazy" | "hodnoceni" | "tematicky-plan" | "tinyboti" | "lekce" | "asistenti" | "navody" | "zpetna-vazba";
+type NavItem = "tridy" | "cile" | "dukazy" | "hodnoceni" | "tematicky-plan" | "profil" | "tinyboti" | "lekce" | "asistenti" | "navody" | "zpetna-vazba";
 
 // nav items v2
 const navItems: { id: NavItem; label: string; icon: React.ReactNode }[] = [
@@ -944,6 +956,123 @@ function StudentProfile({
       {addOpen && <AddEvidenceModal student={student} className={className} onClose={() => setAddOpen(false)} />}
       {preset && <AddEvidenceModal student={student} className={className} preset={preset} onClose={() => setPreset(null)} />}
       {editRecord && <AddEvidenceModal student={student} className={className} record={editRecord} onClose={() => setEditRecord(null)} />}
+    </div>
+  );
+}
+
+// Profil učitele — jméno, škola a hlavně úrovně hodnocení, které škola používá.
+function ProfilView() {
+  const {
+    schoolLevelId, setSchoolLevelId, schoolCustomLevels, setSchoolCustomLevels,
+    teacherName, setTeacherName, schoolName, setSchoolName,
+  } = useContext(GoalsContext);
+  const [editingLevels, setEditingLevels] = useState(false);
+  const jmeno = teacherName;
+  const setJmeno = setTeacherName;
+  const skola = schoolName;
+  const setSkola = setSchoolName;
+  const opt = levelOptions.find(o => o.id === schoolLevelId) ?? levelOptions[1];
+
+  const fieldStyle: React.CSSProperties = {
+    width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 10,
+    border: "1.5px solid rgba(0,0,0,0.13)", outline: "none",
+    fontFamily: "'Inter:Regular', sans-serif", fontSize: 13.5, color: "#0a0a0a",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500,
+    fontSize: 11, color: "#717182", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6,
+  };
+
+  return (
+    <div style={{ padding: "32px 40px" }}>
+      <Breadcrumb crumbs={[{ label: "Formativní hodnocení" }, { label: "Můj profil" }]} />
+
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
+        <h1 style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 22, lineHeight: "40px", color: "#0a0a0a", margin: 0, display: "flex", alignItems: "center" }}>
+          Můj profil
+          <InfoHint text="Co si nastavíte tady, platí pro celou vaši výuku — nové vyučovací hodiny i tabulky hodnocení dostanou rovnou tyhle úrovně." />
+        </h1>
+      </div>
+
+      <div style={{ maxWidth: 720, display: "flex", flexDirection: "column", gap: 28 }}>
+        <section style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(0,0,0,0.09)", padding: "18px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%", background: avatarColor(jmeno), flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 15, color: "#fff",
+            }}>
+              {jmeno.split(" ").slice(-2).map(w => w[0]).join("")}
+            </div>
+            <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", margin: 0, lineHeight: 1.55 }}>
+              Jméno a škola se propíšou do tématických plánů a tištěných tabulek hodnocení.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <label style={{ flex: 1 }}>
+              <span style={labelStyle}>Jméno</span>
+              <input value={jmeno} onChange={e => setJmeno(e.target.value)} style={fieldStyle} />
+            </label>
+            <label style={{ flex: 1 }}>
+              <span style={labelStyle}>Škola</span>
+              <input value={skola} onChange={e => setSkola(e.target.value)} style={fieldStyle} />
+            </label>
+          </div>
+        </section>
+
+        <section>
+          <p style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#717182", letterSpacing: "0.04em", textTransform: "uppercase", margin: "0 0 6px", display: "flex", alignItems: "center" }}>
+            Úrovně hodnocení školy
+            <InfoHint text="Úrovně popisují, jak daleko na cestě k cíli žák je. Vyberte metodiku, kterou používá vaše škola, nebo si napište vlastní stupnici." />
+          </p>
+          <p style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#717182", lineHeight: 1.6, margin: "0 0 16px" }}>
+            Tuhle stupnici dostanou všechny nové vyučovací hodiny. U jednotlivé hodiny ji pak můžete přepsat.
+          </p>
+
+          {editingLevels ? (
+            <LevelPicker
+              current={schoolLevelId}
+              onDone={id => { setSchoolLevelId(id); setEditingLevels(false); }}
+              onSaveCustom={setSchoolCustomLevels}
+              savedCustomLevels={schoolCustomLevels}
+            />
+          ) : schoolLevelId === "vlastní" ? (
+            <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{ fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a" }}>Vlastní úrovně</span>
+                <button onClick={() => setEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                  <IconEdit />Upravit
+                </button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {schoolCustomLevels.map((lv, i) => (
+                  <div key={lv.id} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                    <span style={{ flexShrink: 0, padding: "2px 10px", borderRadius: 20, background: "rgba(236,236,240,0.7)", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 12, color: "#0a0a0a", whiteSpace: "nowrap" }}>
+                      {lv.name || `Úroveň ${i + 1}`}
+                    </span>
+                    {lv.desc && <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.5 }}>{lv.desc}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: "#fff", border: "1.5px solid rgba(0,0,0,0.12)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <span style={{ flexShrink: 0, width: 16, height: 16, borderRadius: "50%", marginTop: 2, background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "block" }} />
+                </span>
+                <span>
+                  <span style={{ display: "block", fontFamily: "'Inter:Medium', sans-serif", fontWeight: 500, fontSize: 13, color: "#0a0a0a", marginBottom: 4 }}>{opt.name}</span>
+                  <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 12, color: "#717182", lineHeight: 1.55 }}>{opt.desc}</span>
+                </span>
+              </div>
+              <button onClick={() => setEditingLevels(true)} style={{ ...btnStyle("ghost"), display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <IconEdit />Změnit
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -1593,8 +1722,8 @@ function CustomLevelList({ animateIn, initial, onItemsChange }: { animateIn?: bo
   );
 }
 
-function LevelPicker({ onDone, onSaveCustom, savedCustomLevels }: { onDone: (id: string) => void; onSaveCustom?: (levels: CustomLevel[]) => void; savedCustomLevels?: CustomLevel[] }) {
-  const [selected, setSelected] = useState<string>("vysvědčení");
+function LevelPicker({ onDone, onSaveCustom, savedCustomLevels, current }: { onDone: (id: string) => void; onSaveCustom?: (levels: CustomLevel[]) => void; savedCustomLevels?: CustomLevel[]; current?: string }) {
+  const [selected, setSelected] = useState<string>(current ?? "vysvědčení");
   const [customMode, setCustomMode] = useState(false);
   const [draftItems, setDraftItems] = useState<CustomLevel[]>(savedCustomLevels ?? defaultCustomLevels);
 
@@ -3424,7 +3553,7 @@ function LessonList({ filtered, animateIn, tpGoals, removeTpGoal, setSelectedTpG
 }
 
 function CileView() {
-  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone } = useContext(GoalsContext);
+  const { tpGoals, removeTpGoal, updateTpGoalText, updateTpGoal, animateIn, lessonsDone, toggleLessonDone, schoolLevelId, schoolCustomLevels } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
   // Stav hodiny: co už je pro ni hotové. Ukázkově má první hodina vytisknutou tabulku.
   const [lessonStatus, setLessonStatus] = useState<Record<string, { printed?: boolean; uploaded?: boolean }>>({});
@@ -3447,11 +3576,11 @@ function CileView() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [selectedTpGoalId, setSelectedTpGoalId] = useState<string | null>(null);
   const [tpEditingLevels, setTpEditingLevels] = useState(false);
-  const [tpSelectedLevelId, setTpSelectedLevelId] = useState("začínám");
+  const [tpSelectedLevelId, setTpSelectedLevelId] = useState(schoolLevelId);
   const [tpPrintOpen, setTpPrintOpen] = useState(false);
   const [tpCameraOpen, setTpCameraOpen] = useState(false);
   const [tpEvidenceOpen, setTpEvidenceOpen] = useState(false);
-  const [selectedLevelId, setSelectedLevelId] = useState<string>("vysvědčení");
+  const [selectedLevelId, setSelectedLevelId] = useState<string>(schoolLevelId);
   const [editingLevels, setEditingLevels] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -3459,7 +3588,7 @@ function CileView() {
   const [creatingGoal, setCreatingGoal] = useState(false);
   const [newGoalText, setNewGoalText] = useState("");
   const [generatingGoal, setGeneratingGoal] = useState(false);
-  const [savedCustomLevels, setSavedCustomLevels] = useState<CustomLevel[]>(defaultCustomLevels);
+  const [savedCustomLevels, setSavedCustomLevels] = useState<CustomLevel[]>(schoolCustomLevels);
   const selectedGoal = goals.find((g) => g.id === selectedGoalId) ?? null;
   const classStudents = initialClasses.find((c) => c.name === selectedGoal?.className)?.students ?? [];
 
@@ -3608,6 +3737,7 @@ function CileView() {
             </p>
             {tpEditingLevels ? (
               <LevelPicker
+                current={tpSelectedLevelId}
                 onDone={(id) => { setTpSelectedLevelId(id); setTpEditingLevels(false); }}
                 onSaveCustom={setSavedCustomLevels}
                 savedCustomLevels={savedCustomLevels}
@@ -3863,6 +3993,7 @@ function CileView() {
 
             {editingLevels ? (
               <LevelPicker
+                current={selectedLevelId}
                 onDone={(id) => { setSelectedLevelId(id); setEditingLevels(false); }}
                 onSaveCustom={setSavedCustomLevels}
                 savedCustomLevels={savedCustomLevels}
@@ -6023,7 +6154,7 @@ function AutoTextarea({ value, onChange, color }: { value: string; onChange: (v:
 
 function TematickyPlanView() {
   const openBuddy = useContext(BuddyContext);
-  const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow, tpGoals, lessonsDone } = useContext(GoalsContext);
+  const { addTpGoals, navigateCile, planRows, setPlanRows, updatePlanRow, tpGoals, lessonsDone, schoolName, teacherName } = useContext(GoalsContext);
   const { evidenceRecords } = useContext(EvidenceContext);
 
   // Řádky plánu pro kartu v seznamu: u právě načteného plánu platí sdílený
@@ -6045,8 +6176,8 @@ function TematickyPlanView() {
   const [trida, setTrida] = useState("3.A");
   const [unit, setUnit] = useState("měsíc");
   const [period, setPeriod] = useState("3 měsíce");
-  const [nazevSkoly, setNazevSkoly] = useState("ZŠ Mánesova");
-  const [vyucujici, setVyucujici] = useState("Mgr. Jana Nováková");
+  const [nazevSkoly, setNazevSkoly] = useState(schoolName);
+  const [vyucujici, setVyucujici] = useState(teacherName);
   const [cols, setCols] = useState<Set<TpColumn>>(new Set(["casJednotka", "tema", "cile"]));
 
   function toggleCol(id: TpColumn) {
@@ -7484,6 +7615,11 @@ export default function App() {
   const [plans, setPlans] = useState<TpPlan[]>(initialPlans);
   // které hodiny už jsou odučené — drží se nad navigací, ovlivňuje i kartu plánu
   const [lessonsDone, setLessonsDone] = useState<Record<string, boolean>>({});
+  // stupnice, kterou používá škola — profil ji nastavuje pro celou aplikaci
+  const [teacherName, setTeacherName] = useState("Mgr. Jana Nováková");
+  const [schoolName, setSchoolName] = useState("ZŠ Mánesova");
+  const [schoolLevelId, setSchoolLevelId] = useState("začínám");
+  const [schoolCustomLevels, setSchoolCustomLevels] = useState<CustomLevel[]>(defaultCustomLevels);
   const [animateIn, setAnimateIn] = useState(false);
   const [studentEvidence, setStudentEvidence] = useState<Record<string, StudentEvidence>>(() => {
     const acc: Record<string, StudentEvidence> = {};
@@ -7585,6 +7721,14 @@ export default function App() {
     setPlans,
     lessonsDone,
     toggleLessonDone: (id) => setLessonsDone(prev => ({ ...prev, [id]: !prev[id] })),
+    teacherName,
+    setTeacherName,
+    schoolName,
+    setSchoolName,
+    schoolLevelId,
+    setSchoolLevelId,
+    schoolCustomLevels,
+    setSchoolCustomLevels,
     updatePlanRow: (rowId, patch) => {
       setPlanRows(prev => prev.map(r => r._id === rowId ? { ...r, ...patch } : r));
       // a naopak: úprava v plánu se projeví na hodině, která z řádku vznikla
@@ -7789,7 +7933,19 @@ export default function App() {
         </nav>
 
         {/* user */}
-        <div style={{ borderTop: "1px solid rgba(0,0,0,0.08)", padding: collapsed ? "12px 8px" : "12px 16px", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-start", gap: 10 }}>
+        <button
+          onClick={() => navigate("profil")}
+          title={collapsed ? "Můj profil" : undefined}
+          style={{
+            borderTop: "1px solid rgba(0,0,0,0.08)", borderLeft: "none", borderRight: "none", borderBottom: "none",
+            padding: collapsed ? "12px 8px" : "12px 16px", display: "flex", alignItems: "center",
+            justifyContent: collapsed ? "center" : "flex-start", gap: 10, width: "100%", textAlign: "left",
+            background: active === "profil" ? "rgba(236,236,240,0.85)" : "transparent",
+            cursor: "pointer", transition: "background 0.12s",
+          }}
+          onMouseEnter={e => { if (active !== "profil") e.currentTarget.style.background = "rgba(236,236,240,0.45)"; }}
+          onMouseLeave={e => { if (active !== "profil") e.currentTarget.style.background = "transparent"; }}
+        >
           <div style={{
             width: 28, height: 28, borderRadius: "50%", background: "rgba(236,236,240,0.85)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
@@ -7800,11 +7956,14 @@ export default function App() {
             </svg>
           </div>
           {!collapsed && (
-            <span style={{ fontFamily: "'Inter:Regular', sans-serif", fontSize: 13, color: "#0a0a0a" }}>
-              Můj účet
+            <span style={{
+              fontFamily: active === "profil" ? "'Inter:Medium', sans-serif" : "'Inter:Regular', sans-serif",
+              fontWeight: active === "profil" ? 500 : 400, fontSize: 13, color: "#0a0a0a",
+            }}>
+              Můj profil
             </span>
           )}
-        </div>
+        </button>
       </aside>
 
       {/* main */}
@@ -7814,6 +7973,7 @@ export default function App() {
         {active === "dukazy" && <DukazyView key={navKey} />}
         {active === "hodnoceni" && <HodnoceniView key={navKey} />}
         {active === "tematicky-plan" && <TematickyPlanView key={navKey} />}
+        {active === "profil" && <ProfilView key={navKey} />}
       </main>
 
       {/* buddy chat panel — inline, part of the flex row */}
