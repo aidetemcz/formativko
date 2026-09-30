@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AiFunction =
   | "extract-names"
   | "formulate-goal"
+  | "check-evaluation"
   | "generate-criteria"
   | "generate-evaluation"
   | "generate-goals"

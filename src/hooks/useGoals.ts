@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { LevelDescriptor } from "@/constants/goalLevels";
+import type { JctuScale } from "@/constants/jctu";
 import type { Json } from "@/integrations/supabase/types";
 import { planCriteriaUpdate } from "@/lib/criteriaDiff";
 
@@ -11,6 +12,35 @@ export interface EvaluationCriterion {
   description: string;
   level_descriptors: LevelDescriptor[];
   sort_order: number;
+  teacher_text?: string | null;
+  pupil_text?: string | null;
+  scale?: JctuScale | null;
+  svp_variants?: { need: string; text: string }[];
+}
+
+/**
+ * A criterion as the goal editor saves it. The pupil's wording and the JČTÚ
+ * scale come from the AI (generate-criteria); null clears them when the
+ * teacher rewrote the criterion, undefined leaves the stored value alone.
+ */
+export interface CriterionDraft {
+  description: string;
+  level_descriptors: LevelDescriptor[];
+  sort_order: number;
+  pupil_text?: string | null;
+  scale?: JctuScale | null;
+  svp_variants?: { need: string; text: string }[];
+}
+
+function criterionRow(c: CriterionDraft) {
+  return {
+    description: c.description,
+    level_descriptors: c.level_descriptors as unknown as Json,
+    sort_order: c.sort_order,
+    ...(c.pupil_text !== undefined ? { pupil_text: c.pupil_text } : {}),
+    ...(c.scale !== undefined ? { scale: c.scale as unknown as Json } : {}),
+    ...(c.svp_variants !== undefined ? { svp_variants: c.svp_variants as unknown as Json } : {}),
+  };
 }
 
 export interface EducationalGoal {
@@ -114,7 +144,7 @@ export function useCreateGoal() {
       classId, title, description, subjectId, criteria, courseId,
     }: {
       classId: string; title: string; description: string; subjectId: string | null;
-      criteria: { description: string; level_descriptors: LevelDescriptor[]; sort_order: number }[];
+      criteria: CriterionDraft[];
       courseId?: string | null;
     }) => {
       const { data: goal, error } = await supabase
@@ -125,12 +155,7 @@ export function useCreateGoal() {
       if (error) throw error;
 
       if (criteria.length > 0) {
-        const rows = criteria.map((c) => ({
-          goal_id: goal.id,
-          description: c.description,
-          level_descriptors: c.level_descriptors as unknown as Json,
-          sort_order: c.sort_order,
-        }));
+        const rows = criteria.map((c) => ({ goal_id: goal.id, ...criterionRow(c) }));
         const { error: err2 } = await supabase.from("evaluation_criteria").insert(rows);
         if (err2) throw err2;
       }
@@ -150,7 +175,7 @@ export function useUpdateGoal() {
       id, classId, title, description, subjectId, criteria, courseId,
     }: {
       id: string; classId: string; title: string; description: string; subjectId: string | null;
-      criteria: { description: string; level_descriptors: LevelDescriptor[]; sort_order: number }[];
+      criteria: CriterionDraft[];
       courseId?: string | null;
     }) => {
       const { error } = await supabase
@@ -169,11 +194,7 @@ export function useUpdateGoal() {
         .order("created_at");
       if (selErr) throw selErr;
 
-      const toRow = (c: (typeof criteria)[number]) => ({
-        description: c.description,
-        level_descriptors: c.level_descriptors as unknown as Json,
-        sort_order: c.sort_order,
-      });
+      const toRow = criterionRow;
       const plan = planCriteriaUpdate((existing || []).map((c) => c.id), criteria);
 
       for (const { id: criterionId, value } of plan.updates) {

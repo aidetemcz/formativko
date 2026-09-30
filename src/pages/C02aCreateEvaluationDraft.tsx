@@ -28,11 +28,6 @@ const toneOptions = [
   { id: "formalni", label: "Formální" },
 ];
 
-const personOptions = [
-  { id: "2", label: "2. osoba (dopis žákovi)" },
-  { id: "3", label: "3. osoba (zpráva o žákovi)" },
-];
-
 const lengthOptions = [
   { id: "kratka", label: "Krátké (2–3 věty)" },
   { id: "stredni", label: "Střední (4–6 vět)" },
@@ -40,11 +35,13 @@ const lengthOptions = [
 ];
 
 // Default output settings per evaluation type
-const typeDefaults: Record<string, { tone: string; person: string; length: string }> = {
-  prubezna: { tone: "pratelsky", person: "2", length: "kratka" },
-  tripartita: { tone: "formalni", person: "3", length: "stredni" },
-  vysvedceni: { tone: "formalni", person: "3", length: "dlouha" },
-  vlastni: { tone: "pratelsky", person: "3", length: "stredni" },
+// Prompt 04 always addresses the pupil in the 2nd person, so there is no
+// choice of grammatical person any more.
+const typeDefaults: Record<string, { tone: string; length: string }> = {
+  prubezna: { tone: "pratelsky", length: "kratka" },
+  tripartita: { tone: "formalni", length: "stredni" },
+  vysvedceni: { tone: "formalni", length: "dlouha" },
+  vlastni: { tone: "pratelsky", length: "stredni" },
 };
 
 export default function C02aCreateEvaluationDraft() {
@@ -72,7 +69,6 @@ export default function C02aCreateEvaluationDraft() {
   // Output options with defaults from evalType
   const defaults = typeDefaults[selectedType || "vlastni"] || typeDefaults.vlastni;
   const [tone, setTone] = useState<string>(restored?.tone || defaults.tone);
-  const [person, setPerson] = useState<string>(restored?.person || defaults.person);
   const [evalLength, setEvalLength] = useState<string>(restored?.evalLength || defaults.length);
   const [outputOpen, setOutputOpen] = useState(false);
   // SVP details reach the AI only when the teacher ticks this for the call.
@@ -83,7 +79,6 @@ export default function C02aCreateEvaluationDraft() {
     setSelectedType(typeId);
     const d = typeDefaults[typeId] || typeDefaults.vlastni;
     setTone(d.tone);
-    setPerson(d.person);
     setEvalLength(d.length);
   };
 
@@ -129,7 +124,6 @@ export default function C02aCreateEvaluationDraft() {
           goalId: selectedGoalId || null,
           className: selectedCourse?.classes?.name || null,
           tone,
-          person,
           length: evalLength,
           includeSvp,
         },
@@ -177,9 +171,11 @@ export default function C02aCreateEvaluationDraft() {
         courseName: selectedCourse?.name,
         totalStudents: classStudents.length,
         tone,
-        person,
         evalLength,
         includeSvp,
+        mode: data?.mode ?? null,
+        review: data?.review ?? null,
+        recommendationsOutside: data?.recommendationsOutside ?? [],
       };
       sessionStorage.setItem("evalPreviewState", JSON.stringify(previewState));
       navigate("/evaluations/create/preview", { state: previewState });
@@ -382,25 +378,6 @@ export default function C02aCreateEvaluationDraft() {
                         onClick={() => setTone(o.id)}
                         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                           tone === o.id
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border bg-card text-muted-foreground hover:border-primary/30"
-                        }`}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Person */}
-                <div>
-                  <label className="text-xs text-muted-foreground block mb-1.5">Forma</label>
-                  <div className="flex flex-wrap gap-2">
-                    {personOptions.map((o) => (
-                      <button
-                        key={o.id}
-                        onClick={() => setPerson(o.id)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                          person === o.id
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border bg-card text-muted-foreground hover:border-primary/30"
                         }`}

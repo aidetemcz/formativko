@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
+import { STYLE_GUIDE } from "./_lib/style-guide.js";
 import { getRvpContext } from "./_lib/rvp.js";
 
 /**
@@ -53,7 +54,9 @@ export default webHandler(async (req: Request): Promise<Response> => {
   ]
 }
 Navrhni 2-3 cíle. Cíle by měly být konkrétní, měřitelné a relevantní pro danou lekci.
-${rvpContext}`;
+${rvpContext}
+
+${STYLE_GUIDE}`;
 
     const userPrompt = `Předmět: ${subject}${classContext ? `\nTřída/ročník: ${classContext}` : ""}
 

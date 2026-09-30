@@ -11,7 +11,8 @@
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "gen:knowledge": "node scripts/build-knowledge.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

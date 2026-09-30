@@ -66,6 +66,16 @@ npm run test:watch   # Vitest watch mode
   both go away together when the capture tool is rebuilt (phase 7). Edit
   criteria in place (`src/lib/criteriaDiff.ts`) — deleting a criterion deletes
   its pupils' levels.
+- **AI and the methodology**: `metodologie/` is the source of truth. Prompts
+  01–05 live in `api/_lib/prompts.ts` (pure builders + strict JSON schemas),
+  every system prompt ends with `STYLE_GUIDE` (`api/_lib/style-guide.ts`), and
+  the knowledge files are embedded in `api/_lib/knowledge.generated.ts` — run
+  `npm run gen:knowledge` after editing `metodologie/` (a test fails
+  otherwise). Model calls go through `structuredCompletion`
+  (`api/_lib/openai.ts`), never free text. `generate-evaluation` has two modes
+  (`feedback` keeps next steps in the text, `certificate` returns them apart)
+  and runs the Rádce (`check-evaluation`) on every draft. Live check against
+  the model: `RUN_LIVE_AI=1 npx vitest run api/_lib/methodology.live.test.ts`.
 - **Path alias**: `@/` maps to `src/`
 - **Server state**: TanStack React Query via hooks in `src/hooks/`
 - **Forms**: React Hook Form + Zod validation

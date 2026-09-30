@@ -1,51 +1,77 @@
 import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
-import { getRvpContext } from "./_lib/rvp.js";
+import { BadRequest, errorResponse, field, json, requireUser } from "./_lib/http.js";
+import { structuredCompletion } from "./_lib/openai.js";
 import {
-  depseudonymize,
-  pseudonymize,
-  PSEUDONYM_PROMPT_RULE,
-  type PseudonymPerson,
-} from "../src/lib/pseudonym.js";
+  EVALUATION_SCHEMA,
+  evaluationPrompt,
+  gradeFromClassName,
+  type EvaluationMode,
+  type EvaluationOutput,
+  type EvaluationSource,
+} from "./_lib/prompts.js";
+import { runReview } from "./_lib/review.js";
+import { depseudonymize, pseudonymize, type PseudonymPerson } from "../src/lib/pseudonym.js";
 
 /**
- * Ported from the Supabase Edge Function of the same name.
+ * Step 4 of the methodology: the written evaluation (metodologie/prompty/04),
+ * checked straight away by the Rádce (prompt 05).
  *
- * The model never sees a pupil's real name: the prompt carries the nickname
- * (`students.nickname`), every name found in notes and earlier evaluations is
- * pseudonymised, and the nickname in the answer is turned back into the first
- * name here. SVP details are included only when the teacher asks for them.
+ * - Two modes (zadání kap. 2.1): running feedback carries next steps; text for
+ *   the school report keeps them out of the text and returns them apart.
+ * - Input: the pupil's J/Č/T/Ú levels per criterion and the proofs of
+ *   learning. Each sentence of the answer names what it is based on.
+ * - The model never sees a pupil's real name: the prompt carries the nickname,
+ *   every known name in notes and earlier texts is pseudonymised, and the
+ *   nickname in the answer is turned back into the first name here. SVP
+ *   details are included only when the teacher ticked them for this call.
  */
 export const config = { maxDuration: 60 };
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+const LEVEL_LABELS: Record<string, string> = {
+  J: "J (ještě neosvojeno)",
+  C: "Č (částečně osvojeno)",
+  T: "T (téměř osvojeno)",
+  U: "Ú (úplně osvojeno)",
 };
 
+const SOURCE_LABELS: Record<string, string> = {
+  teacher: "hodnocení učitele",
+  self_qr: "sebehodnocení žáka (online exitka)",
+  self_paper: "sebehodnocení žáka (papírová exitka)",
+};
+
+const TONES: Record<string, string> = {
+  pratelsky: "přátelský, povzbuzující",
+  formalni: "věcný, výstižný",
+};
+
+const LENGTHS: Record<string, string> = {
+  kratka: "2–3 věty",
+  stredni: "4–6 vět",
+  dlouha: "7–10 vět",
+};
+
+/** Old evaluation types of the generator form → the two modes of the brief. */
+export function modeFor(evalType: unknown, mode: unknown): EvaluationMode {
+  if (mode === "certificate" || mode === "feedback") return mode;
+  return evalType === "vysvedceni" ? "certificate" : "feedback";
+}
+
 export default webHandler(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return json(null);
 
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    const user = await requireUser(req);
+    const body = await req.json();
+    const { studentId, evalType, dateFrom, dateTo, goalId, includeSvp } = body;
+    if (!studentId) throw new BadRequest("Chybí žák.");
+    const mode = modeFor(evalType, body.mode);
 
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Verify user
-    const anonClient = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!);
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authError || !user) throw new Error("Unauthorized");
-
-    const { studentId, evalType, dateFrom, dateTo, preferences, goalId, className, tone, person, length, includeSvp } = await req.json();
+    const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
     // The service-role client bypasses RLS, so every query below that can
     // reach another teacher's rows is filtered by teacher_id explicitly.
-
-    // Load the student first: nothing else is fetched for a student who does
-    // not belong to this teacher.
     const { data: student } = await supabase
       .from("students")
       .select("first_name, last_name, nickname, svp, interests, communication_preferences, learning_styles, svp_details, notes")
@@ -54,354 +80,175 @@ export default webHandler(async (req: Request): Promise<Response> => {
       .single();
     if (!student) throw new Error("Student not found");
 
-    // --- Fetch all context data in parallel ---
-
-    // Every pupil of this teacher, so that names of classmates mentioned in a
-    // proof note are pseudonymised too.
-    const peoplePromise = supabase
-      .from("students")
-      .select("first_name, last_name, nickname")
-      .eq("teacher_id", user.id);
-
-    const proofsPromise = supabase
-      .from("proof_students")
-      .select("proof_id, proofs_of_learning(id, title, type, date, note, lesson_id)")
-      .eq("student_id", studentId);
-
-    const previousEvalsPromise = supabase
-      .from("evaluations")
-      .select("text, period, created_at, goal_id")
-      .eq("student_id", studentId)
-      .eq("teacher_id", user.id)
-      .not("text", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(2);
-
-    // Goal (if goalId provided) — only one of this teacher's own goals.
-    const goalPromise = goalId
-      ? supabase
-          .from("educational_goals")
-          .select("title, description, subject_id, subjects(name)")
-          .eq("id", goalId)
-          .eq("teacher_id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null });
-
-    const [
-      { data: people },
-      { data: proofLinks },
-      { data: previousEvals },
-      { data: goal },
-    ] = await Promise.all([peoplePromise, proofsPromise, previousEvalsPromise, goalPromise]);
-
-    // Criteria and the pupil's level are read only once the goal is known to
-    // be this teacher's.
-    const [{ data: criteria }, { data: goalLevel }] = goal
-      ? await Promise.all([
-          supabase
-            .from("evaluation_criteria")
-            .select("description, level_descriptors, sort_order")
-            .eq("goal_id", goalId)
-            .order("sort_order"),
-          supabase
-            .from("student_goal_levels")
-            .select("level")
-            .eq("student_id", studentId)
-            .eq("goal_id", goalId)
+    const [{ data: people }, { data: proofLinks }, { data: previousEvals }, { data: goal }] = await Promise.all([
+      supabase.from("students").select("first_name, last_name, nickname").eq("teacher_id", user.id),
+      supabase
+        .from("proof_students")
+        .select("proof_id, proofs_of_learning(id, title, type, date, note, lesson_id)")
+        .eq("student_id", studentId),
+      supabase
+        .from("evaluations")
+        .select("text, period, created_at")
+        .eq("student_id", studentId)
+        .eq("teacher_id", user.id)
+        .not("text", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(2),
+      goalId
+        ? supabase
+            .from("educational_goals")
+            .select("id, title, description, subjects(name)")
+            .eq("id", goalId)
             .eq("teacher_id", user.id)
-            .maybeSingle(),
-        ])
-      : [{ data: null }, { data: null }];
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
     const pupil: PseudonymPerson = {
       first_name: student.first_name,
       last_name: student.last_name,
       nickname: student.nickname,
     };
-    const everyone: PseudonymPerson[] = [pupil, ...((people || []) as PseudonymPerson[])];
+    const everyone: PseudonymPerson[] = [pupil, ...((people ?? []) as PseudonymPerson[])];
     const anon = (text: string | null | undefined) => pseudonymize(text, everyone);
 
-    // --- Filter proofs by date range ---
+    const inPeriod = (date: string | null | undefined) => {
+      const day = (date ?? "").slice(0, 10);
+      if (dateFrom && day < dateFrom) return false;
+      if (dateTo && day > dateTo) return false;
+      return true;
+    };
 
-    const proofs = (proofLinks || [])
-      .map((pl: any) => pl.proofs_of_learning)
-      .filter(Boolean)
-      .filter((p: any) => {
-        if (dateFrom && p.date < dateFrom) return false;
-        if (dateTo && p.date > dateTo) return false;
-        return true;
-      });
+    // --- Proofs in the period ---
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const proofs = (proofLinks ?? []).map((pl: any) => pl.proofs_of_learning).filter(Boolean).filter((p: any) => inPeriod(p.date));
 
-    // If no proofs, return immediately with noProofs flag
-    if (proofs.length === 0) {
-      return new Response(JSON.stringify({ text: "", noProofs: true, proofCount: 0, sourceProofs: [] }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // --- Current levels per criterion (teacher and self-assessment) ---
+    const { data: levelRows } = await supabase
+      .from("current_criterion_levels")
+      .select("id, criterion_id, source, level, assessed_at")
+      .eq("student_id", studentId)
+      .eq("teacher_id", user.id);
+    const levelsInPeriod = (levelRows ?? []).filter((l) => inPeriod(l.assessed_at));
+
+    const criterionIds = [...new Set(levelsInPeriod.map((l) => l.criterion_id))];
+    const { data: criteria } = criterionIds.length
+      ? await supabase
+          .from("evaluation_criteria")
+          .select("id, teacher_text, description, goal_id, educational_goals!inner(title, teacher_id)")
+          .in("id", criterionIds)
+          .eq("educational_goals.teacher_id", user.id)
+      : { data: [] };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const criterionById = new Map((criteria ?? []).map((c: any) => [c.id, c]));
+    const levels = levelsInPeriod.filter(
+      (l) => criterionById.has(l.criterion_id) && (!goal || criterionById.get(l.criterion_id).goal_id === goal.id),
+    );
+
+    if (proofs.length === 0 && levels.length === 0) {
+      return json({ text: "", noProofs: true, proofCount: 0, sourceProofs: [], sentences: [] });
     }
 
-    // --- Proof→goals lookup, limited to this student's proofs and this
-    // teacher's goals ---
-
-    const proofGoalsMap: Record<string, string[]> = {};
-    const { data: proofGoalsRaw } = await supabase
-      .from("proof_goals")
-      .select("proof_id, goal_id, educational_goals!inner(title, teacher_id)")
-      .in("proof_id", proofs.map((p: any) => p.id))
-      .eq("educational_goals.teacher_id", user.id);
-    for (const pg of proofGoalsRaw || []) {
-      const goalTitle = (pg as any).educational_goals?.title;
-      if (goalTitle) {
-        if (!proofGoalsMap[pg.proof_id]) proofGoalsMap[pg.proof_id] = [];
-        proofGoalsMap[pg.proof_id].push(goalTitle);
-      }
-    }
-
-    // --- Fetch lesson context for proofs that have lesson_id ---
-
+    // --- Lessons of the proofs ---
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lessonIds = [...new Set(proofs.map((p: any) => p.lesson_id).filter(Boolean))];
-    let lessonsMap: Record<string, any> = {};
-    if (lessonIds.length > 0) {
-      const { data: lessons } = await supabase
-        .from("lessons")
-        .select("id, title, planned_activities, observation_focus")
-        .in("id", lessonIds)
-        .eq("teacher_id", user.id);
-      if (lessons) {
-        lessonsMap = Object.fromEntries(lessons.map((l: any) => [l.id, l]));
-      }
-    }
+    const { data: lessons } = lessonIds.length
+      ? await supabase.from("lessons").select("id, title, observation_focus").in("id", lessonIds).eq("teacher_id", user.id)
+      : { data: [] };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lessonById = new Map((lessons ?? []).map((l: any) => [l.id, l]));
 
-    // --- Build prompt sections ---
-
-    // Evaluation type configuration
-    const typeConfig: Record<string, { label: string; tone: string; person: string; length: string }> = {
-      prubezna: {
-        label: "průběžná zpětná vazba",
-        tone: "přátelský, povzbuzující",
-        person: "2. osoba (dopis žákovi, tykej mu/jí)",
-        length: "3–5 vět",
-      },
-      tripartita: {
-        label: "hodnocení pro tripartitní schůzku (učitel, rodič, žák)",
-        tone: "věcný, respektující, srozumitelný pro rodiče i žáka",
-        person: "3. osoba (zpráva o žákovi)",
-        length: "5–8 vět",
-      },
-      vysvedceni: {
-        label: "slovní hodnocení na vysvědčení",
-        tone: "formální, výstižný",
-        person: "3. osoba (zpráva o žákovi)",
-        length: "6–10 vět",
-      },
-      vlastni: {
-        label: "hodnocení",
-        tone: "neutrální",
-        person: "3. osoba",
-        length: "4–6 vět",
-      },
-    };
-
-    const baseConfig = typeConfig[evalType] || typeConfig.vlastni;
-
-    // Tone/person/length option maps
-    const toneMap: Record<string, string> = {
-      pratelsky: "přátelský, povzbuzující",
-      formalni: "formální, výstižný",
-    };
-    const personMap: Record<string, string> = {
-      "2": "2. osoba (dopis žákovi, tykej mu/jí)",
-      "3": "3. osoba (zpráva o žákovi)",
-    };
-    const lengthMap: Record<string, string> = {
-      kratka: "2–3 věty",
-      stredni: "4–6 vět",
-      dlouha: "7–10 vět",
-    };
-
-    // Apply overrides from request params
-    const config = {
-      label: baseConfig.label,
-      tone: tone ? (toneMap[tone] || baseConfig.tone) : baseConfig.tone,
-      person: person ? (personMap[person] || baseConfig.person) : baseConfig.person,
-      length: length ? (lengthMap[length] || baseConfig.length) : baseConfig.length,
-    };
-
-    // Subject name (from goal or fallback)
-    const subjectName = (goal as any)?.subjects?.name || null;
-
-    // Goal section
-    let goalSection = "";
-    if (goal) {
-      const g = goal as any;
-      const criteriaLines = (criteria || []).map((c: any) => {
-        const levels = (c.level_descriptors || [])
-          .filter((ld: any) => ld.level)
-          .map((ld: any) => `${ld.level}: ${ld.description || "—"}`)
-          .join(" | ");
-        return `  - ${c.description}${levels ? `\n    Úrovně: ${levels}` : ""}`;
-      }).join("\n");
-
-      goalSection = `\n## Vzdělávací cíl\n${g.title}${g.description ? `\n${g.description}` : ""}`;
-      if (criteriaLines) {
-        goalSection += `\n\nKritéria hodnocení:\n${criteriaLines}`;
-      }
-      if ((goalLevel as any)?.level) {
-        goalSection += `\n\nAktuální úroveň žáka: ${(goalLevel as any).level}`;
-      }
-    }
-
-    // Student profile section
-    const profileLines: string[] = [];
-    if (student.interests) profileLines.push(`- Zájmy a motivace: ${anon(student.interests)}`);
-    if (student.communication_preferences) profileLines.push(`- Komunikační preference: ${student.communication_preferences}`);
-    if (student.learning_styles) profileLines.push(`- Preferované styly učení: ${student.learning_styles}`);
-    // SVP details only when the teacher ticked them for this call.
-    if (includeSvp === true && student.svp && student.svp_details) {
-      profileLines.push(`- Speciální vzdělávací potřeby: ${anon(student.svp_details)}`);
-    }
-    if (student.notes) profileLines.push(`- Poznámky učitele: ${anon(student.notes)}`);
-    const profileSection = profileLines.length > 0
-      ? `\n## Profil žáka\n${profileLines.join("\n")}`
-      : "";
-
-    // Proofs section with lesson context and goal links
-    const proofLines = proofs.map((p: any) => {
-      let line = `- ${anon(p.title)} (${p.type}, ${p.date})`;
+    // --- Sources the model cites: D1… for proofs, U1… for levels ---
+    const refs = new Map<string, { proofId?: string; assessmentId?: string }>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const proofSources: EvaluationSource[] = proofs.map((p: any, i: number) => {
+      const ref = `D${i + 1}`;
+      refs.set(ref, { proofId: p.id });
+      let line = `${anon(p.title)} (${p.type}, ${p.date})`;
       if (p.note) line += `: ${anon(p.note)}`;
-      const linkedGoals = proofGoalsMap[p.id];
-      if (linkedGoals && linkedGoals.length > 0) {
-        line += `\n  [Cíle: ${linkedGoals.join(", ")}]`;
-      }
-      if (p.lesson_id && lessonsMap[p.lesson_id]) {
-        const lesson = lessonsMap[p.lesson_id];
-        line += `\n  [Hodina: ${lesson.title}`;
-        if (lesson.observation_focus) line += ` | Fokus pozorování: ${lesson.observation_focus}`;
-        line += `]`;
-      }
-      return line;
-    }).join("\n");
-
-    // Previous evaluations section
-    let previousSection = "";
-    if (previousEvals && previousEvals.length > 0) {
-      const prevLines = previousEvals.map((e: any) =>
-        `- Období ${e.period}: ${anon(e.text)}`
-      ).join("\n");
-      previousSection = `\n## Předchozí hodnocení (pro zachycení vývoje)\n${prevLines}`;
-    }
-
-    // RVP context
-    const rvpContext = getRvpContext(className);
-
-    // --- System prompt with full pedagogical framework ---
-
-    const defaultRules = `Jsi profesionální pedagogický asistent a expert na formativní hodnocení. Tvým úkolem je vytvořit pro učitele návrh slovního hodnocení žáka. Tento text bude sloužit pouze jako draft, který učitel následně zkontroluje, upraví a převezme za něj finální zodpovědnost.
-
-# Pravidla pro tvorbu textu (striktně dodržuj)
-
-1. **Struktura a obsah:** Hodnocení musí posoudit výsledky žáka v jejich vývoji. Automaticky a vyváženě zapoj informace o silných stránkách, konkrétním pokroku a případných obtížích.
-
-2. **Naznačení dalšího rozvoje:** Text musí obsahovat zdůvodnění a konkrétní, srozumitelná doporučení, jak předcházet případným neúspěchům a jak je překonávat.
-
-3. **Oddělení chování od učení:** Nespojuj a nesměšuj hodnocení výsledků učení s hodnocením chování, snahy nebo aktivity. Vyvaruj se frází jako „málo se snažíš", „je pilný/á", „pracuje pomalu".
-
-4. **Respektující a popisný jazyk:** Používej výhradně popisný jazyk zaměřený na proces a výsledky učení. Absolutně se vyvaruj hodnocení osobnosti žáka (např. „jsi roztržitý") a jakéhokoliv nálepkování (např. „jsi lajdák", „jsi pomalý").
-
-5. **Bezpečné prostředí:** Text nesmí obsahovat sarkasmus, ironii ani srovnávání žáka s ostatními spolužáky. Nepoužívej hodnocení jako formu trestu nebo odměny závislé na pocitech učitele (např. „udělal jsi mi radost").
-
-6. **Vazba na kritéria:** Zpětná vazba musí být opřena o dodaná kritéria a důkazy o učení. Vyhni se obecným a prázdným frázím (např. „skvělé", „mohlo by to být lepší"). Každé tvrzení musí být podloženo konkrétním důkazem.`;
-
-    const rulesSection = `${defaultRules}
-
-7. **Soukromí:** ${PSEUDONYM_PROMPT_RULE}`;
-
-    const personExamples = person === "2"
-      ? 'Oslovuj žáka přímo (ty/tebe/tobě/tvůj). Příklad: „Zvládáš…", „Dokázal/a jsi…", „Zkus se zaměřit na…".'
-      : 'Piš o žákovi ve třetí osobě (on/ona/žák/žákyně). Příklad: „Žák zvládá…", „Dokázal/a…", „Měl/a by se zaměřit na…".';
-
-    const systemPrompt = `${rulesSection}
-
-# Specifikace výstupu
-
-- **Typ hodnocení:** ${config.label}
-- **Tón:** ${config.tone}
-- **Forma:** ${config.person}
-- **Rozsah:** ${config.length}
-- Piš v češtině. Nepoužívej formátování markdown.
-- **DŮLEŽITÉ – dodržení formy osoby:** Celý text hodnocení MUSÍ být napsán v ${config.person}. ${personExamples}
-- **DŮLEŽITÉ – dodržení rozsahu:** Text MUSÍ mít přesně ${config.length}. Nepřekračuj tento rozsah. Pokud máš hodně důkazů, vyber ty nejdůležitější a shrň je stručně.
-- Pokud jsou k dispozici předchozí hodnocení, navázej na ně a zachyť vývoj žáka.
-- Pokud je k dispozici profil žáka, přizpůsob jazyk jeho komunikačním preferencím.${preferences ? `
-
-# Kritický pokyn od učitele (musíš ho striktně dodržet)
-${anon(preferences)}` : ""}
-${rvpContext}`;
-
-    // --- User prompt with structured data ---
-
-    const userPrompt = `Napiš ${config.label} pro žáka **${pupil.nickname}** (přezdívka).
-
-## Kontext
-- Období: ${dateFrom || "neurčeno"} – ${dateTo || "neurčeno"}${className ? `\n- Třída: ${className}` : ""}${subjectName ? `\n- Předmět: ${subjectName}` : ""}
-${profileSection}${goalSection}${previousSection}
-
-## Důkazy o učení (${proofs.length})
-${proofLines}
-
-Na základě těchto pravidel a vstupních dat napiš souvislý, smysluplný a motivující návrh slovního hodnocení. Celý text piš v ${config.person}. Délka textu: přesně ${config.length}.`;
-
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
-
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
+      const lesson = lessonById.get(p.lesson_id);
+      if (lesson) line += ` [Hodina: ${anon(lesson.title)}${lesson.observation_focus ? `; fokus: ${anon(lesson.observation_focus)}` : ""}]`;
+      return { ref, line };
+    });
+    const levelSources: EvaluationSource[] = levels.map((l, i) => {
+      const ref = `U${i + 1}`;
+      refs.set(ref, { assessmentId: l.id });
+      const c = criterionById.get(l.criterion_id);
+      return {
+        ref,
+        line: `${anon(c.teacher_text || c.description)} (cíl: ${anon(c.educational_goals?.title)}) → ${LEVEL_LABELS[l.level] ?? l.level}, ${SOURCE_LABELS[l.source] ?? l.source}, ${String(l.assessed_at).slice(0, 10)}`,
+      };
     });
 
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Příliš mnoho požadavků, zkuste to znovu za chvíli." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Nedostatek kreditů pro AI generování." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, t);
-      throw new Error("AI gateway error");
-    }
+    // --- Pupil profile ---
+    const profile = [
+      student.interests && `Zájmy a motivace: ${anon(student.interests)}`,
+      student.communication_preferences && `Komunikační preference: ${student.communication_preferences}`,
+      student.learning_styles && `Preferované styly učení: ${student.learning_styles}`,
+      includeSvp === true && student.svp && student.svp_details && `Speciální vzdělávací potřeby: ${anon(student.svp_details)}`,
+      student.notes && `Poznámky učitele: ${anon(student.notes)}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-    const result = await aiResponse.json();
-    const text = depseudonymize(result.choices?.[0]?.message?.content || "", pupil);
+    const className = field(body.className, 100);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = goal as any;
+    const input = {
+      mode,
+      nickname: pupil.nickname,
+      grade: gradeFromClassName(className),
+      subject: g?.subjects?.name ?? "",
+      period: `${dateFrom || "neurčeno"} – ${dateTo || "neurčeno"}`,
+      goal: g ? anon([g.title, g.description].filter(Boolean).join(" — ")) : "",
+      profile,
+      previous: (previousEvals ?? []).map((e) => `Období ${e.period}: ${anon(e.text)}`).join("\n"),
+      levels: levelSources,
+      proofs: proofSources,
+      teacherInstructions: anon(field(body.preferences)),
+      tone: TONES[body.tone] ?? TONES.pratelsky,
+      length: LENGTHS[body.length] ?? LENGTHS.stredni,
+    };
 
-    // Build source proofs summary for the frontend
-    const sourceProofs = proofs.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      type: p.type,
-      date: p.date,
-    }));
+    const { system, user: userPrompt } = evaluationPrompt(input);
+    const result = await structuredCompletion<EvaluationOutput>({ system, user: userPrompt, schema: EVALUATION_SCHEMA });
 
-    return new Response(JSON.stringify({ text, noProofs: false, proofCount: proofs.length, sourceProofs }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const rawSentences = (result.sentences ?? []).filter((s) => s.text?.trim());
+    const rawText = rawSentences.map((s) => s.text.trim()).join(" ");
+
+    // The Rádce reads the draft while it still carries the nickname.
+    const review = await runReview({ text: rawText, grade: input.grade, mode }).catch((e) => {
+      console.error("Rádce failed, returning the draft without comments:", e);
+      return null;
+    });
+
+    const back = (s: string) => depseudonymize(s, pupil);
+    const sentences = rawSentences.map((s) => {
+      const cited = (s.sources ?? []).map((r) => refs.get(r.trim())).filter(Boolean);
+      return {
+        text: back(s.text.trim()),
+        proofIds: cited.map((c) => c!.proofId).filter(Boolean),
+        assessmentIds: cited.map((c) => c!.assessmentId).filter(Boolean),
+      };
+    });
+
+    return json({
+      text: back(rawText),
+      mode,
+      noProofs: false,
+      proofCount: proofs.length,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sourceProofs: proofs.map((p: any) => ({ id: p.id, title: p.title, type: p.type, date: p.date })),
+      sentences,
+      recommendationsOutside: mode === "certificate" ? (result.recommendations_outside ?? []).map(back) : [],
+      review: review && {
+        comments: review.comments.map(back),
+        went_well: review.went_well.map(back),
+        offers: review.offers,
+        style_issues: review.style_issues,
+      },
     });
   } catch (e) {
-    console.error("generate-evaluation error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse(e, "generate-evaluation");
   }
 });

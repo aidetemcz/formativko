@@ -21,6 +21,53 @@ import { supabase } from "@/integrations/supabase/client";
 import { invokeAi } from "@/lib/ai";
 import { useToast } from "@/hooks/use-toast";
 import { DEFAULT_LEVEL_DESCRIPTORS, type LevelDescriptor } from "@/constants/goalLevels";
+import { JCTU_LEVELS, pupilSentence, type JctuScale } from "@/constants/jctu";
+import { LevelChip } from "@/components/shared/LevelChip";
+
+interface CriterionExtra {
+  pupil_text: string | null;
+  scale: JctuScale | null;
+}
+
+interface GeneratedCriterion {
+  teacher: string;
+  pupil: string;
+  scale: JctuScale;
+}
+
+/**
+ * Level names for criteria generated with a JČTÚ scale. The labels are also
+ * what the database maps back to J/C/T/U when this old editor records a
+ * pupil's level for the whole goal.
+ */
+const JCTU_LEVEL_DESCRIPTORS: LevelDescriptor[] = JCTU_LEVELS.map((l) => ({
+  level: l.label,
+  description: l.pupil,
+}));
+
+/** The pupil's version of a criterion and its four steps, read-only. */
+function CriterionForPupil({ extra }: { extra: CriterionExtra }) {
+  return (
+    <div className="ml-7 rounded-lg bg-muted/50 px-3 py-2 text-xs">
+      {extra.pupil_text && (
+        <p>
+          <span className="text-muted-foreground">Pro žáka: </span>
+          {extra.pupil_text}
+        </p>
+      )}
+      {extra.scale && (
+        <ul className="mt-1.5 space-y-1">
+          {JCTU_LEVELS.map((l) => (
+            <li key={l.code} className="flex items-start gap-2">
+              <LevelChip level={l.code} className="h-5 min-w-5 text-[0.6875rem]" />
+              <span className="pt-0.5">{pupilSentence(l.code, extra.scale)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 import { ShimmerField } from "@/components/ui/field-shimmer";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -54,6 +101,12 @@ export default function G03CreateGoal() {
     DEFAULT_LEVEL_DESCRIPTORS.map((d) => ({ ...d }))
   );
   const [criteriaTexts, setCriteriaTexts] = useState<string[]>([""]);
+  /**
+   * The pupil's wording and JČTÚ scale of each criterion, index-aligned with
+   * criteriaTexts. Null once the teacher rewrites a criterion, so a stale
+   * pupil version is never saved next to a new teacher version.
+   */
+  const [criteriaExtras, setCriteriaExtras] = useState<(CriterionExtra | null)[]>([null]);
 
   // Resolve the selected course object
   const selectedCourse = courses.find((c) => c.id === selectedCourseId) || null;
@@ -108,6 +161,11 @@ export default function G03CreateGoal() {
         setCriteriaTexts(
           existingGoal.evaluation_criteria.map((c) => c.description)
         );
+        setCriteriaExtras(
+          existingGoal.evaluation_criteria.map((c) =>
+            c.pupil_text || c.scale ? { pupil_text: c.pupil_text ?? null, scale: c.scale ?? null } : null
+          )
+        );
       }
     }
   }, [existingGoal, courses]);
@@ -128,14 +186,17 @@ export default function G03CreateGoal() {
 
   const addCriterion = () => {
     setCriteriaTexts((prev) => [...prev, ""]);
+    setCriteriaExtras((prev) => [...prev, null]);
   };
 
   const removeCriterion = (idx: number) => {
     setCriteriaTexts((prev) => prev.filter((_, i) => i !== idx));
+    setCriteriaExtras((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const updateCriterion = (idx: number, value: string) => {
     setCriteriaTexts((prev) => prev.map((c, i) => (i === idx ? value : c)));
+    setCriteriaExtras((prev) => prev.map((x, i) => (i === idx ? null : x)));
   };
 
   /** Single AI action: formulate goal + generate criteria in one step */
@@ -150,15 +211,14 @@ export default function G03CreateGoal() {
       const subjectName = selectedCourse?.subjects?.name;
       const className = classes.find((c) => c.id === selectedCourse?.class_id)?.name;
 
-      const currentNames = levels.map((l) => l.level).filter((l) => l.trim());
-      const sendLevelNames = currentNames.length > 0;
-
-      // Step 1: Formulate goal
+      // Step 1: Formulate goal (prompt 01). The first of the three variants
+      // replaces the teacher's wording; the rest will be offered in the
+      // lesson detail (phase 5).
       const { data: formData, error: formErr } = await invokeAi(
         "formulate-goal",
         {
           body: {
-            rawGoal: title.trim(),
+            context: title.trim(),
             subject: subjectName || undefined,
             className: className || undefined,
           },
@@ -168,23 +228,19 @@ export default function G03CreateGoal() {
       if (formErr) throw formErr;
       if (formData?.error) throw new Error(formData.error);
 
-      const refinedTitle = formData?.title || title.trim();
-      const refinedDescription = formData?.description || description.trim();
+      const refinedTitle = formData?.goals?.[0]?.teacher || title.trim();
       setTitle(refinedTitle);
-      if (refinedDescription) setDescription(refinedDescription);
 
-      // Title+description done, now generating criteria
+      // Title done, now generating criteria
       setGenPhase("criteria");
 
-      // Step 2: Generate criteria
+      // Step 2: Criteria with their JČTÚ scales (prompts 02 + 03)
       const { data: critData, error: critErr } = await invokeAi(
         "generate-criteria",
         {
           body: {
-            goalTitle: refinedTitle,
-            goalDescription: refinedDescription || undefined,
+            goal: [refinedTitle, description.trim()].filter(Boolean).join(" "),
             subject: subjectName || undefined,
-            levelNames: sendLevelNames ? currentNames : undefined,
             className: className || undefined,
           },
         }
@@ -193,19 +249,11 @@ export default function G03CreateGoal() {
       if (critErr) throw critErr;
       if (critData?.error) throw new Error(critData.error);
 
-      if (critData?.criteria?.length > 0) {
-        const aiLevels = critData.criteria[0].level_descriptors;
-        if (aiLevels?.length > 0) {
-          setLevels(
-            aiLevels.map((ld: { level: string; description: string }) => ({
-              level: ld.level || "",
-              description: ld.description || "",
-            }))
-          );
-        }
-        setCriteriaTexts(
-          critData.criteria.map((c: { description: string }) => c.description || "")
-        );
+      const generated: GeneratedCriterion[] = critData?.criteria ?? [];
+      if (generated.length > 0) {
+        setLevels(JCTU_LEVEL_DESCRIPTORS.map((ld) => ({ ...ld })));
+        setCriteriaTexts(generated.map((c) => c.teacher));
+        setCriteriaExtras(generated.map((c) => ({ pupil_text: c.pupil, scale: c.scale })));
       }
 
       toast({ title: "Cíl a kritéria vygenerovány" });
@@ -246,6 +294,13 @@ export default function G03CreateGoal() {
           setLevels(firstLevels.map((ld: LevelDescriptor) => ({ ...ld })));
         }
         setCriteriaTexts(crit.map((c: { description: string }) => c.description));
+        setCriteriaExtras(
+          crit.map((c) =>
+            c.pupil_text || c.scale
+              ? { pupil_text: c.pupil_text ?? null, scale: (c.scale as unknown as JctuScale) ?? null }
+              : null
+          )
+        );
       }
       setCloneOpen(false);
       toast({ title: "Cíl naklonován do formuláře" });
@@ -276,11 +331,14 @@ export default function G03CreateGoal() {
 
     const validLevels = levels.filter((ld) => ld.level.trim());
     const validCriteria = criteriaTexts
-      .filter((c) => c.trim())
-      .map((c, i) => ({
-        description: c.trim(),
+      .map((text, i) => ({ text, extra: criteriaExtras[i] ?? null }))
+      .filter(({ text }) => text.trim())
+      .map(({ text, extra }, i) => ({
+        description: text.trim(),
         level_descriptors: validLevels,
         sort_order: i,
+        pupil_text: extra?.pupil_text ?? null,
+        scale: extra?.scale ?? null,
       }));
 
     try {
@@ -493,7 +551,8 @@ export default function G03CreateGoal() {
             </p>
             <div className="space-y-2">
               {criteriaTexts.map((text, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="space-y-1.5">
+                <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-5 text-right shrink-0">
                     {idx + 1}.
                   </span>
@@ -513,6 +572,8 @@ export default function G03CreateGoal() {
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </button>
                   )}
+                </div>
+                  {criteriaExtras[idx] && <CriterionForPupil extra={criteriaExtras[idx]!} />}
                 </div>
               ))}
               <Button
