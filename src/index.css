@@ -82,6 +82,17 @@
     --jctu-u: 263 47% 47%;
     --jctu-u-foreground: 0 0% 100%;
 
+    /*
+     * Readiness semafor (src/lib/readiness.ts): about the teacher's records,
+     * not the pupil, and still no traffic-light red or green.
+     */
+    --ready: 174 45% 88%;
+    --ready-foreground: 175 60% 24%;
+    --partial: 40 90% 90%;
+    --partial-foreground: 32 70% 32%;
+    --missing: 240 12% 93%;
+    --missing-foreground: 240 7% 36%;
+
     /* Subject chips */
     --subject-cestina: 265 70% 95%;
     --subject-cestina-foreground: 267 43% 44%;

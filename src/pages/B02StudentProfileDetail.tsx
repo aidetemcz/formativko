@@ -20,9 +20,9 @@ import {
 import { useStudent, useUpdateStudent, useDeleteStudent, getStudentDisplayName, isDuplicateNickname } from "@/hooks/useStudents";
 import { useStudentClasses } from "@/hooks/useClasses";
 import { useProofsForStudent, useDeleteProof } from "@/hooks/useProofs";
-import { useGoalCoverageForStudent } from "@/hooks/useGoals";
-import { useStudentGoalLevels } from "@/hooks/useStudentGoalLevels";
-import { getLevelColor, DEFAULT_LEVEL_DESCRIPTORS } from "@/constants/goalLevels";
+import { StudentLevels } from "@/components/student/StudentLevels";
+import { StudentEvaluations } from "@/components/student/StudentEvaluations";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -53,10 +53,6 @@ export default function B02StudentProfileDetail() {
   const { data: student, isLoading } = useStudent(id);
   const { data: studentClasses = [] } = useStudentClasses(id);
   const { data: proofs = [] } = useProofsForStudent(id);
-  const classIds = studentClasses.map((c) => c.id);
-  const { data: goalCoverage = [] } = useGoalCoverageForStudent(id, classIds);
-  const goalIds = useMemo(() => goalCoverage.map((gc) => gc.goal.id), [goalCoverage]);
-  const { data: studentGoalLevels = {} } = useStudentGoalLevels(goalIds);
   const updateStudent = useUpdateStudent();
   const deleteStudent = useDeleteStudent();
   const deleteProof = useDeleteProof();
@@ -163,7 +159,7 @@ export default function B02StudentProfileDetail() {
     try {
       await deleteStudent.mutateAsync(id);
       toast({ title: "Profil žáka smazán" });
-      navigate("/student-profiles");
+      navigate(studentClasses[0] ? `/tridy/${studentClasses[0].id}` : "/tridy");
     } catch (err) {
       console.error("Chyba při mazání", err);
       toast({ title: "Chyba při mazání", variant: "destructive" });
@@ -189,8 +185,8 @@ export default function B02StudentProfileDetail() {
       <div className="max-w-3xl mx-auto">
         <AppBreadcrumb
           items={[
-            { label: "Úvod", href: "/" },
-            { label: "Žáci", href: "/student-profiles" },
+            { label: "Třídy", href: "/tridy" },
+            ...(studentClasses[0] ? [{ label: studentClasses[0].name, href: `/tridy/${studentClasses[0].id}` }] : []),
             { label: getStudentDisplayName(student) },
           ]}
         />
@@ -442,41 +438,26 @@ export default function B02StudentProfileDetail() {
           );
         })()}
 
-        {goalCoverage.length > 0 && (
-          <div className="mb-4 p-4 rounded-xl bg-muted/50 border border-border">
-            <div className="flex items-center gap-2 mb-2.5">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Pokrytí cílů</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {goalCoverage.map(({ goal, levelNames }) => {
-                const level = id ? studentGoalLevels[id]?.[goal.id] : undefined;
-                const names = levelNames.length > 0 ? levelNames : DEFAULT_LEVEL_DESCRIPTORS.map((d) => d.level);
-                const colorClass = level
-                  ? getLevelColor(level, names)
-                  : "border-border bg-card text-muted-foreground";
-                return (
-                  <Link
-                    key={goal.id}
-                    to={`/goals/${goal.id}`}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs hover:opacity-80 transition-all ${colorClass}`}
-                  >
-                    {level ? (
-                      <span className="font-semibold">{level.charAt(0).toUpperCase()}</span>
-                    ) : (
-                      <Minus className="h-3 w-3" />
-                    )}
-                    <span>{goal.title}</span>
-                    {level && (
-                      <span className="opacity-60 text-[10px]">{level}</span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <div className="mb-4 grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Úrovně u kritérií</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StudentLevels studentId={student.id} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Předešlá hodnocení</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StudentEvaluations studentId={student.id} />
+            </CardContent>
+          </Card>
+        </div>
 
+        <h2 className="mb-3 text-lg font-medium">Důkazy o učení</h2>
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1">
             <SearchBar placeholder="Hledat důkaz..." value={search} onChange={setSearch} />

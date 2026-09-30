@@ -2,7 +2,7 @@ import type { ContentPart } from "./openai.js";
 import { BadRequest } from "./http.js";
 import { isOwnSignedStorageUrl } from "./storage-url.js";
 
-function bytesToBase64(bytes: Uint8Array): string {
+export function bytesToBase64(bytes: Uint8Array): string {
   const CHUNK = 0x8000;
   const parts: string[] = [];
   for (let i = 0; i < bytes.length; i += CHUNK) {

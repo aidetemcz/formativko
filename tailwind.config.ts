@@ -58,6 +58,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         subtle: "hsl(var(--subtle))",
+        ready: { DEFAULT: "hsl(var(--ready))", foreground: "hsl(var(--ready-foreground))" },
+        partial: { DEFAULT: "hsl(var(--partial))", foreground: "hsl(var(--partial-foreground))" },
+        missing: { DEFAULT: "hsl(var(--missing))", foreground: "hsl(var(--missing-foreground))" },
         brand: {
           DEFAULT: "hsl(var(--brand))",
           strong: "hsl(var(--brand-strong))",
