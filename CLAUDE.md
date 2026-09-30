@@ -75,6 +75,13 @@ npm run test:watch   # Vitest watch mode
   the teacher confirms every row in `PaperExitTicketsDialog` and
   `useSavePaperExitTickets` stores proof + ticket + `self_paper` levels. The
   lesson's "Exitky" card lists tickets with pupil and teacher comments.
+- **Důkazy a Nápady** (phase 9a): `/dukazy` is one feed of proofs and levels
+  (`useEvidenceFeed`, filters in `src/lib/evidence.ts`; levels that came with a
+  proof show as that proof). `/napady` asks about pupil × criterion pairs of
+  taught lessons with no teacher level (`src/lib/napady.ts`, batches of
+  `NAPADY_BATCH`), shows the pupil's self-assessment and last proof, and
+  writes through `useRecordLevels`. Filters live in the URL (`?trida=`,
+  `?predmet=`, `?obdobi=`).
 - **Legacy goal levels**: `student_goal_levels` and the three-step scale in
   `src/constants/goalLevels.ts` now back only the old course overview
   (`/plany/:id/prehled`), goal detail and dashboard; the capture tool no longer
