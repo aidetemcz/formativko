@@ -86,6 +86,11 @@ npm run test:watch   # Vitest watch mode
   `subject-*` chips (`src/constants/subjectColors.ts`), `jctu-*` steps
   (`src/components/shared/LevelChip.tsx`), proof types. Font is Inter
   (`@fontsource-variable/inter`). No hex values or pixel sizes in screens.
+- **Lessons (new)**: live inside thematic plans — `/plany/:id` lists them by
+  month, `/lekce/:id` edits one (goal for teacher and pupil, three criteria
+  with JČTÚ scales, levels overview), `/lekce/:id/tisk/arch|exitky` prints the
+  sheet and exit tickets through the browser's print dialog. Hooks in
+  `src/hooks/usePlanLessons.ts`; not behind `LESSONS_ENABLED`.
 - **Routes**: Czech paths from zadání kap. 4.2 (`/predmety`, `/plany/:id`,
   `/tridy`, `/zaci/:id`, `/dukazy`, `/napady`, `/hodnoceni`, `/nastaveni`,
   public `/s/:token`). Old English paths redirect through `LegacyRedirect`,

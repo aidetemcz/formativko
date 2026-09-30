@@ -338,6 +338,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          pupil_text: string
           subject_id: string | null
           teacher_id: string
           title: string
@@ -349,6 +350,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          pupil_text?: string
           subject_id?: string | null
           teacher_id: string
           title: string
@@ -360,6 +362,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          pupil_text?: string
           subject_id?: string | null
           teacher_id?: string
           title?: string
