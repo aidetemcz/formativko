@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import eliImage from "@/assets/Eli.svg";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { describeAuthError } from "@/lib/authErrors";
 
 export default function Login() {
   usePageTitle("Přihlášení");
@@ -51,7 +52,7 @@ export default function Login() {
     } catch (error: any) {
       toast({
         title: "Chyba",
-        description: error.message,
+        description: describeAuthError(error?.message, isSignUp),
         variant: "destructive",
       });
     } finally {
@@ -68,6 +69,11 @@ export default function Login() {
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Vytvořte si účet" : "Přihlaste se do svého účtu"}
           </p>
+          {isSignUp && (
+            <p className="text-muted-foreground text-xs text-center">
+              Registrace je zatím otevřená jen pro pozvané učitele.
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

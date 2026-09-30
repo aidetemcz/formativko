@@ -69,8 +69,9 @@ export function toStoragePath(
 /**
  * Object path for a newly uploaded file.
  *
- * The leading `<teacher id>/` segment is what the bucket's delete policy
- * matches on, so a teacher can remove their own uploads and nobody else's.
+ * The leading `<teacher id>/` segment is what the bucket policies match on:
+ * a teacher may upload only into their own folder and read or delete only
+ * their own files.
  */
 export function buildUploadPath(userId: string, fileName: string): string {
   const ext = fileName.split(".").pop();

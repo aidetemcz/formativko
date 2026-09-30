@@ -37,7 +37,7 @@ export default function C02bCreateEvaluationDraft() {
     subject, period,
     selectedType, selectedCourseId, selectedClassId, selectedStudentId, selectedGoalId,
     dateFrom, dateTo, preferences, className, totalStudents,
-    tone, person, evalLength, customSystemPrompt,
+    tone, person, evalLength, includeSvp,
   } = state || {};
 
   interface SourceProof { id: string; title: string; type: string; date: string; }
@@ -77,6 +77,7 @@ export default function C02bCreateEvaluationDraft() {
         tone,
         person,
         evalLength,
+        includeSvp,
       },
     });
   };
@@ -113,7 +114,7 @@ export default function C02bCreateEvaluationDraft() {
               tone: tone || null,
               person: person || null,
               length: evalLength || null,
-              customSystemPrompt: customSystemPrompt || null,
+              includeSvp: includeSvp === true,
             },
           });
 

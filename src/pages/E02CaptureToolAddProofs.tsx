@@ -109,7 +109,7 @@ export default function E02CaptureToolAddProofs() {
     if (coverageGoalIds.length === 0) return {};
     const map: Record<string, "all" | "some" | "none"> = {};
     for (const so of studentOverview) {
-      const counts = Object.values(so.goalCounts);
+      const counts = Object.values(so.goalCounts) as number[];
       const covered = counts.filter((c) => c > 0).length;
       if (covered === 0 || counts.length === 0) map[so.student.id] = "none";
       else if (covered >= coverageGoalIds.length) map[so.student.id] = "all";

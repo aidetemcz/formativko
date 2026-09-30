@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      allowed_emails: {
+        Row: {
+          created_at: string
+          email: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       class_students: {
         Row: {
           class_id: string
@@ -837,6 +855,7 @@ export type Database = {
           interests: string
           last_name: string
           learning_styles: string
+          nickname: string
           notes: string
           svp: boolean
           svp_details: string
@@ -851,6 +870,7 @@ export type Database = {
           interests?: string
           last_name: string
           learning_styles?: string
+          nickname?: string
           notes?: string
           svp?: boolean
           svp_details?: string
@@ -865,6 +885,7 @@ export type Database = {
           interests?: string
           last_name?: string
           learning_styles?: string
+          nickname?: string
           notes?: string
           svp?: boolean
           svp_details?: string
@@ -902,7 +923,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_student_nickname: {
+        Args: { p_teacher_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

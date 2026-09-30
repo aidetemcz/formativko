@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { LevelDescriptor } from "@/constants/goalLevels";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface EvaluationCriterion {
   id: string;
@@ -76,7 +77,7 @@ export function useGoalsForCourse(courseId: string | undefined) {
         .eq("course_id", courseId!)
         .order("title");
       if (error) throw error;
-      return (data as GoalWithCriteria[]).map((g) => {
+      return (data as unknown as GoalWithCriteria[]).map((g) => {
         g.evaluation_criteria.sort((a, b) => a.sort_order - b.sort_order);
         return g;
       });
@@ -96,7 +97,7 @@ export function useGoal(goalId: string | undefined) {
         .eq("id", goalId!)
         .single();
       if (error) throw error;
-      const goal = data as GoalWithCriteria;
+      const goal = data as unknown as GoalWithCriteria;
       goal.evaluation_criteria.sort((a, b) => a.sort_order - b.sort_order);
       return goal;
     },
@@ -126,7 +127,7 @@ export function useCreateGoal() {
         const rows = criteria.map((c) => ({
           goal_id: goal.id,
           description: c.description,
-          level_descriptors: c.level_descriptors,
+          level_descriptors: c.level_descriptors as unknown as Json,
           sort_order: c.sort_order,
         }));
         const { error: err2 } = await supabase.from("evaluation_criteria").insert(rows);
@@ -168,7 +169,7 @@ export function useUpdateGoal() {
         const rows = criteria.map((c) => ({
           goal_id: id,
           description: c.description,
-          level_descriptors: c.level_descriptors,
+          level_descriptors: c.level_descriptors as unknown as Json,
           sort_order: c.sort_order,
         }));
         const { error: insErr } = await supabase.from("evaluation_criteria").insert(rows);
