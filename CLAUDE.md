@@ -90,7 +90,11 @@ npm run test:watch   # Vitest watch mode
   month, `/lekce/:id` edits one (goal for teacher and pupil, three criteria
   with JČTÚ scales, levels overview), `/lekce/:id/tisk/arch|exitky` prints the
   sheet and exit tickets through the browser's print dialog. Hooks in
-  `src/hooks/usePlanLessons.ts`; not behind `LESSONS_ENABLED`.
+  `src/hooks/usePlanLessons.ts`; not behind `LESSONS_ENABLED`. "Načíst plán"
+  reads a pasted/uploaded thematic plan into lessons (`api/plan-rows`);
+  "Vygenerovat lekce" fills goals and criteria one lesson at a time on the
+  client (`src/lib/lessonGeneration.ts`, reusing `formulate-goal` and
+  `generate-criteria`), so no request runs into the function time limit.
 - **Routes**: Czech paths from zadání kap. 4.2 (`/predmety`, `/plany/:id`,
   `/tridy`, `/zaci/:id`, `/dukazy`, `/napady`, `/hodnoceni`, `/nastaveni`,
   public `/s/:token`). Old English paths redirect through `LegacyRedirect`,

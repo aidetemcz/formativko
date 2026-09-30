@@ -18,6 +18,61 @@ function lines(pairs: [string, string | null | undefined][]): string {
     .join("\n");
 }
 
+// ─── Tematický plán → lekce ──────────────────────────────────────────────────
+
+export const PLAN_MONTHS = ["září", "říjen", "listopad", "prosinec", "leden", "únor", "březen", "duben", "květen", "červen"];
+
+export interface PlanRowsInput {
+  subject: string;
+  grade: string;
+  hoursPerLesson: number;
+}
+
+export interface PlanRow {
+  month: string;
+  title: string;
+  description: string;
+  hours: number;
+  rvp_outcome: string;
+}
+
+export const PLAN_ROWS_SCHEMA: JsonSchema = {
+  name: "radky_planu",
+  schema: objectSchema({
+    rows: {
+      type: "array",
+      items: objectSchema({
+        month: { type: "string", enum: [...PLAN_MONTHS, ""] },
+        title: stringSchema,
+        description: stringSchema,
+        hours: { type: "number" },
+        rvp_outcome: stringSchema,
+      }),
+    },
+  }),
+};
+
+/**
+ * Reads a thematic plan the teacher pasted or uploaded and turns it into
+ * lessons month by month (zadání kap. 4.3). Goals and criteria are made per
+ * lesson afterwards by prompts 01–03, so this step only structures the plan.
+ */
+export function planRowsPrompt(input: PlanRowsInput): string {
+  return `Jsi zkušený český pedagog. Učitel ti dá svůj tematický plán (text, tabulku, PDF nebo fotografii). Převeď ho na seznam lekcí po měsících školního roku.
+
+Pravidla:
+- Každý řádek výstupu je jedna lekce o ${input.hoursPerLesson} ${input.hoursPerLesson === 1 ? "vyučovací hodině" : "vyučovacích hodinách"}. Téma, které má v plánu víc hodin, rozděl na víc lekcí s navazujícími názvy; téma na méně hodin nech jako jednu lekci.
+- month: měsíc školního roku, do kterého lekce v plánu patří (${PLAN_MONTHS.join(", ")}). Když plán měsíc neuvádí, odhadni ho z pořadí témat; když to nejde, nech prázdné.
+- title: krátký název lekce (nejvýše 8 slov), jak by ho napsal učitel.
+- description: jedna až dvě věty, co se žáci v lekci učí a co dělají. Drž se plánu, nic si nevymýšlej.
+- hours: počet vyučovacích hodin lekce.
+- rvp_outcome: očekávaný výstup / výsledek učení z RVP, pokud ho plán u tématu uvádí (doslova). Jinak prázdné.
+- Zachovej pořadí témat z plánu. Vynech řádky, které nejsou výuka (prázdniny, opakování bez obsahu, poznámky).
+- Předmět: ${input.subject || "neuveden"}. Ročník: ${input.grade || "neuveden"}.
+
+${STYLE_GUIDE}`;
+}
+
 // ─── 01 · Výukový cíl ─────────────────────────────────────────────────────────
 
 export interface GoalInput {

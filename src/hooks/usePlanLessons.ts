@@ -190,49 +190,44 @@ export function useDeleteLesson() {
   });
 }
 
+type GoalLesson = Pick<LessonDetail, "id" | "class_id" | "subject_id" | "course_id" | "courses">;
+
 /** Save the lesson's one goal: create and link it, or update it in place. */
+export async function saveLessonGoal(
+  teacherId: string,
+  { lesson, goalId, teacher, pupil }: { lesson: GoalLesson; goalId: string | null; teacher: string; pupil: string },
+): Promise<string> {
+  if (goalId) {
+    const { error } = await supabase.from("educational_goals").update({ title: teacher, pupil_text: pupil }).eq("id", goalId);
+    if (error) throw error;
+    return goalId;
+  }
+  const classId = lesson.class_id ?? lesson.courses?.classes?.id;
+  const { data: goal, error } = await supabase
+    .from("educational_goals")
+    .insert({
+      teacher_id: teacherId,
+      class_id: classId!,
+      subject_id: lesson.subject_id ?? lesson.courses?.subjects?.id ?? null,
+      course_id: lesson.course_id,
+      title: teacher,
+      description: "",
+      pupil_text: pupil,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  const { error: linkErr } = await supabase.from("lesson_goals").insert({ lesson_id: lesson.id, goal_id: goal.id });
+  if (linkErr) throw linkErr;
+  return goal.id as string;
+}
+
 export function useSaveLessonGoal() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      lesson,
-      goalId,
-      teacher,
-      pupil,
-    }: {
-      lesson: Pick<LessonDetail, "id" | "class_id" | "subject_id" | "course_id" | "courses">;
-      goalId: string | null;
-      teacher: string;
-      pupil: string;
-    }) => {
-      if (goalId) {
-        const { error } = await supabase
-          .from("educational_goals")
-          .update({ title: teacher, pupil_text: pupil })
-          .eq("id", goalId);
-        if (error) throw error;
-        return goalId;
-      }
-      const classId = lesson.class_id ?? lesson.courses?.classes?.id;
-      const { data: goal, error } = await supabase
-        .from("educational_goals")
-        .insert({
-          teacher_id: user!.id,
-          class_id: classId!,
-          subject_id: lesson.subject_id ?? lesson.courses?.subjects?.id ?? null,
-          course_id: lesson.course_id,
-          title: teacher,
-          description: "",
-          pupil_text: pupil,
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      const { error: linkErr } = await supabase.from("lesson_goals").insert({ lesson_id: lesson.id, goal_id: goal.id });
-      if (linkErr) throw linkErr;
-      return goal.id as string;
-    },
+    mutationFn: (args: { lesson: GoalLesson; goalId: string | null; teacher: string; pupil: string }) =>
+      saveLessonGoal(user!.id, args),
     onSuccess: (_, v) => invalidateLesson(queryClient, v.lesson.id),
   });
 }
@@ -267,39 +262,80 @@ export function criterionRow(c: CriterionDraft, index: number) {
  * Save the goal's criteria. Criteria that keep their place are updated in
  * place, because pupils' levels hang off a criterion's id.
  */
+export async function saveLessonCriteria({
+  goalId,
+  existingIds,
+  criteria,
+}: {
+  goalId: string;
+  existingIds: string[];
+  criteria: CriterionDraft[];
+}): Promise<void> {
+  const plan = planCriteriaUpdate(existingIds, criteria);
+  for (const [i, { id, value }] of plan.updates.entries()) {
+    const { error } = await supabase.from("evaluation_criteria").update(criterionRow(value, i)).eq("id", id);
+    if (error) throw error;
+  }
+  if (plan.inserts.length > 0) {
+    const offset = plan.updates.length;
+    const { error } = await supabase
+      .from("evaluation_criteria")
+      .insert(plan.inserts.map((c, i) => ({ goal_id: goalId, ...criterionRow(c, offset + i) })));
+    if (error) throw error;
+  }
+  if (plan.deleteIds.length > 0) {
+    const { error } = await supabase.from("evaluation_criteria").delete().in("id", plan.deleteIds);
+    if (error) throw error;
+  }
+}
+
 export function useSaveLessonCriteria() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      lessonId,
-      goalId,
-      existingIds,
-      criteria,
-    }: {
-      lessonId: string;
-      goalId: string;
-      existingIds: string[];
-      criteria: CriterionDraft[];
-    }) => {
-      const plan = planCriteriaUpdate(existingIds, criteria);
-      for (const [i, { id, value }] of plan.updates.entries()) {
-        const { error } = await supabase.from("evaluation_criteria").update(criterionRow(value, i)).eq("id", id);
-        if (error) throw error;
-      }
-      if (plan.inserts.length > 0) {
-        const offset = plan.updates.length;
-        const { error } = await supabase
-          .from("evaluation_criteria")
-          .insert(plan.inserts.map((c, i) => ({ goal_id: goalId, ...criterionRow(c, offset + i) })));
-        if (error) throw error;
-      }
-      if (plan.deleteIds.length > 0) {
-        const { error } = await supabase.from("evaluation_criteria").delete().in("id", plan.deleteIds);
-        if (error) throw error;
-      }
-      return lessonId;
-    },
+    mutationFn: ({ lessonId: _lessonId, ...args }: { lessonId: string; goalId: string; existingIds: string[]; criteria: CriterionDraft[] }) =>
+      saveLessonCriteria(args),
     onSuccess: (_, v) => invalidateLesson(queryClient, v.lessonId),
+  });
+}
+
+/** Add several lessons to a plan at once (rows read from a thematic plan). */
+export function useAddPlanLessons() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      course,
+      rows,
+      startPosition,
+      sourceText,
+    }: {
+      course: { id: string; class_id: string; subject_id: string };
+      rows: { title: string; description: string; month: string | null; hours: number | null; rvp_outcome: string | null }[];
+      startPosition: number;
+      sourceText?: string;
+    }) => {
+      const { error } = await supabase.from("lessons").insert(
+        rows.map((r, i) => ({
+          teacher_id: user!.id,
+          course_id: course.id,
+          class_id: course.class_id,
+          subject_id: course.subject_id,
+          title: r.title,
+          description: r.description,
+          month: r.month,
+          hours: r.hours,
+          rvp_outcome: r.rvp_outcome,
+          position: startPosition + i,
+          status: "prepared",
+        })),
+      );
+      if (error) throw error;
+      if (sourceText) {
+        // Where the plan came from (zadání kap. 2.3, courses.source_text).
+        await supabase.from("courses").update({ source_text: sourceText }).eq("id", course.id);
+      }
+    },
+    onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ["plan_lessons", v.course.id] }),
   });
 }
 

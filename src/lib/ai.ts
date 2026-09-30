@@ -9,7 +9,8 @@ export type AiFunction =
   | "generate-evaluation"
   | "generate-goals"
   | "generate-goals-from-plan"
-  | "generate-lessons-from-plan";
+  | "generate-lessons-from-plan"
+  | "plan-rows";
 
 /**
  * Result shape of `supabase.functions.invoke`, kept deliberately: the AI

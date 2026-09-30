@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { groupByMonth } from "@/lib/lessons";
-import { SCHOOL_MONTHS, schoolMonthOf } from "@/constants/schoolYear";
+import { SCHOOL_MONTHS, gradeFromClassName, schoolMonthOf } from "@/constants/schoolYear";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BookOpen, CheckCircle2, Loader2, Pencil, Plus } from "lucide-react";
+import { AlertCircle, BookOpen, CheckCircle2, FileUp, Loader2, Pencil, Plus, RotateCcw, Sparkles } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -16,14 +16,59 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCourse } from "@/hooks/useCourses";
-import { useCreatePlanLesson, usePlanLessons } from "@/hooks/usePlanLessons";
+import { saveLessonCriteria, saveLessonGoal, useCreatePlanLesson, usePlanLessons } from "@/hooks/usePlanLessons";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { invokeAi } from "@/lib/ai";
+import { generateLessonContent, runQueue, type GenerationStatus } from "@/lib/lessonGeneration";
+import { PlanImportDialog } from "@/components/lesson/PlanImportDialog";
+import { GenerateLessonsDialog } from "@/components/lesson/GenerateLessonsDialog";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 import { subjectChipClasses } from "@/constants/subjectColors";
 
+/** Where a lesson is in the generation queue, with a retry after an error. */
+function GenerationBadge({
+  state,
+  onRetry,
+}: {
+  state?: { state: GenerationStatus; error?: string };
+  onRetry: (e: React.MouseEvent) => void;
+}) {
+  if (!state) return null;
+  if (state.state === "waiting") return <span className="shrink-0 text-xs text-muted-foreground">Čeká…</span>;
+  if (state.state === "running")
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-brand-strong">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        Připravuji
+      </span>
+    );
+  if (state.state === "done")
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-brand-strong">
+        <Sparkles className="h-3.5 w-3.5" />
+        Hotovo
+      </span>
+    );
+  return (
+    <button
+      type="button"
+      onClick={onRetry}
+      title={state.error}
+      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-destructive/40 px-2 py-0.5 text-xs text-destructive hover:bg-destructive/10"
+    >
+      <AlertCircle className="h-3.5 w-3.5" />
+      Chyba · zkusit znovu
+      <RotateCcw className="h-3 w-3" />
+    </button>
+  );
+}
+
 /**
- * A thematic plan: its lessons month by month (zadání kap. 4.3). A lesson is
- * created by hand here; generating lessons from an uploaded plan follows.
+ * A thematic plan: its lessons month by month (zadání kap. 4.3). Lessons come
+ * from the teacher by hand or from a plan she already has (Načíst plán); goals
+ * and criteria are then generated one lesson at a time (Vygenerovat lekce).
  */
 export default function PlanDetail() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -39,6 +84,46 @@ export default function PlanDetail() {
   const [month, setMonth] = useState<string>(schoolMonthOf(new Date()));
   const [hours, setHours] = useState("1");
   const [description, setDescription] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  /** Generation status per lesson; lessons not in the map are idle. */
+  const [status, setStatus] = useState<Record<string, { state: GenerationStatus; error?: string }>>({});
+  const running = Object.values(status).some((s) => s.state === "waiting" || s.state === "running");
+
+  // Closing the tab stops the queue; say so before it happens.
+  useEffect(() => {
+    if (!running) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [running]);
+
+  const generate = useCallback(
+    async (ids: string[]) => {
+      if (!course || !user) return;
+      const ctx = { subject: course.subjects?.name ?? "", grade: gradeFromClassName(course.classes?.name) };
+      const byId = new Map(lessons.map((l) => [l.id, l]));
+      await runQueue(
+        ids.map((id) => byId.get(id)!).filter(Boolean),
+        (lesson) =>
+          generateLessonContent(lesson, ctx, {
+            invoke: invokeAi,
+            saveGoal: (lessonId, goal) =>
+              saveLessonGoal(user.id, {
+                lesson: { ...lesson, id: lessonId, courses: { id: course.id, name: course.name, classes: course.classes ?? null, subjects: course.subjects ?? null } },
+                goalId: null,
+                teacher: goal.teacher,
+                pupil: goal.pupil,
+              }),
+            saveCriteria: (goalId, criteria) => saveLessonCriteria({ goalId, existingIds: [], criteria }),
+          }).then(() => queryClient.invalidateQueries({ queryKey: ["plan_lessons", course.id] })),
+        (id, state, error) => setStatus((prev) => ({ ...prev, [id]: { state, error } })),
+      );
+    },
+    [course, user, lessons, queryClient],
+  );
 
   const create = async () => {
     if (!course || !title.trim()) return;
@@ -74,6 +159,14 @@ export default function PlanDetail() {
 
   const subject = course?.subjects;
   const groups = groupByMonth(lessons);
+  const withoutGoal = lessons.filter((l) => !l.goalTitle && status[l.id]?.state !== "done");
+
+  const importPlan = (
+    <Button variant="outline" onClick={() => setImportOpen(true)}>
+      <FileUp />
+      Načíst plán
+    </Button>
+  );
 
   return (
     <AppLayout>
@@ -88,12 +181,19 @@ export default function PlanDetail() {
           help="Tematický plán po měsících. Každá lekce má jeden výukový cíl a tři kritéria hodnocení ve verzi pro učitele i pro žáky."
           actions={
             <>
-              <Button asChild variant="outline">
+              <Button asChild variant="ghost">
                 <Link to={`/courses/${courseId}/edit`}>
                   <Pencil />
                   Upravit plán
                 </Link>
               </Button>
+              {importPlan}
+              {withoutGoal.length > 0 && (
+                <Button variant="brand" onClick={() => setGenerateOpen(true)} disabled={running}>
+                  {running ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                  {running ? "Generuji lekce…" : "Vygenerovat lekce"}
+                </Button>
+              )}
               {newLesson}
             </>
           }
@@ -115,8 +215,18 @@ export default function PlanDetail() {
         {isLoading ? (
           <ListSkeleton variant="row" />
         ) : lessons.length === 0 ? (
-          <EmptyState icon={BookOpen} title="Plán zatím nemá lekce" action={newLesson}>
-            Vytvořte první lekci. V ní pak s pomocí AI připravíte cíl, kritéria a škálu J, Č, T, Ú pro žáky.
+          <EmptyState
+            icon={BookOpen}
+            title="Plán zatím nemá lekce"
+            action={
+              <>
+                {importPlan}
+                {newLesson}
+              </>
+            }
+          >
+            Načtěte tematický plán, který už máte (text, PDF nebo fotku), a AI z něj udělá lekce po měsících. Nebo vytvořte
+            první lekci ručně.
           </EmptyState>
         ) : (
           <div className="space-y-6">
@@ -132,6 +242,13 @@ export default function PlanDetail() {
                           {l.goalTitle ?? <span className="italic">Zatím bez cíle</span>}
                         </p>
                       </div>
+                      <GenerationBadge
+                        state={status[l.id]}
+                        onRetry={(e) => {
+                          e.preventDefault();
+                          generate([l.id]);
+                        }}
+                      />
                       {l.hours != null && <span className="shrink-0 text-xs text-muted-foreground">{l.hours} h</span>}
                       {l.status === "past" && (
                         <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
@@ -147,6 +264,11 @@ export default function PlanDetail() {
           </div>
         )}
       </div>
+
+      {course && (
+        <PlanImportDialog open={importOpen} onOpenChange={setImportOpen} course={course} startPosition={lessons.length + 1} />
+      )}
+      <GenerateLessonsDialog open={generateOpen} onOpenChange={setGenerateOpen} lessons={withoutGoal} onConfirm={generate} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

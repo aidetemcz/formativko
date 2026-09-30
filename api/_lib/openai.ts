@@ -15,6 +15,12 @@ export interface JsonSchema {
   schema: Record<string, unknown>;
 }
 
+/** A part of a user message: text, an image, or a PDF (as a data URL). */
+export type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } }
+  | { type: "file"; file: { filename: string; file_data: string } };
+
 export async function structuredCompletion<T>({
   system,
   user,
@@ -23,7 +29,7 @@ export async function structuredCompletion<T>({
   temperature = 0.4,
 }: {
   system: string;
-  user: string;
+  user: string | ContentPart[];
   schema: JsonSchema;
   model?: string;
   temperature?: number;

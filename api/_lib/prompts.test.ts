@@ -3,6 +3,8 @@ import {
   CRITERIA_SCHEMA,
   EVALUATION_SCHEMA,
   GOAL_SCHEMA,
+  PLAN_ROWS_SCHEMA,
+  planRowsPrompt,
   REVIEW_SCHEMA,
   criteriaPrompt,
   evaluationPrompt,
@@ -123,8 +125,17 @@ describe("output schemas", () => {
     for (const [k, v] of Object.entries(n)) assertStrict(v, `${path}.${k}`);
   }
 
-  it.each([GOAL_SCHEMA, CRITERIA_SCHEMA, EVALUATION_SCHEMA, REVIEW_SCHEMA])("$name is strict", (s) => {
+  it.each([GOAL_SCHEMA, CRITERIA_SCHEMA, EVALUATION_SCHEMA, REVIEW_SCHEMA, PLAN_ROWS_SCHEMA])("$name is strict", (s) => {
     assertStrict(s.schema);
+  });
+});
+
+describe("thematic plan → lessons", () => {
+  it("splits by the chosen lesson length and keeps to the plan", () => {
+    const p = planRowsPrompt({ subject: "Prvouka", grade: "3. ročník", hoursPerLesson: 2 });
+    expect(p).toContain("o 2 vyučovacích hodinách");
+    expect(p).toContain("nic si nevymýšlej");
+    expect(p).toContain(STYLE_GUIDE);
   });
 });
 
