@@ -103,7 +103,7 @@ export default function K01Courses() {
         />
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Kurzy</h1>
+          <h1 className="text-2xl font-medium">Kurzy</h1>
           <Button asChild size="sm" className="gap-1">
             <Link to="/courses/create">
               <Plus className="h-4 w-4" />

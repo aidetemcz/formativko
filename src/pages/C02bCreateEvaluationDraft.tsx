@@ -171,7 +171,7 @@ export default function C02bCreateEvaluationDraft() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">Náhled konceptu</h1>
+        <h1 className="text-2xl font-medium mb-6">Náhled konceptu</h1>
         <p className="text-muted-foreground mb-6">
           Zkontrolujte vygenerované hodnocení a rozhodněte se, zda pokračovat.
         </p>

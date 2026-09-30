@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Book } from "lucide-react";
+import { Plus, Trash2, Book, Pencil } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { subjectChipClasses } from "@/constants/subjectColors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,22 +63,18 @@ export default function H01Subjects() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <AppBreadcrumb
-          items={[
-            { label: "Úvod", href: "/" },
-            { label: "Předměty" },
-          ]}
+        <PageHeader
+          title="Předměty"
+          help="Předměty, které učíte. V každém předmětu jsou tematické plány pro jednotlivé třídy a v nich lekce s cíli a kritérii."
+          actions={
+            <Button asChild>
+              <Link to="/subjects/create">
+                <Plus />
+                Nový předmět
+              </Link>
+            </Button>
+          }
         />
-
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Předměty</h1>
-          <Button asChild size="sm" className="gap-1">
-            <Link to="/subjects/create">
-              <Plus className="h-4 w-4" />
-              Nový předmět
-            </Link>
-          </Button>
-        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <SearchBar placeholder="Hledat předmět..." value={search} onChange={setSearch} />
@@ -106,11 +104,13 @@ export default function H01Subjects() {
               return (
                 <div key={subject.id} className="flex items-center gap-2">
                   <Link
-                    to={`/subjects/${subject.id}/edit`}
-                    className="flex-1 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-sm transition-all"
+                    to={`/predmety/${subject.id}`}
+                    className="flex-1 p-4 rounded-xl bg-card border border-border hover:border-input transition-colors"
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <h3 className="font-medium text-foreground">{subject.name}</h3>
+                      <Badge variant="plain" className={`${subjectChipClasses(subject.name)} text-sm`}>
+                        {subject.name}
+                      </Badge>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{goalCount} {goalCount === 1 ? "cíl" : goalCount >= 2 && goalCount <= 4 ? "cíle" : "cílů"}</span>
                         {LESSONS_ENABLED && (
@@ -118,6 +118,13 @@ export default function H01Subjects() {
                         )}
                       </div>
                     </div>
+                  </Link>
+                  <Link
+                    to={`/subjects/${subject.id}/edit`}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+                    title="Přejmenovat předmět"
+                  >
+                    <Pencil className="h-4 w-4" />
                   </Link>
                   <button
                     onClick={() => setDeleteTarget({ id: subject.id, name: subject.name })}

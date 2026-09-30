@@ -9,9 +9,15 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LESSONS_ENABLED } from "@/config/features";
+import { LegacyRedirect } from "@/components/LegacyRedirect";
 
 const Login = lazy(() => import("./pages/Login"));
-const A01Dashboard = lazy(() => import("./pages/A01Dashboard"));
+const Uvod = lazy(() => import("./pages/Uvod"));
+const PredmetPlany = lazy(() => import("./pages/PredmetPlany"));
+const Dukazy = lazy(() => import("./pages/Dukazy"));
+const Napady = lazy(() => import("./pages/Napady"));
+const Nastaveni = lazy(() => import("./pages/Nastaveni"));
+const SebehodnoceniVerejne = lazy(() => import("./pages/SebehodnoceniVerejne"));
 const A02CreateStudentProfiles = lazy(() => import("./pages/A02CreateStudentProfiles"));
 const A03CreateClass = lazy(() => import("./pages/A03CreateClass"));
 const A04EditClass = lazy(() => import("./pages/A04EditClass"));
@@ -39,7 +45,6 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const K01Courses = lazy(() => import("./pages/K01Courses"));
 const K02CreateCourse = lazy(() => import("./pages/K02CreateCourse"));
 const K03CourseDetail = lazy(() => import("./pages/K03CourseDetail"));
-const R01Rvp = lazy(() => import("./pages/R01Rvp"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,7 +59,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+    <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -64,45 +69,67 @@ const App = () => (
           <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-muted-foreground">Načítání…</div>}>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/" element={<ProtectedRoute><A01Dashboard /></ProtectedRoute>} />
+              {/* Public: pupils open this from a QR code, without an account. */}
+              <Route path="/s/:token" element={<SebehodnoceniVerejne />} />
+
+              {/* The new version's routes (zadání kap. 4.2). */}
+              <Route path="/" element={<ProtectedRoute><Uvod /></ProtectedRoute>} />
+              <Route path="/predmety" element={<ProtectedRoute><H01Subjects /></ProtectedRoute>} />
+              <Route path="/predmety/:subjectId" element={<ProtectedRoute><PredmetPlany /></ProtectedRoute>} />
+              <Route path="/plany/:courseId" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
+              <Route path="/tridy" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />
+              <Route path="/tridy/:classId" element={<ProtectedRoute><A04EditClass /></ProtectedRoute>} />
+              <Route path="/zaci/:id" element={<ProtectedRoute><B02StudentProfileDetail /></ProtectedRoute>} />
+              <Route path="/dukazy" element={<ProtectedRoute><Dukazy /></ProtectedRoute>} />
+              <Route path="/napady" element={<ProtectedRoute><Napady /></ProtectedRoute>} />
+              <Route path="/hodnoceni" element={<ProtectedRoute><C01Evaluations /></ProtectedRoute>} />
+              <Route path="/hodnoceni/nove" element={<ProtectedRoute><C02aCreateEvaluationDraft /></ProtectedRoute>} />
+              <Route path="/hodnoceni/nove/nahled" element={<ProtectedRoute><C02bCreateEvaluationDraft /></ProtectedRoute>} />
+              <Route path="/hodnoceni/:id" element={<ProtectedRoute><C03EditEvaluationDrafts /></ProtectedRoute>} />
+              <Route path="/nastaveni" element={<ProtectedRoute><Nastaveni /></ProtectedRoute>} />
+              {/* Lessons come back with phase 5; until the flag is on, the
+                  routes are not registered and a bookmarked URL lands on 404. */}
+              {LESSONS_ENABLED && (
+                <>
+                  <Route path="/lekce/:lessonId" element={<ProtectedRoute><D03LessonDetail /></ProtectedRoute>} />
+                  <Route path="/lessons" element={<ProtectedRoute><D01Lessons /></ProtectedRoute>} />
+                  <Route path="/lessons/create" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
+                  <Route path="/lessons/:lessonId" element={<LegacyRedirect to="/lekce/:lessonId" />} />
+                  <Route path="/lessons/:lessonId/edit" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
+                </>
+              )}
+
+              {/* Old addresses that have a new home. */}
+              <Route path="/classes" element={<LegacyRedirect to="/tridy" />} />
+              <Route path="/edit-class/:classId" element={<LegacyRedirect to="/tridy/:classId" />} />
+              <Route path="/student-profiles/:id" element={<LegacyRedirect to="/zaci/:id" />} />
+              <Route path="/evaluations" element={<LegacyRedirect to="/hodnoceni" />} />
+              <Route path="/evaluations/create" element={<LegacyRedirect to="/hodnoceni/nove" />} />
+              <Route path="/evaluations/create/preview" element={<LegacyRedirect to="/hodnoceni/nove/nahled" />} />
+              <Route path="/evaluations/edit/:id" element={<LegacyRedirect to="/hodnoceni/:id" />} />
+              <Route path="/subjects" element={<LegacyRedirect to="/predmety" />} />
+              <Route path="/courses/:courseId" element={<LegacyRedirect to="/plany/:courseId" />} />
+
+              {/* Screens of the old version that the new menu no longer lists.
+                  They stay reachable from the pages that link to them until
+                  their phase rebuilds them. */}
               <Route path="/create-student-profiles" element={<ProtectedRoute><A02CreateStudentProfiles /></ProtectedRoute>} />
               <Route path="/create-class" element={<ProtectedRoute><A03CreateClass /></ProtectedRoute>} />
-              <Route path="/edit-class/:classId" element={<ProtectedRoute><A04EditClass /></ProtectedRoute>} />
               <Route path="/student-profiles" element={<ProtectedRoute><B01StudentProfiles /></ProtectedRoute>} />
-              <Route path="/student-profiles/:id" element={<ProtectedRoute><B02StudentProfileDetail /></ProtectedRoute>} />
               <Route path="/student-profiles/:id/proof/:proofId" element={<ProtectedRoute><B03aProofOfLearningDetailText /></ProtectedRoute>} />
               <Route path="/student-profiles/:id/proof-file/:proofId" element={<ProtectedRoute><B03bProofOfLearningDetailFile /></ProtectedRoute>} />
               <Route path="/student-profiles/:id/add-proof" element={<ProtectedRoute><B04AddProofOfLearning /></ProtectedRoute>} />
-              <Route path="/evaluations" element={<ProtectedRoute><C01Evaluations /></ProtectedRoute>} />
-              <Route path="/evaluations/create" element={<ProtectedRoute><C02aCreateEvaluationDraft /></ProtectedRoute>} />
-              <Route path="/evaluations/create/preview" element={<ProtectedRoute><C02bCreateEvaluationDraft /></ProtectedRoute>} />
-              <Route path="/evaluations/edit/:id" element={<ProtectedRoute><C03EditEvaluationDrafts /></ProtectedRoute>} />
               <Route path="/goals" element={<ProtectedRoute><G01Goals /></ProtectedRoute>} />
               <Route path="/goals/create" element={<ProtectedRoute><G03CreateGoal /></ProtectedRoute>} />
               <Route path="/goals/:goalId" element={<ProtectedRoute><G02GoalDetail /></ProtectedRoute>} />
               <Route path="/goals/:goalId/edit" element={<ProtectedRoute><G03CreateGoal /></ProtectedRoute>} />
-              <Route path="/subjects" element={<ProtectedRoute><H01Subjects /></ProtectedRoute>} />
               <Route path="/subjects/create" element={<ProtectedRoute><H02CreateSubject /></ProtectedRoute>} />
               <Route path="/subjects/:subjectId/edit" element={<ProtectedRoute><H02CreateSubject /></ProtectedRoute>} />
               <Route path="/courses" element={<ProtectedRoute><K01Courses /></ProtectedRoute>} />
               <Route path="/courses/create" element={<ProtectedRoute><K02CreateCourse /></ProtectedRoute>} />
-              <Route path="/courses/:courseId" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
               <Route path="/courses/:courseId/edit" element={<ProtectedRoute><K02CreateCourse /></ProtectedRoute>} />
-              {/* Lesson planning is switched off in the prototype: the routes
-                  are not registered at all, so a bookmarked /lessons URL lands
-                  on the 404 page instead of a page that is meant to be hidden. */}
-              {LESSONS_ENABLED && (
-                <>
-                  <Route path="/lessons" element={<ProtectedRoute><D01Lessons /></ProtectedRoute>} />
-                  <Route path="/lessons/create" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
-                  <Route path="/lessons/:lessonId" element={<ProtectedRoute><D03LessonDetail /></ProtectedRoute>} />
-                  <Route path="/lessons/:lessonId/edit" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
-                </>
-              )}
-              <Route path="/classes" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />
               <Route path="/capture" element={<ProtectedRoute><E01CaptureToolChooseClass /></ProtectedRoute>} />
               <Route path="/capture/:courseId" element={<ProtectedRoute><E02CaptureToolAddProofs /></ProtectedRoute>} />
-              <Route path="/rvp" element={<ProtectedRoute><R01Rvp /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

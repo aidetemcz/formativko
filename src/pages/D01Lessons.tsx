@@ -128,7 +128,7 @@ export default function D01Lessons() {
         />
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Lekce</h1>
+          <h1 className="text-2xl font-medium">Lekce</h1>
           <Button asChild size="sm" className="gap-1">
             <Link to="/lessons/create">
               <Plus className="h-4 w-4" />

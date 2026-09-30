@@ -75,7 +75,7 @@ export default function D03LessonDetail() {
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <h1 className="text-2xl font-bold">{lesson.title}</h1>
+          <h1 className="text-2xl font-medium">{lesson.title}</h1>
           {lesson.subjects?.name && <Badge variant="secondary">{lesson.subjects.name}</Badge>}
           {cls && <Badge variant="outline">{cls.name}</Badge>}
           {lesson.date && <Badge variant="outline">{lesson.date}</Badge>}

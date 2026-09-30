@@ -196,7 +196,7 @@ export default function B02StudentProfileDetail() {
         />
 
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <h1 className="text-2xl font-bold">{getStudentDisplayName(student)}</h1>
+          <h1 className="text-2xl font-medium">{getStudentDisplayName(student)}</h1>
           {student.svp && (
             <Badge variant="destructive" className="text-xs">SVP</Badge>
           )}

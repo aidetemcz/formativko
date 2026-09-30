@@ -99,7 +99,7 @@ export default function A04EditClass() {
         />
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Upravit třídu</h1>
+          <h1 className="text-2xl font-medium">Upravit třídu</h1>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button className="p-2 hover:bg-destructive/10 rounded-lg" title="Smazat třídu">
