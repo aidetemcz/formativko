@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 const NAMES = [
   "check-evaluation", "extract-names", "formulate-goal", "generate-criteria", "generate-evaluation",
-  "generate-goals", "generate-goals-from-plan", "generate-lessons-from-plan",
+  "generate-goals", "generate-goals-from-plan", "generate-lessons-from-plan", "plan-rows",
 ];
 
 describe("every AI endpoint is a loadable Vercel function", () => {

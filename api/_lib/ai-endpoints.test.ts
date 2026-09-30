@@ -212,3 +212,34 @@ describe("check-evaluation", () => {
     expect(body.style_issues.map((i: { rule: string }) => i.rule)).toEqual(["umis", "emoce"]);
   });
 });
+
+describe("plan-rows", () => {
+  it("reads pasted text into lessons and cleans up what the model returns", async () => {
+    answers.radky_planu = {
+      rows: [
+        { month: "září", title: "Části rostliny", description: "Pozorujeme.", hours: 1, rvp_outcome: "" },
+        { month: "Září!", title: "Semínko", description: "", hours: 0, rvp_outcome: "" },
+        { month: "říjen", title: "  ", description: "", hours: 1, rvp_outcome: "" },
+      ],
+    };
+    const { status, body } = await call("plan-rows", { text: "září: části rostliny, semínko", hoursPerLesson: 1 });
+    expect(status).toBe(200);
+    expect(body.rows).toEqual([
+      { month: "září", title: "Části rostliny", description: "Pozorujeme.", hours: 1, rvp_outcome: "" },
+      { month: "", title: "Semínko", description: "", hours: 1, rvp_outcome: "" },
+    ]);
+    expect(JSON.stringify(sent[0].user)).toContain("září: části rostliny");
+  });
+
+  it("refuses a file that is not in the teacher's own storage", async () => {
+    const { status, body } = await call("plan-rows", { fileUrl: "https://evil.example/plan.pdf" });
+    expect(status).toBe(400);
+    expect(body.error).toMatch(/Neplatný odkaz/);
+    expect(sent).toHaveLength(0);
+  });
+
+  it("asks for a plan when there is none", async () => {
+    const { status } = await call("plan-rows", {});
+    expect(status).toBe(400);
+  });
+});
