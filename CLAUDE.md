@@ -93,6 +93,21 @@ npm run test:watch   # Vitest watch mode
   `review` and `recommendations_outside`; status goes draft → approved, and
   only approved texts are copied or exported. `generate-evaluation` takes an
   optional `subjectId` that limits proofs and levels to that subject.
+- **TinyBuddy** (phase 10): the welcome page `/` is Buddy — the field shows
+  direct hits from `search_everything()` (SQL function, accent-insensitive,
+  runs with the caller's rights) while typing, Enter asks Buddy, and
+  `/?konverzace=<id>` shows a conversation. `api/buddy-chat` streams NDJSON
+  events (`conversation`, `text`, `tool`, `results`, `proposal`, `done`,
+  `error`; `webHandler` passes `application/x-ndjson` through) and runs the
+  tools in `api/_lib/buddy.ts`. Reading tools answer from the teacher's data;
+  `propose_*` tools save nothing — new goals and criteria still come from
+  prompts 01–03 — and the client saves a proposal only on "Uložit"
+  (`useSaveProposal`, `applyLessonSnapshot`), writing `lesson_revisions`,
+  which the lesson's "Historie změn" can undo. Names: the browser
+  pseudonymises the teacher's message, the server does it again for tool
+  results, and `depseudonymizeAll` puts names back only for display. The
+  chat icon passes the current lesson/plan/class/pupil as a context chip
+  (`contextFromPage`).
 - **Legacy goal levels**: `student_goal_levels` and the three-step scale in
   `src/constants/goalLevels.ts` now back only the old course overview
   (`/plany/:id/prehled`), goal detail and dashboard; the capture tool no longer

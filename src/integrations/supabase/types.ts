@@ -64,6 +64,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          data: NonNullable<Json>
           id: string
           role: string
         }
@@ -71,6 +72,7 @@ export type Database = {
           content?: string
           conversation_id: string
           created_at?: string
+          data?: NonNullable<Json>
           id?: string
           role: string
         }
@@ -78,6 +80,7 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          data?: NonNullable<Json>
           id?: string
           role?: string
         }
@@ -681,6 +684,47 @@ export type Database = {
           },
           {
             foreignKeyName: "lesson_goals_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revisions: {
+        Row: {
+          after: NonNullable<Json>
+          before: Json | null
+          changed_by: string
+          created_at: string
+          id: string
+          lesson_id: string
+          summary: string
+          teacher_id: string
+        }
+        Insert: {
+          after: NonNullable<Json>
+          before?: Json | null
+          changed_by: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          summary?: string
+          teacher_id: string
+        }
+        Update: {
+          after?: NonNullable<Json>
+          before?: Json | null
+          changed_by?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          summary?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revisions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
@@ -1295,6 +1339,7 @@ export type Database = {
       }
     }
     Functions: {
+      f_unaccent: { Args: { value: string }; Returns: string }
       generate_student_nickname: {
         Args: { p_teacher_id: string }
         Returns: string
@@ -1303,6 +1348,16 @@ export type Database = {
       legacy_level_to_jctu: {
         Args: { p_level: string; p_levels: string[] }
         Returns: string
+      }
+      search_everything: {
+        Args: { p_teacher?: string; per_kind?: number; q: string }
+        Returns: {
+          id: string
+          kind: string
+          link_id: string
+          subtitle: string
+          title: string
+        }[]
       }
     }
     Enums: {

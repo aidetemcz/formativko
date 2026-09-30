@@ -1,14 +1,17 @@
 import { MessageCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { HowToProvider } from "./HowTo";
+import { contextFromPage } from "@/lib/buddy";
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
   return (
     <HowToProvider>
       <SidebarProvider>
@@ -20,6 +23,16 @@ export function AppLayout({ children }: AppLayoutProps) {
               <SidebarTrigger className="md:hidden" />
               <Link
                 to="/"
+                // From a lesson, plan, class or pupil the new conversation starts
+                // with that page as a context chip (zadání kap. 5.1). The label
+                // is read on click, once the page has set its title.
+                onClick={(e) => {
+                  const buddyContext = contextFromPage(location.pathname, document.title);
+                  if (buddyContext) {
+                    e.preventDefault();
+                    navigate("/", { state: { buddyContext } });
+                  }
+                }}
                 title="TinyBuddy"
                 aria-label="Otevřít TinyBuddyho"
                 className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-brand-soft hover:text-brand-strong"

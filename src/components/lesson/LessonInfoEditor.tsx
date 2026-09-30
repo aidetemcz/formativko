@@ -19,6 +19,7 @@ export function LessonInfoEditor({ lesson }: { lesson: LessonDetail }) {
     month: lesson.month ?? "",
     hours: lesson.hours != null ? String(lesson.hours) : "",
     rvp_outcome: lesson.rvp_outcome ?? "",
+    planned_activities: lesson.planned_activities ?? "",
   };
   const [form, setForm] = useState(initial);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -45,6 +46,7 @@ export function LessonInfoEditor({ lesson }: { lesson: LessonDetail }) {
         month: form.month || null,
         hours,
         rvp_outcome: form.rvp_outcome.trim() || null,
+        planned_activities: form.planned_activities.trim(),
       });
       toast({ title: "Lekce uložena" });
     } catch (e) {
@@ -86,6 +88,16 @@ export function LessonInfoEditor({ lesson }: { lesson: LessonDetail }) {
           className="mt-1.5 min-h-[80px]"
           value={form.description}
           onChange={(e) => set("description")(e.target.value)}
+        />
+      </div>
+      <div>
+        <Label htmlFor="lesson-activities">Průběh hodiny</Label>
+        <Textarea
+          id="lesson-activities"
+          className="mt-1.5 min-h-[80px]"
+          placeholder="Např. 5 min motivace, 15 min práce ve dvojicích… Můžete ho vymyslet i s Buddym."
+          value={form.planned_activities}
+          onChange={(e) => set("planned_activities")(e.target.value)}
         />
       </div>
       <div>
