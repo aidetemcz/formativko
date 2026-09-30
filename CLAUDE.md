@@ -54,6 +54,18 @@ npm run test:watch   # Vitest watch mode
   editor).
 - **Storage**: files live under `<teacher id>/…`; bucket policies let a
   teacher read, upload and delete only in their own folder.
+- **Levels (JČTÚ)**: what a pupil has reached is stored per criterion in
+  `criterion_assessments`, one row per entry (no unique key — the table is the
+  history). `current_criterion_levels` gives the latest row per pupil ×
+  criterion × source. Codes are ASCII `J`, `C`, `T`, `U`; labels and pupil
+  sentences live in `src/constants/jctu.ts`. Never colour the scale as a
+  red/green grade.
+- **Legacy goal levels**: `student_goal_levels` and the three-step scale in
+  `src/constants/goalLevels.ts` still back the capture tool, course overview
+  and dashboard. A trigger mirrors every change into `criterion_assessments`;
+  both go away together when the capture tool is rebuilt (phase 7). Edit
+  criteria in place (`src/lib/criteriaDiff.ts`) — deleting a criterion deletes
+  its pupils' levels.
 - **Path alias**: `@/` maps to `src/`
 - **Server state**: TanStack React Query via hooks in `src/hooks/`
 - **Forms**: React Hook Form + Zod validation

@@ -32,6 +32,65 @@ export type Database = {
         }
         Relationships: []
       }
+      buddy_conversations: {
+        Row: {
+          context: NonNullable<Json>
+          created_at: string
+          id: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          context?: NonNullable<Json>
+          created_at?: string
+          id?: string
+          teacher_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          context?: NonNullable<Json>
+          created_at?: string
+          id?: string
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      buddy_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_students: {
         Row: {
           class_id: string
@@ -134,6 +193,9 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          period: string | null
+          school_year: string | null
+          source_text: string | null
           subject_id: string
           teacher_id: string
           thematic_plan_file_name: string | null
@@ -145,6 +207,9 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          period?: string | null
+          school_year?: string | null
+          source_text?: string | null
           subject_id: string
           teacher_id: string
           thematic_plan_file_name?: string | null
@@ -156,6 +221,9 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          period?: string | null
+          school_year?: string | null
+          source_text?: string | null
           subject_id?: string
           teacher_id?: string
           thematic_plan_file_name?: string | null
@@ -175,6 +243,90 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      criterion_assessments: {
+        Row: {
+          assessed_at: string
+          confirmed_by_teacher: boolean
+          created_at: string
+          criterion_id: string
+          exit_ticket_id: string | null
+          id: string
+          lesson_id: string | null
+          level: string
+          note: string
+          proof_id: string | null
+          source: string
+          student_id: string
+          teacher_id: string
+        }
+        Insert: {
+          assessed_at?: string
+          confirmed_by_teacher?: boolean
+          created_at?: string
+          criterion_id: string
+          exit_ticket_id?: string | null
+          id?: string
+          lesson_id?: string | null
+          level: string
+          note?: string
+          proof_id?: string | null
+          source: string
+          student_id: string
+          teacher_id: string
+        }
+        Update: {
+          assessed_at?: string
+          confirmed_by_teacher?: boolean
+          created_at?: string
+          criterion_id?: string
+          exit_ticket_id?: string | null
+          id?: string
+          lesson_id?: string | null
+          level?: string
+          note?: string
+          proof_id?: string | null
+          source?: string
+          student_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "criterion_assessments_criterion_id_fkey"
+            columns: ["criterion_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_criteria"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_exit_ticket_id_fkey"
+            columns: ["exit_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "exit_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs_of_learning"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
@@ -244,7 +396,12 @@ export type Database = {
           goal_id: string
           id: string
           level_descriptors: NonNullable<Json>
+          position: number | null
+          pupil_text: string | null
+          scale: Json | null
           sort_order: number
+          svp_variants: NonNullable<Json>
+          teacher_text: string | null
         }
         Insert: {
           created_at?: string
@@ -252,7 +409,12 @@ export type Database = {
           goal_id: string
           id?: string
           level_descriptors?: NonNullable<Json>
+          position?: number | null
+          pupil_text?: string | null
+          scale?: Json | null
           sort_order?: number
+          svp_variants?: NonNullable<Json>
+          teacher_text?: string | null
         }
         Update: {
           created_at?: string
@@ -260,7 +422,12 @@ export type Database = {
           goal_id?: string
           id?: string
           level_descriptors?: NonNullable<Json>
+          position?: number | null
+          pupil_text?: string | null
+          scale?: Json | null
           sort_order?: number
+          svp_variants?: NonNullable<Json>
+          teacher_text?: string | null
         }
         Relationships: [
           {
@@ -393,6 +560,73 @@ export type Database = {
           },
         ]
       }
+      exit_tickets: {
+        Row: {
+          confirmed_by_teacher: boolean
+          created_at: string
+          id: string
+          lesson_id: string
+          proof_id: string | null
+          pupil_comment: string
+          source: string
+          student_id: string
+          submitted_at: string
+          teacher_comment: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed_by_teacher?: boolean
+          created_at?: string
+          id?: string
+          lesson_id: string
+          proof_id?: string | null
+          pupil_comment?: string
+          source: string
+          student_id: string
+          submitted_at?: string
+          teacher_comment?: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed_by_teacher?: boolean
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          proof_id?: string | null
+          pupil_comment?: string
+          source?: string
+          student_id?: string
+          submitted_at?: string
+          teacher_comment?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exit_tickets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exit_tickets_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs_of_learning"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exit_tickets_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_goals: {
         Row: {
           goal_id: string
@@ -429,9 +663,15 @@ export type Database = {
           course_id: string | null
           created_at: string
           date: string | null
+          description: string
+          hours: number | null
           id: string
+          materials: NonNullable<Json>
+          month: string | null
           observation_focus: string
           planned_activities: string
+          position: number | null
+          rvp_outcome: string | null
           status: string
           subject_id: string | null
           teacher_id: string
@@ -443,9 +683,15 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           date?: string | null
+          description?: string
+          hours?: number | null
           id?: string
+          materials?: NonNullable<Json>
+          month?: string | null
           observation_focus?: string
           planned_activities?: string
+          position?: number | null
+          rvp_outcome?: string | null
           status?: string
           subject_id?: string | null
           teacher_id: string
@@ -457,9 +703,15 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           date?: string | null
+          description?: string
+          hours?: number | null
           id?: string
+          materials?: NonNullable<Json>
+          month?: string | null
           observation_focus?: string
           planned_activities?: string
+          position?: number | null
+          rvp_outcome?: string | null
           status?: string
           subject_id?: string | null
           teacher_id?: string
@@ -709,6 +961,44 @@ export type Database = {
           },
         ]
       }
+      self_assessment_sessions: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          lesson_id: string
+          teacher_id: string
+          token: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lesson_id: string
+          teacher_id: string
+          token?: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lesson_id?: string
+          teacher_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "self_assessment_sessions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills: {
         Row: {
           created_at: string
@@ -920,11 +1210,67 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      current_criterion_levels: {
+        Row: {
+          assessed_at: string | null
+          confirmed_by_teacher: boolean | null
+          criterion_id: string | null
+          exit_ticket_id: string | null
+          id: string | null
+          lesson_id: string | null
+          level: string | null
+          proof_id: string | null
+          source: string | null
+          student_id: string | null
+          teacher_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "criterion_assessments_criterion_id_fkey"
+            columns: ["criterion_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_criteria"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_exit_ticket_id_fkey"
+            columns: ["exit_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "exit_tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proofs_of_learning"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "criterion_assessments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_student_nickname: {
         Args: { p_teacher_id: string }
+        Returns: string
+      }
+      goal_level_names: { Args: { p_goal_id: string }; Returns: string[] }
+      legacy_level_to_jctu: {
+        Args: { p_level: string; p_levels: string[] }
         Returns: string
       }
     }
