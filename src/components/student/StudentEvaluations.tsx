@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useStudentEvaluations } from "@/hooks/useStudentProgress";
 
 const STATUS_LABELS: Record<string, string> = {
+  draft: "Koncept",
   waiting: "Koncept",
   approved: "Schváleno",
   done: "Hotovo",
@@ -33,7 +34,7 @@ export function StudentEvaluations({ studentId }: { studentId: string }) {
         return (
           <li key={e.id} className="py-2.5">
             {e.group_id ? (
-              <Link to={`/hodnoceni/${e.group_id}`} className="block rounded-md hover:bg-muted/40">
+              <Link to={`/hodnoceni/${e.group_id}?zak=${studentId}`} className="block rounded-md hover:bg-muted/40">
                 {body}
               </Link>
             ) : (

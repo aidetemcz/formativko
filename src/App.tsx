@@ -30,10 +30,9 @@ const B02StudentProfileDetail = lazy(() => import("./pages/B02StudentProfileDeta
 const B03aProofOfLearningDetailText = lazy(() => import("./pages/B03aProofOfLearningDetailText"));
 const B03bProofOfLearningDetailFile = lazy(() => import("./pages/B03bProofOfLearningDetailFile"));
 const B04AddProofOfLearning = lazy(() => import("./pages/B04AddProofOfLearning"));
-const C01Evaluations = lazy(() => import("./pages/C01Evaluations"));
-const C02aCreateEvaluationDraft = lazy(() => import("./pages/C02aCreateEvaluationDraft"));
-const C02bCreateEvaluationDraft = lazy(() => import("./pages/C02bCreateEvaluationDraft"));
-const C03EditEvaluationDrafts = lazy(() => import("./pages/C03EditEvaluationDrafts"));
+const Hodnoceni = lazy(() => import("./pages/Hodnoceni"));
+const HodnoceniNove = lazy(() => import("./pages/HodnoceniNove"));
+const HodnoceniDetail = lazy(() => import("./pages/HodnoceniDetail"));
 const D01Lessons = lazy(() => import("./pages/D01Lessons"));
 const D02CreateLesson = lazy(() => import("./pages/D02CreateLesson"));
 const F01Classes = lazy(() => import("./pages/F01Classes"));
@@ -93,10 +92,10 @@ const App = () => (
               <Route path="/zaci/:id" element={<ProtectedRoute><B02StudentProfileDetail /></ProtectedRoute>} />
               <Route path="/dukazy" element={<ProtectedRoute><Dukazy /></ProtectedRoute>} />
               <Route path="/napady" element={<ProtectedRoute><Napady /></ProtectedRoute>} />
-              <Route path="/hodnoceni" element={<ProtectedRoute><C01Evaluations /></ProtectedRoute>} />
-              <Route path="/hodnoceni/nove" element={<ProtectedRoute><C02aCreateEvaluationDraft /></ProtectedRoute>} />
-              <Route path="/hodnoceni/nove/nahled" element={<ProtectedRoute><C02bCreateEvaluationDraft /></ProtectedRoute>} />
-              <Route path="/hodnoceni/:id" element={<ProtectedRoute><C03EditEvaluationDrafts /></ProtectedRoute>} />
+              <Route path="/hodnoceni" element={<ProtectedRoute><Hodnoceni /></ProtectedRoute>} />
+              <Route path="/hodnoceni/nove" element={<ProtectedRoute><HodnoceniNove /></ProtectedRoute>} />
+              <Route path="/hodnoceni/nove/nahled" element={<LegacyRedirect to="/hodnoceni" />} />
+              <Route path="/hodnoceni/:id" element={<ProtectedRoute><HodnoceniDetail /></ProtectedRoute>} />
               <Route path="/nastaveni" element={<ProtectedRoute><Nastaveni /></ProtectedRoute>} />
               {/* The old stand-alone lesson pages stay off; lessons now live
                   in thematic plans (/plany/:id, /lekce/:id). */}

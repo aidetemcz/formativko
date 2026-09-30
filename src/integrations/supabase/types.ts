@@ -450,7 +450,10 @@ export type Database = {
           date_from: string | null
           date_to: string | null
           id: string
+          mode: string | null
           name: string
+          settings: NonNullable<Json>
+          subject_id: string | null
           teacher_id: string
           type: string
           updated_at: string
@@ -462,7 +465,10 @@ export type Database = {
           date_from?: string | null
           date_to?: string | null
           id?: string
+          mode?: string | null
           name: string
+          settings?: NonNullable<Json>
+          subject_id?: string | null
           teacher_id: string
           type: string
           updated_at?: string
@@ -474,7 +480,10 @@ export type Database = {
           date_from?: string | null
           date_to?: string | null
           id?: string
+          mode?: string | null
           name?: string
+          settings?: NonNullable<Json>
+          subject_id?: string | null
           teacher_id?: string
           type?: string
           updated_at?: string
@@ -494,15 +503,26 @@ export type Database = {
             referencedRelation: "courses"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "evaluation_groups_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       evaluations: {
         Row: {
+          approved_at: string | null
           created_at: string
           goal_id: string | null
           group_id: string | null
           id: string
           period: string
+          recommendations_outside: NonNullable<Json>
+          review: Json | null
+          sentences: NonNullable<Json>
           source_proof_ids: Json | null
           status: string
           student_id: string
@@ -512,11 +532,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
           created_at?: string
           goal_id?: string | null
           group_id?: string | null
           id?: string
           period: string
+          recommendations_outside?: NonNullable<Json>
+          review?: Json | null
+          sentences?: NonNullable<Json>
           source_proof_ids?: Json | null
           status?: string
           student_id: string
@@ -526,11 +550,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
           created_at?: string
           goal_id?: string | null
           group_id?: string | null
           id?: string
           period?: string
+          recommendations_outside?: NonNullable<Json>
+          review?: Json | null
+          sentences?: NonNullable<Json>
           source_proof_ids?: Json | null
           status?: string
           student_id?: string
