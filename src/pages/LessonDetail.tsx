@@ -11,6 +11,7 @@ import { CriteriaEditor } from "@/components/lesson/CriteriaEditor";
 import { LessonInfoEditor } from "@/components/lesson/LessonInfoEditor";
 import { LessonLevelsOverview } from "@/components/lesson/LessonLevelsOverview";
 import { LessonExitTickets } from "@/components/lesson/LessonExitTickets";
+import { LessonHistory } from "@/components/lesson/LessonHistory";
 import { PaperExitTicketsDialog } from "@/components/lesson/PaperExitTicketsDialog";
 import { QrDialog } from "@/components/lesson/QrDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -164,6 +165,15 @@ export default function LessonDetail() {
             </CardHeader>
             <CardContent>
               <LessonLevelsOverview lesson={lesson} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Historie změn</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LessonHistory lessonId={lesson.id} />
             </CardContent>
           </Card>
 

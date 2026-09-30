@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /** The AI endpoints, served as Vercel functions from /api. */
 export type AiFunction =
+  | "buddy-chat"
   | "extract-names"
   | "formulate-goal"
   | "check-evaluation"
@@ -130,4 +131,57 @@ export function invokeAiWithForm<T = any>(
   form: FormData,
 ): Promise<AiResult<T>> {
   return send<T>(name, { body: form });
+}
+
+/**
+ * Call an endpoint that streams newline-delimited JSON events (TinyBuddy).
+ * Each complete line is parsed and handed to `onEvent` as it arrives.
+ */
+export async function streamAi(
+  name: AiFunction,
+  body: Record<string, unknown>,
+  onEvent: (event: Record<string, unknown>) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const response = await fetch(`/api/${name}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: await authorization() },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!response.ok || !response.body) {
+    const raw = await response.text().catch(() => "");
+    let message: string | undefined;
+    try {
+      message = JSON.parse(raw)?.error;
+    } catch {
+      message = undefined;
+    }
+    throw new Error(message || describeTransportError(response.status, response.headers.get("x-vercel-error")));
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        onEvent(JSON.parse(line));
+      } catch {
+        // A broken line is skipped; the next one may still be fine.
+      }
+    }
+  }
+  if (buffer.trim()) {
+    try {
+      onEvent(JSON.parse(buffer));
+    } catch {
+      // Ignore a trailing fragment.
+    }
+  }
 }

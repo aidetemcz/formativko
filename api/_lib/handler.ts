@@ -80,6 +80,18 @@ export function webHandler(fn: (req: Request) => Promise<Response>) {
     response.headers.forEach((value, key) => res.setHeader(key, value));
     res.status(response.status);
 
+    // A streamed answer (TinyBuddy) is passed on chunk by chunk.
+    if (response.body && (response.headers.get("content-type") ?? "").startsWith("application/x-ndjson")) {
+      const reader = response.body.getReader();
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        res.write(Buffer.from(value));
+      }
+      res.end();
+      return;
+    }
+
     const text = await response.text();
     if (text) res.send(text);
     else res.end();

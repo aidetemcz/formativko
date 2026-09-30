@@ -25,13 +25,17 @@ export interface PseudonymPerson {
  */
 const CASE_ENDINGS = [
   "ovi", "ové", "ům", "ech", "em", "ou", "a", "á", "e", "é", "ě", "i", "í", "y", "u", "o",
+  // Adjective surnames: "Bílý" → "Bílého", "Bílému", "Bílým"; "Malá" → "Malé", "Malou".
+  "ý", "ého", "ému", "ém", "ým", "ých", "ými",
+  // Soft first names: "Jiří" → "Jiřího", "Jiřímu", "Jiřím".
+  "ho", "mu", "m",
   // Possessives: "Adamův sešit", "Adamovy rostliny", "Evin úkol", "Evina práce".
   "ův", "ova", "ovo", "ovy", "ovu", "ových", "ovým", "ovými", "ovou", "ově",
   "in", "ina", "ino", "iny", "inu", "iných", "iným", "inými", "inou", "ině",
 ];
 
-/** Name endings dropped before a case ending is added ("Jana" → "Jan"). */
-const STEM_VOWELS = /[aáeěoy]$/i;
+/** Name endings dropped before a case ending is added ("Jana" → "Jan", "Bílý" → "Bíl"). */
+const STEM_VOWELS = /[aáeěoyý]$/i;
 
 /** Letters, including Czech diacritics; JavaScript's \b is ASCII-only. */
 const NOT_LETTER_BEFORE = "(?<!\\p{L})";
@@ -107,3 +111,22 @@ export function depseudonymize(text: string | null | undefined, person: Pseudony
  */
 export const PSEUDONYM_PROMPT_RULE =
   "Žáci jsou v podkladech označeni přezdívkou (např. „Modrá vydra“). Přezdívku nikdy neskloňuj ani neupravuj, a pokud to jde, žáka jménem ani přezdívkou vůbec neoznačuj. Nevymýšlej žádná skutečná jména.";
+
+/**
+ * Put every known pupil back in place of their nickname, for showing a
+ * conversation to the teacher (TinyBuddy speaks about several pupils at once).
+ */
+export function depseudonymizeAll(
+  text: string | null | undefined,
+  people: PseudonymPerson[],
+  label: (person: PseudonymPerson) => string = (p) => `${p.first_name} ${p.last_name}`.trim(),
+): string {
+  if (!text) return "";
+  let result = text;
+  const sorted = [...people].filter((p) => p.nickname).sort((a, b) => b.nickname.length - a.nickname.length);
+  for (const person of sorted) {
+    const regex = new RegExp(`${NOT_LETTER_BEFORE}${escapeRegExp(person.nickname)}${NOT_LETTER_AFTER}`, "giu");
+    result = result.replace(regex, label(person));
+  }
+  return result;
+}

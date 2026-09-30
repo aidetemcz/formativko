@@ -46,6 +46,8 @@ export interface LessonCriterion {
 }
 
 export interface LessonDetail extends PlanLesson {
+  /** How the lesson goes, step by step (the teacher's or Buddy's plan). */
+  planned_activities: string;
   courses: {
     id: string;
     name: string;
@@ -121,32 +123,35 @@ export function useCreatePlanLesson() {
   });
 }
 
+/** One lesson with its plan, goal and criteria in order. */
+export async function fetchLessonDetail(lessonId: string): Promise<LessonDetail> {
+  const { data, error } = await supabase
+    .from("lessons")
+    .select(
+      "id, title, description, month, hours, position, rvp_outcome, status, planned_activities, course_id, class_id, subject_id, courses(id, name, classes(id, name), subjects(id, name)), lesson_goals(educational_goals(id, title, pupil_text, evaluation_criteria(id, teacher_text, description, pupil_text, scale, svp_variants, position, sort_order)))",
+    )
+    .eq("id", lessonId)
+    .single();
+  if (error) throw error;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row = data as any;
+  // One goal per lesson; an older lesson linked to several shows the first.
+  const goal = row.lesson_goals?.[0]?.educational_goals ?? null;
+  const criteria = ((goal?.evaluation_criteria ?? []) as LessonCriterion[]).sort(
+    (a, b) => (a.position ?? a.sort_order + 1) - (b.position ?? b.sort_order + 1),
+  );
+  return {
+    ...row,
+    goal: goal ? { id: goal.id, title: goal.title, pupil_text: goal.pupil_text ?? "" } : null,
+    criteria,
+  };
+}
+
 export function useLessonDetail(lessonId: string | undefined) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["lesson_detail", lessonId],
-    queryFn: async (): Promise<LessonDetail> => {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select(
-          "id, title, description, month, hours, position, rvp_outcome, status, course_id, class_id, subject_id, courses(id, name, classes(id, name), subjects(id, name)), lesson_goals(educational_goals(id, title, pupil_text, evaluation_criteria(id, teacher_text, description, pupil_text, scale, svp_variants, position, sort_order)))",
-        )
-        .eq("id", lessonId!)
-        .single();
-      if (error) throw error;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const row = data as any;
-      // One goal per lesson; an older lesson linked to several shows the first.
-      const goal = row.lesson_goals?.[0]?.educational_goals ?? null;
-      const criteria = ((goal?.evaluation_criteria ?? []) as LessonCriterion[]).sort(
-        (a, b) => (a.position ?? a.sort_order + 1) - (b.position ?? b.sort_order + 1),
-      );
-      return {
-        ...row,
-        goal: goal ? { id: goal.id, title: goal.title, pupil_text: goal.pupil_text ?? "" } : null,
-        criteria,
-      };
-    },
+    queryFn: () => fetchLessonDetail(lessonId!),
     enabled: !!user && !!lessonId,
   });
 }
@@ -171,6 +176,7 @@ export function useUpdateLessonInfo() {
       hours?: number | null;
       rvp_outcome?: string | null;
       status?: string;
+      planned_activities?: string;
     }) => {
       const { error } = await supabase.from("lessons").update(fields).eq("id", id);
       if (error) throw error;

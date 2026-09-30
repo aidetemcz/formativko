@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { depseudonymize, pseudonymize, type PseudonymPerson } from "./pseudonym";
+import { depseudonymize, depseudonymizeAll, pseudonymize, type PseudonymPerson } from "./pseudonym";
 
 const adam: PseudonymPerson = { first_name: "Adam", last_name: "Novák", nickname: "Modrá vydra" };
 const jana: PseudonymPerson = { first_name: "Jana", last_name: "Svobodová", nickname: "Zelený bobr" };
@@ -26,6 +26,13 @@ describe("pseudonymize", () => {
     );
   });
 
+  it("handles masculine adjectival surnames", () => {
+    const jiri: PseudonymPerson = { first_name: "Jiří", last_name: "Bílý", nickname: "Hnědý svišť" };
+    expect(pseudonymize("Najdi zlomky pro Jiřího Bílého, Bílému a s Bílým", [jiri])).toBe(
+      "Najdi zlomky pro Hnědý svišť, Hnědý svišť a s Hnědý svišť",
+    );
+  });
+
   it("replaces possessive forms", () => {
     expect(pseudonymize("Nákres Adamovy rostliny a Adamův sešit", [adam])).toBe(
       "Nákres Modrá vydra rostliny a Modrá vydra sešit",
@@ -48,5 +55,13 @@ describe("depseudonymize", () => {
     expect(depseudonymize("Modrá vydra popsala části rostliny.", adam)).toBe(
       "Adam popsala části rostliny.",
     );
+  });
+});
+
+describe("depseudonymizeAll", () => {
+  it("puts every pupil back, longer nicknames first", () => {
+    const mala: PseudonymPerson = { first_name: "Eva", last_name: "Malá", nickname: "Sova" };
+    expect(depseudonymizeAll("Modrá vydra a Šedá sova, Sova", [adam, eva, mala])).toBe("Adam Novák a Eva Černá, Eva Malá");
+    expect(depseudonymizeAll(null, [adam])).toBe("");
   });
 });
