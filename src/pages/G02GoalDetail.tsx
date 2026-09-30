@@ -105,7 +105,7 @@ export default function G02GoalDetail() {
         />
 
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <h1 className="text-2xl font-bold">{goal.title}</h1>
+          <h1 className="text-2xl font-medium">{goal.title}</h1>
           {goal.subjects?.name && (
             <Badge variant="secondary">{goal.subjects.name}</Badge>
           )}

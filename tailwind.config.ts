@@ -57,6 +57,31 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        subtle: "hsl(var(--subtle))",
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          strong: "hsl(var(--brand-strong))",
+          soft: "hsl(var(--brand-soft))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
+        jctu: {
+          j: { DEFAULT: "hsl(var(--jctu-j))", foreground: "hsl(var(--jctu-j-foreground))" },
+          c: { DEFAULT: "hsl(var(--jctu-c))", foreground: "hsl(var(--jctu-c-foreground))" },
+          t: { DEFAULT: "hsl(var(--jctu-t))", foreground: "hsl(var(--jctu-t-foreground))" },
+          u: { DEFAULT: "hsl(var(--jctu-u))", foreground: "hsl(var(--jctu-u-foreground))" },
+        },
+        subject: Object.fromEntries(
+          [
+            "cestina", "matematika", "prvouka", "anglictina",
+            "hudebni", "vytvarna", "telesna", "informatika", "other",
+          ].map((key) => [
+            key,
+            {
+              DEFAULT: `hsl(var(--subject-${key}))`,
+              foreground: `hsl(var(--subject-${key}-foreground))`,
+            },
+          ]),
+        ),
         proof: {
           text: "hsl(var(--proof-text))",
           voice: "hsl(var(--proof-voice))",
@@ -64,7 +89,12 @@ export default {
           file: "hsl(var(--proof-file))",
         },
       },
+      fontFamily: {
+        sans: ['"Inter Variable"', "Inter", "system-ui", "-apple-system", "sans-serif"],
+      },
       borderRadius: {
+        "2xl": "calc(var(--radius) + 10px)",
+        xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",

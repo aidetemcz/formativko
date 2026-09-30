@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { useClasses, useAllClassStudents } from "@/hooks/useClasses";
 import { Link } from "react-router-dom";
@@ -12,7 +12,7 @@ import { ListSkeleton } from "@/components/shared/ListSkeleton";
 function ClassCard({ cls, studentCount }: { cls: { id: string; name: string }; studentCount: number }) {
   return (
     <Link
-      to={`/edit-class/${cls.id}`}
+      to={`/tridy/${cls.id}`}
       className="block p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-sm transition-all"
     >
       <div className="flex items-center justify-between">
@@ -53,22 +53,18 @@ export default function F01Classes() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <AppBreadcrumb
-          items={[
-            { label: "Úvod", href: "/" },
-            { label: "Třídy" },
-          ]}
+        <PageHeader
+          title="Třídy"
+          help="Třídy a žáci, u kterých sbíráte důkazy o učení. V detailu třídy uvidíte, kdo je připravený na hodnocení a komu ještě důkazy chybí."
+          actions={
+            <Button asChild>
+              <Link to="/create-class">
+                <Plus />
+                Nová třída
+              </Link>
+            </Button>
+          }
         />
-
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Třídy</h1>
-          <Button asChild size="sm">
-            <Link to="/create-class">
-              <Plus className="h-4 w-4 mr-1" />
-              Nová třída
-            </Link>
-          </Button>
-        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <SearchBar placeholder="Hledat třídu..." value={search} onChange={setSearch} />

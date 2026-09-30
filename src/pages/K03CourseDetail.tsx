@@ -315,7 +315,7 @@ export default function K03CourseDetail() {
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <h1 className="text-2xl font-bold">{course.name}</h1>
+          <h1 className="text-2xl font-medium">{course.name}</h1>
           {course.classes?.name && <Badge variant="outline">{course.classes.name}</Badge>}
           {course.subjects?.name && <Badge variant="secondary">{course.subjects.name}</Badge>}
           <div className="ml-auto flex gap-1">

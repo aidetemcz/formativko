@@ -363,7 +363,7 @@ export default function R01Rvp() {
       <div className="max-w-3xl mx-auto">
         <AppBreadcrumb items={[{ label: "RVP 2025" }]} />
 
-        <h1 className="text-2xl font-bold mb-6">Rámcový vzdělávací program pro základní vzdělávání 2025</h1>
+        <h1 className="text-2xl font-medium mb-6">Rámcový vzdělávací program pro základní vzdělávání 2025</h1>
 
         <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20 mb-6">
           <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />

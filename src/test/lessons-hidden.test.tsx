@@ -90,10 +90,11 @@ describe("the prototype hides lesson planning", () => {
 });
 
 describe("nothing waits for a lesson to be planned", () => {
-  it("shows evaluations once goals are set, not once a lesson exists", () => {
+  it("offers evaluations without any lesson", () => {
     lessons = [];
     renderSidebar();
-    expect(screen.getByText("Hodnocení")).toBeInTheDocument();
+    // "Hodnocení" is also the heading of the menu section; the entry is the link.
+    expect(screen.getByRole("link", { name: "Hodnocení" })).toBeInTheDocument();
   });
 
   it("leads the onboarding from the goal straight to the first proof", () => {

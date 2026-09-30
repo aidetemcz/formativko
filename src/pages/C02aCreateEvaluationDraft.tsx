@@ -203,7 +203,7 @@ export default function C02aCreateEvaluationDraft() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">Tvorba hodnocení</h1>
+        <h1 className="text-2xl font-medium mb-6">Tvorba hodnocení</h1>
 
         <div className="space-y-6">
           {/* Step 1: Type */}

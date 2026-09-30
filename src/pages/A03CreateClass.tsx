@@ -128,7 +128,7 @@ export default function A03CreateClass() {
         title: `Třída „${className}" vytvořena`,
         description: `${totalStudents} ${totalStudents === 1 ? "žák přidán" : totalStudents < 5 ? "žáci přidáni" : "žáků přidáno"}`,
       });
-      navigate("/");
+      navigate("/tridy");
     } catch (err) {
       console.error("Chyba při vytváření třídy", err);
       toast({ title: "Chyba při vytváření třídy", variant: "destructive" });
@@ -147,7 +147,7 @@ export default function A03CreateClass() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">Vytvořit třídu</h1>
+        <h1 className="text-2xl font-medium mb-6">Vytvořit třídu</h1>
 
         <div className="mb-6">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">Název třídy</label>

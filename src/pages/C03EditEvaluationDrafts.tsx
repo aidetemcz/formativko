@@ -110,7 +110,7 @@ export default function C03EditEvaluationDrafts() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">{group ? `Draft: ${group.name}` : "Draft hodnocení"}</h1>
+        <h1 className="text-2xl font-medium mb-6">{group ? `Draft: ${group.name}` : "Draft hodnocení"}</h1>
 
         {isLoading ? (
           <div className="text-center py-12 text-muted-foreground">Načítání…</div>

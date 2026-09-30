@@ -338,7 +338,7 @@ export default function G03CreateGoal() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">
+        <h1 className="text-2xl font-medium mb-6">
           {isEdit ? "Upravit vzdělávací cíl" : "Nový vzdělávací cíl"}
         </h1>
 

@@ -201,7 +201,7 @@ export default function B04AddProofOfLearning() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">Přidat důkaz o učení</h1>
+        <h1 className="text-2xl font-medium mb-6">Přidat důkaz o učení</h1>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
           {proofTypes.map((pt) => (

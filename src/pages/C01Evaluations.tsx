@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { ClassFilterBar } from "@/components/shared/ClassFilterBar";
 import { Badge } from "@/components/ui/badge";
@@ -82,22 +82,18 @@ export default function C01Evaluations() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <AppBreadcrumb
-          items={[
-            { label: "Úvod", href: "/" },
-            { label: "Hodnocení" },
-          ]}
+        <PageHeader
+          title="Hodnocení"
+          help="Slovní hodnocení, která vznikla z důkazů o učení. Každý text zkontrolujete a upravíte, než ho použijete."
+          actions={
+            <Button asChild>
+              <Link to="/hodnoceni/nove">
+                <Plus />
+                Nové hodnocení
+              </Link>
+            </Button>
+          }
         />
-
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Hodnocení</h1>
-          <Button asChild size="sm" className="gap-1">
-            <Link to="/evaluations/create">
-              <Plus className="h-4 w-4" />
-              Nové hodnocení
-            </Link>
-          </Button>
-        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <SearchBar placeholder="Hledat hodnocení..." value={search} onChange={setSearch} />

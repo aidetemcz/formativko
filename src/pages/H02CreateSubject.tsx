@@ -60,7 +60,7 @@ export default function H02CreateSubject() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">{isEdit ? "Upravit předmět" : "Nový předmět"}</h1>
+        <h1 className="text-2xl font-medium mb-6">{isEdit ? "Upravit předmět" : "Nový předmět"}</h1>
 
         <div className="space-y-6">
           <div>

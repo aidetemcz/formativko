@@ -107,7 +107,7 @@ export default function A02CreateStudentProfiles() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">Vytvořit žákovské profily</h1>
+        <h1 className="text-2xl font-medium mb-6">Vytvořit žákovské profily</h1>
 
         <div className="space-y-3 mb-4">
           {rows.map((row, i) => (

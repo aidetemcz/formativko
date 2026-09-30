@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Plus, Upload, X } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
 import { useSubjects, useCreateSubject } from "@/hooks/useSubjects";
@@ -30,7 +30,9 @@ export default function K02CreateCourse() {
 
   const [name, setName] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  // A plan started from a subject page arrives with ?predmet=<id>.
+  const [searchParams] = useSearchParams();
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(searchParams.get("predmet"));
   const [newSubjectName, setNewSubjectName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [planFileName, setPlanFileName] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export default function K02CreateCourse() {
           thematicPlanFileUrl: planFileUrl,
         });
         toast({ title: "Kurz upraven" });
-        navigate(`/courses/${courseId}`);
+        navigate(`/plany/${courseId}`);
       } else {
         const course = await createCourse.mutateAsync({
           name: name.trim(),
@@ -108,8 +110,8 @@ export default function K02CreateCourse() {
           thematicPlanFileName: planFileName,
           thematicPlanFileUrl: planFileUrl,
         });
-        toast({ title: "Kurz vytvořen" });
-        navigate("/");
+        toast({ title: "Plán vytvořen" });
+        navigate(`/plany/${course.id}`);
       }
     } catch (err: any) {
       console.error("Course save error:", err);
@@ -130,7 +132,7 @@ export default function K02CreateCourse() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">{isEdit ? "Upravit kurz" : "Nový kurz"}</h1>
+        <h1 className="text-2xl font-medium mb-6">{isEdit ? "Upravit kurz" : "Nový kurz"}</h1>
 
         <div className="space-y-6">
           {/* Name */}

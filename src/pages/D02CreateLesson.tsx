@@ -226,7 +226,7 @@ export default function D02CreateLesson() {
           ]}
         />
 
-        <h1 className="text-2xl font-bold mb-6">{isEdit ? "Upravit lekci" : "Nová lekce"}</h1>
+        <h1 className="text-2xl font-medium mb-6">{isEdit ? "Upravit lekci" : "Nová lekce"}</h1>
 
         <div className="space-y-6">
           {/* Class */}

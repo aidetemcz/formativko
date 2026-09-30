@@ -42,7 +42,7 @@ export default function B03bProofOfLearningDetailFile() {
         />
 
         <div className="flex items-center gap-2 mb-6">
-          <h1 className="text-2xl font-bold flex-1">{proof.title}</h1>
+          <h1 className="text-2xl font-medium flex-1">{proof.title}</h1>
           <button className="p-2 hover:bg-accent rounded-lg">
             <Pencil className="h-4 w-4 text-muted-foreground" />
           </button>

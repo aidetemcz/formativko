@@ -65,7 +65,7 @@ export default function Login() {
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
           <img src={eliImage} alt="Eli" className="h-24 w-24 object-contain" />
-          <h1 className="text-2xl font-bold text-foreground">Tiny</h1>
+          <h1 className="text-2xl font-medium text-foreground">Tiny</h1>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Vytvořte si účet" : "Přihlaste se do svého účtu"}
           </p>

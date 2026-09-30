@@ -25,8 +25,8 @@ npm run test:watch   # Vitest watch mode
   - **D** series: Lessons
   - **E** series: Capture tool (photo/media capture for quick evidence)
   - **F** series: Classes listing
-- `src/components/ui/` — shadcn/ui primitives (50+ components, do not modify directly)
-- `src/components/layout/` — AppLayout, AppSidebar, AppBreadcrumb
+- `src/components/ui/` — shadcn/ui primitives (50+ components). Their look comes from the design tokens; button, card, badge, input, textarea, select, dialog, alert-dialog and table were restyled once to match Veronika's prototype. Do not restyle them per screen.
+- `src/components/layout/` — AppLayout (menu + chat icon to the welcome page), AppSidebar (menu of zadání kap. 4.1), PageHeader (breadcrumbs, title, "?" help, main action), PageHelp, HowTo ("Jak na to" dialog)
 - `src/components/shared/` — Reusable domain components (StudentChip, SearchBar, DateField, LessonLinkField)
 - `src/hooks/` — Data fetching hooks wrapping Supabase + React Query (useStudents, useClasses, useEvaluations, useProofs, useLessons)
 - `src/contexts/` — AuthContext (Supabase auth)
@@ -71,7 +71,15 @@ npm run test:watch   # Vitest watch mode
 - **Forms**: React Hook Form + Zod validation
 - **Routing**: React Router DOM v6
 - **TypeScript**: Lenient config (noImplicitAny: false, strictNullChecks: false) — this is intentional for Lovable compatibility
-- **Theming**: Custom Tailwind color tokens for proof types (`text`, `voice`, `camera`, `file`) and sidebar, with dark mode via CSS class
+- **Theming**: every colour is a token in `src/index.css`, exposed through
+  `tailwind.config.ts` — neutral surfaces, black primary, `brand` (Buddy/AI),
+  `subject-*` chips (`src/constants/subjectColors.ts`), `jctu-*` steps
+  (`src/components/shared/LevelChip.tsx`), proof types. Font is Inter
+  (`@fontsource-variable/inter`). No hex values or pixel sizes in screens.
+- **Routes**: Czech paths from zadání kap. 4.2 (`/predmety`, `/plany/:id`,
+  `/tridy`, `/zaci/:id`, `/dukazy`, `/napady`, `/hodnoceni`, `/nastaveni`,
+  public `/s/:token`). Old English paths redirect through `LegacyRedirect`,
+  which keeps navigation state. Screens not rebuilt yet keep their old paths.
 - **Supabase types**: Auto-generated in `src/integrations/supabase/types.ts` — do not hand-edit
 
 ### Supabase
