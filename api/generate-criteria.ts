@@ -1,117 +1,47 @@
-import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
-import { getRvpContext } from "./_lib/rvp.js";
+import { BadRequest, errorResponse, field, json, requireUser } from "./_lib/http.js";
+import { structuredCompletion } from "./_lib/openai.js";
+import { CRITERIA_SCHEMA, criteriaPrompt, gradeFromClassName, type CriteriaOutput } from "./_lib/prompts.js";
 
 /**
- * Ported from the Supabase Edge Function of the same name. Only the entry
- * point and the environment lookups changed — the prompts, the OpenAI calls
- * and the response handling below are unchanged from the version that was
- * already running in production.
+ * Steps 2 and 3 of the methodology in one structured answer
+ * (metodologie/prompty/02 and 03): three criteria, each for the teacher and
+ * for the pupil, with the pupil's J/Č/T/Ú sentences.
+ *
+ * SVP variants are produced only for needs the teacher ticked for this call,
+ * and the SVP knowledge file is attached only then.
  */
 export const config = { maxDuration: 60 };
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
 export default webHandler(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
+  if (req.method === "OPTIONS") return json(null);
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) throw new Error("No authorization header");
+    await requireUser(req);
+    const body = await req.json();
 
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const anonClient = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!);
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (authError || !user) throw new Error("Unauthorized");
+    const goal = field(body.goal) || [field(body.goalTitle), field(body.goalDescription)].filter(Boolean).join(" ");
+    if (!goal) throw new BadRequest("Chybí výukový cíl.");
 
-    const { goalTitle, goalDescription, subject, levelNames, className } = await req.json();
+    const svpNeeds = Array.isArray(body.svpNeeds)
+      ? body.svpNeeds.map((n: unknown) => field(n, 300)).filter(Boolean).slice(0, 5)
+      : [];
 
-    if (!goalTitle) throw new Error("Goal title is required");
-
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
-
-    // The endpoint used to download a thematic plan from any URL the client
-    // named and read level names out of it. That let a caller make the server
-    // fetch arbitrary addresses, so it is gone: levels come from the request.
-    const effectiveLevels = Array.isArray(levelNames) && levelNames.length > 0 ? levelNames : null;
-    const levelsInstruction = effectiveLevels && effectiveLevels.length > 0
-      ? `Použij přesně tyto názvy úrovní (v tomto pořadí): ${effectiveLevels.join(", ")}.`
-      : `Použij 3-4 úrovně, např. "Výborně ovládl/a", "Dobře zvládl/a", "S pomocí zvládl/a", "Zatím příliš nezvládl/a".`;
-
-    const rvpContext = getRvpContext(className);
-
-    const systemPrompt = `Jsi zkušený český pedagog a odborník na formativní hodnocení. Na základě vzdělávacího cíle navrhni kritéria hodnocení s popisy úrovní. ${levelsInstruction}
-
-Odpověz POUZE validním JSON objektem v tomto formátu:
-{
-  "criteria": [
-    {
-      "description": "co konkrétně hodnotíme",
-      "level_descriptors": [
-        { "level": "název úrovně", "description": "konkrétní popis, co žák na této úrovni dokáže" }
-      ]
-    }
-  ]
-}
-
-Navrhni 1-3 kritéria podle složitosti cíle. Popisy úrovní by měly být konkrétní, pozorovatelné a měřitelné. Piš stručně (1-2 věty na úroveň). Inspiruj se přiloženým RVP ZV 2025 — kritéria by měla odpovídat očekávaným výsledkům učení.
-${rvpContext}`;
-
-    const userPrompt = `Vzdělávací cíl: ${goalTitle}${goalDescription ? `\nPopis: ${goalDescription}` : ""}${subject ? `\nPředmět: ${subject}` : ""}
-
-Navrhni kritéria hodnocení s popisy úrovní.`;
-
-    const messages: any[] = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ];
-
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages,
-        response_format: { type: "json_object" },
-      }),
+    const { system, user } = criteriaPrompt({
+      goal,
+      grade: field(body.grade, 100) || gradeFromClassName(field(body.className, 100)),
+      subject: field(body.subject, 200),
+      notes: field(body.notes),
+      svpNeeds,
     });
+    const result = await structuredCompletion<CriteriaOutput>({ system, user, schema: CRITERIA_SCHEMA });
 
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Příliš mnoho požadavků, zkuste to znovu za chvíli." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, t);
-      throw new Error("AI gateway error");
-    }
-
-    const result = await aiResponse.json();
-    const content = result.choices?.[0]?.message?.content || "{}";
-
-    let parsed;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      console.error("Failed to parse AI response:", content);
-      throw new Error("AI returned invalid JSON");
-    }
-
-    return new Response(JSON.stringify(parsed), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const criteria = (result.criteria ?? [])
+      .filter((c) => c.teacher?.trim())
+      .slice(0, 3)
+      .map((c) => ({ ...c, svp_variants: svpNeeds.length > 0 ? c.svp_variants ?? [] : [] }));
+    if (criteria.length === 0) throw new Error("AI returned no criteria");
+    return json({ criteria });
   } catch (e) {
-    console.error("generate-criteria error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return errorResponse(e, "generate-criteria");
   }
 });

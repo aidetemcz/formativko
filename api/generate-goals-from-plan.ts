@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
+import { STYLE_GUIDE } from "./_lib/style-guide.js";
 import { getRvpContext } from "./_lib/rvp.js";
 import { isOwnSignedStorageUrl } from "./_lib/storage-url.js";
 
@@ -89,7 +90,9 @@ Odpověz POUZE validním JSON objektem v tomto formátu:
     }
   ]
 }
-${rvpContext}`;
+${rvpContext}
+
+${STYLE_GUIDE}`;
 
     const userPrompt = `Předmět: ${subject || "neurčen"}${className ? `\nTřída/ročník: ${className}` : ""}
 

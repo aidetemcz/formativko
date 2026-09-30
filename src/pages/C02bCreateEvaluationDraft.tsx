@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { invokeAi } from "@/lib/ai";
 import { Loader2, ArrowLeft, ArrowRight, AlertTriangle, FileSearch } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { RadceReview } from "@/components/shared/RadceReview";
 
 export default function C02bCreateEvaluationDraft() {
   usePageTitle("Náhled konceptu");
@@ -37,7 +38,7 @@ export default function C02bCreateEvaluationDraft() {
     subject, period,
     selectedType, selectedCourseId, selectedClassId, selectedStudentId, selectedGoalId,
     dateFrom, dateTo, preferences, className, totalStudents,
-    tone, person, evalLength, includeSvp,
+    tone, evalLength, includeSvp, mode, review, recommendationsOutside,
   } = state || {};
 
   interface SourceProof { id: string; title: string; type: string; date: string; }
@@ -75,7 +76,6 @@ export default function C02bCreateEvaluationDraft() {
         dateTo,
         preferences,
         tone,
-        person,
         evalLength,
         includeSvp,
       },
@@ -112,7 +112,6 @@ export default function C02bCreateEvaluationDraft() {
               goalId: selectedGoalId || null,
               className: className || null,
               tone: tone || null,
-              person: person || null,
               length: evalLength || null,
               includeSvp: includeSvp === true,
             },
@@ -196,6 +195,15 @@ export default function C02bCreateEvaluationDraft() {
                 placeholder={noProofs ? "Žádné hodnocení — nedostatek důkazů o učení." : ""}
               />
             </ShimmerField>
+
+            <RadceReview
+              text={draftText}
+              mode={mode === "certificate" ? "certificate" : "feedback"}
+              className={className}
+              studentId={selectedStudentId}
+              initialReview={review}
+              recommendationsOutside={recommendationsOutside}
+            />
 
             {sourceProofs.length > 0 && (
               <div className="mt-3 pt-3 border-t border-border">

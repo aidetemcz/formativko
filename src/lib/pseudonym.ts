@@ -19,12 +19,15 @@ export interface PseudonymPerson {
 /**
  * Czech case endings a name can take in running text: "Adam" → "Adama",
  * "Adamovi", "Adamem"; "Jana" → "Jany", "Janě", "Janu", "Janou".
- * Matching the stem plus one of these catches the declined forms a teacher
- * writes in a note without matching a different, longer name ("Jan" must not
- * swallow "Janek").
+ * Matching the stem plus one of these catches the declined and possessive forms
+ * a teacher writes in a note without matching a different, longer name ("Jan"
+ * must not swallow "Janek").
  */
 const CASE_ENDINGS = [
   "ovi", "ové", "ům", "ech", "em", "ou", "a", "á", "e", "é", "ě", "i", "í", "y", "u", "o",
+  // Possessives: "Adamův sešit", "Adamovy rostliny", "Evin úkol", "Evina práce".
+  "ův", "ova", "ovo", "ovy", "ovu", "ových", "ovým", "ovými", "ovou", "ově",
+  "in", "ina", "ino", "iny", "inu", "iných", "iným", "inými", "inou", "ině",
 ];
 
 /** Name endings dropped before a case ending is added ("Jana" → "Jan"). */

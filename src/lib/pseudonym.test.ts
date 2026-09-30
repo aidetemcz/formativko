@@ -26,6 +26,13 @@ describe("pseudonymize", () => {
     );
   });
 
+  it("replaces possessive forms", () => {
+    expect(pseudonymize("Nákres Adamovy rostliny a Adamův sešit", [adam])).toBe(
+      "Nákres Modrá vydra rostliny a Modrá vydra sešit",
+    );
+    expect(pseudonymize("Evin úkol a Janina práce", [eva, jana])).toBe("Šedá sova úkol a Zelený bobr práce");
+  });
+
   it("leaves words that only start with a name alone", () => {
     expect(pseudonymize("Adamovský chodník", [adam])).toBe("Adamovský chodník");
   });
