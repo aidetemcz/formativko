@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Home, Settings, LayoutGrid } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { LESSONS_ENABLED } from "@/config/features";
 
 interface CaptureHeaderProps {
   courseName: string;
@@ -22,6 +21,8 @@ interface CaptureHeaderProps {
   manageMode: boolean;
   onToggleManage: () => void;
   onOpenSeating: () => void;
+  /** Where the home button leads: the lesson being recorded, or the welcome page. */
+  backHref: string;
 }
 
 export function CaptureHeader({
@@ -43,6 +44,7 @@ export function CaptureHeader({
   manageMode,
   onToggleManage,
   onOpenSeating,
+  backHref,
 }: CaptureHeaderProps) {
   return (
     <header className="flex items-center justify-between p-2 sm:p-3 border-b border-border bg-card gap-1">
@@ -70,7 +72,8 @@ export function CaptureHeader({
             ))}
           </div>
         )}
-        {LESSONS_ENABLED && (
+        {/* Lessons of the plan (phase 5); not governed by LESSONS_ENABLED. */}
+        {(
           <div className="relative">
             <Badge
               variant={selectedLesson ? "default" : "outline"}
@@ -95,7 +98,8 @@ export function CaptureHeader({
                       }`}
                     >
                       {lesson.title}
-                      {lesson.subjects?.name && <span className="text-xs text-muted-foreground ml-2">· {lesson.subjects.name}</span>}
+                      {lesson.month && <span className="text-xs text-muted-foreground ml-2">· {lesson.month}</span>}
+                      {lesson.status === "past" && <span className="text-xs text-muted-foreground ml-2">· probráno</span>}
                     </button>
                   ))
                 )}
@@ -130,7 +134,7 @@ export function CaptureHeader({
         >
           <LayoutGrid className="h-5 w-5 text-muted-foreground" />
         </button>
-        <Link to="/" className="p-2 hover:bg-accent rounded-lg" title="Zpět na úvod">
+        <Link to={backHref} className="p-2 hover:bg-accent rounded-lg" title={backHref === "/" ? "Zpět na úvod" : "Zpět na lekci"}>
           <Home className="h-5 w-5 text-muted-foreground" />
         </Link>
       </div>

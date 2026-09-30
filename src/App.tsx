@@ -83,6 +83,8 @@ const App = () => (
               {/* The old course page, with goals made before lessons existed. */}
               <Route path="/plany/:courseId/prehled" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
               <Route path="/lekce/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
+              {/* Recording in the lesson (zadání kap. 3), opened from the lesson. */}
+              <Route path="/lekce/:lessonId/zaznam" element={<ProtectedRoute><E02CaptureToolAddProofs /></ProtectedRoute>} />
               {/* Printable sheet and exit tickets, without the app's menu. */}
               <Route path="/lekce/:lessonId/tisk/:kind" element={<ProtectedRoute><LessonPrint /></ProtectedRoute>} />
               <Route path="/tridy" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />

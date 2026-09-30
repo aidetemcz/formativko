@@ -60,12 +60,18 @@ npm run test:watch   # Vitest watch mode
   criterion × source. Codes are ASCII `J`, `C`, `T`, `U`; labels and pupil
   sentences live in `src/constants/jctu.ts`. Never colour the scale as a
   red/green grade.
+- **Recording in the lesson** (capture tool, phase 7): `/lekce/:id/zaznam` or
+  the fallback `/capture/:courseId` with a lesson picked in the header. The
+  "Úroveň" type shows J/Č/T/Ú per lesson criterion and writes
+  `criterion_assessments` on tap (`useRecordLevels`); the grid shows each
+  pupil's chips. Voice notes are recorded in the browser (`AudioRecorder`) and
+  stored as `voice` proofs with the audio file.
 - **Legacy goal levels**: `student_goal_levels` and the three-step scale in
-  `src/constants/goalLevels.ts` still back the capture tool, course overview
-  and dashboard. A trigger mirrors every change into `criterion_assessments`;
-  both go away together when the capture tool is rebuilt (phase 7). Edit
-  criteria in place (`src/lib/criteriaDiff.ts`) — deleting a criterion deletes
-  its pupils' levels.
+  `src/constants/goalLevels.ts` now back only the old course overview
+  (`/plany/:id/prehled`), goal detail and dashboard; the capture tool no longer
+  writes them. A trigger mirrors every change into `criterion_assessments`.
+  Edit criteria in place (`src/lib/criteriaDiff.ts`) — deleting a criterion
+  deletes its pupils' levels.
 - **AI and the methodology**: `metodologie/` is the source of truth. Prompts
   01–05 live in `api/_lib/prompts.ts` (pure builders + strict JSON schemas),
   every system prompt ends with `STYLE_GUIDE` (`api/_lib/style-guide.ts`), and

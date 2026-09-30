@@ -52,7 +52,11 @@ export default function B03bProofOfLearningDetailFile() {
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">Příloha</label>
             <div className="relative rounded-xl border border-border bg-muted overflow-hidden">
-              {fileUrl ? (
+              {fileUrl && proof.type === "voice" ? (
+                <div className="bg-background p-4 pr-24">
+                  <audio controls src={fileUrl} className="w-full" />
+                </div>
+              ) : fileUrl ? (
                 <img src={fileUrl} alt={proof.file_name || "Příloha"} className="w-full aspect-video object-contain bg-background" />
               ) : (
                 <div className="aspect-video bg-[repeating-conic-gradient(hsl(var(--muted))_0%_25%,hsl(var(--card))_0%_50%)] bg-[length:20px_20px] flex items-center justify-center">

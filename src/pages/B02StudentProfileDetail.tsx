@@ -487,7 +487,7 @@ export default function B02StudentProfileDetail() {
               <div key={proof.id} className="flex items-start gap-2">
                 <Link
                   to={
-                    proof.type === "file" || proof.type === "camera"
+                    proof.type === "file" || proof.type === "camera" || proof.type === "voice"
                       ? `/student-profiles/${student.id}/proof-file/${proof.id}`
                       : `/student-profiles/${student.id}/proof/${proof.id}`
                   }

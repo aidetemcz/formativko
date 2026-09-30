@@ -3,14 +3,13 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClassStudents } from "@/hooks/useClasses";
-import { useCourse, useCourses, useCourseLessons, useCourseSeating, useSaveCourseSeating } from "@/hooks/useCourses";
-import { useLessonGoals, useLessonStudentOverview } from "@/hooks/useLessons";
-import { useGoalsForCourse } from "@/hooks/useGoals";
-import { LESSONS_ENABLED } from "@/config/features";
+import { useCourse, useCourses, useCourseSeating, useSaveCourseSeating } from "@/hooks/useCourses";
+import { useCriterionLevels, useLessonDetail, usePlanLessons } from "@/hooks/usePlanLessons";
+import type { JctuCode } from "@/constants/jctu";
 import { useStudentGroups } from "@/hooks/useStudentGroups";
 import { useCustomProofTypes } from "@/hooks/useProofTypes";
 import { PROOF_TYPE_COLORS, ICON_MAP, BUILTIN_PROOF_TYPES, type ProofTypeColor } from "@/constants/proofTypes";
-import CapturePanel from "@/components/capture/CapturePanel";
+import CapturePanel, { type CaptureLesson } from "@/components/capture/CapturePanel";
 import ProofTypeManager from "@/components/capture/ProofTypeManager";
 import SeatingChartEditor from "@/components/shared/SeatingChartEditor";
 import { CaptureHeader } from "@/components/capture/CaptureHeader";
@@ -18,17 +17,25 @@ import { GroupPillBar } from "@/components/capture/GroupPillBar";
 import { StudentGrid } from "@/components/capture/StudentGrid";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
+/**
+ * Recording in the lesson (zadání kap. 3). Opened from a lesson
+ * (/lekce/:lessonId/zaznam) it starts with that lesson and its criteria;
+ * /capture/:courseId remains as the fallback way in, with the lesson chosen
+ * in the header.
+ */
 export default function E02CaptureToolAddProofs() {
-  usePageTitle("Zachytávač");
-  const { courseId } = useParams<{ courseId: string }>();
+  usePageTitle("Záznam v hodině");
+  const { courseId: courseParam, lessonId: lessonParam } = useParams<{ courseId?: string; lessonId?: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { data: entryLesson } = useLessonDetail(lessonParam);
+  const courseId = courseParam ?? entryLesson?.course_id ?? undefined;
   const { data: course } = useCourse(courseId);
   const { data: allCourses = [] } = useCourses();
   const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
   const classId = course?.class_id;
   const { data: students = [] } = useClassStudents(classId);
-  const { data: courseLessons = [] } = useCourseLessons(courseId);
+  const { data: planLessons = [] } = usePlanLessons(courseId);
   const { data: customProofTypes = [] } = useCustomProofTypes();
   const proofTypes = useMemo(
     () => [...BUILTIN_PROOF_TYPES, ...customProofTypes],
@@ -50,7 +57,7 @@ export default function E02CaptureToolAddProofs() {
   const [proofDots, setProofDots] = useState<Record<string, string[]>>(savedSession?.proofDots || {});
   const [lessonOpen, setLessonOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(
-    LESSONS_ENABLED ? savedSession?.selectedLesson || null : null
+    lessonParam ?? searchParams.get("lesson") ?? savedSession?.selectedLesson ?? null
   );
 
   // Persist key state on change
@@ -67,7 +74,6 @@ export default function E02CaptureToolAddProofs() {
   useEffect(() => {
     persistSession();
   }, [persistSession]);
-  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
   const [manageMode, setManageMode] = useState(false);
 
   // Quick Groups
@@ -78,49 +84,22 @@ export default function E02CaptureToolAddProofs() {
   const saveSeating = useSaveCourseSeating();
   const [showSeatingEditor, setShowSeatingEditor] = useState(false);
 
-  // Auto-select lesson from URL param. Ignored while lessons are off, so an
-  // old ?lesson= link cannot stamp a lesson onto newly captured proofs.
-  useEffect(() => {
-    if (!LESSONS_ENABLED) return;
-    const lessonParam = searchParams.get("lesson");
-    if (lessonParam) setSelectedLesson(lessonParam);
-  }, [searchParams]);
-
-  // Goals the student grid colours coverage against.
-  //
-  // A selected lesson narrows this to the lesson's own goals; without lesson
-  // planning the course's goals take over, so the colouring keeps working
-  // rather than quietly switching itself off.
-  const { data: lessonGoals = [] } = useLessonGoals(selectedLesson || undefined);
-  const { data: courseGoals = [] } = useGoalsForCourse(courseId);
-  const coverageGoalIds = useMemo(() => {
-    if (LESSONS_ENABLED && selectedLesson && lessonGoals.length > 0) {
-      return lessonGoals.map((g) => g.id);
-    }
-    return courseGoals.map((g) => g.id);
-  }, [selectedLesson, lessonGoals, courseGoals]);
-
-  const { data: studentOverview = [] } = useLessonStudentOverview(
-    coverageGoalIds.length > 0 ? classId : undefined,
-    coverageGoalIds
+  // The lesson being recorded, its criteria and the teacher's current levels.
+  const { data: lessonDetail } = useLessonDetail(selectedLesson ?? undefined);
+  const captureLesson: CaptureLesson | null = useMemo(
+    () =>
+      lessonDetail && selectedLesson
+        ? { id: lessonDetail.id, goalId: lessonDetail.goal?.id ?? null, criteria: lessonDetail.criteria }
+        : null,
+    [lessonDetail, selectedLesson],
   );
-
-  const coverageMap = useMemo(() => {
-    if (coverageGoalIds.length === 0) return {};
-    const map: Record<string, "all" | "some" | "none"> = {};
-    for (const so of studentOverview) {
-      const counts = Object.values(so.goalCounts) as number[];
-      const covered = counts.filter((c) => c > 0).length;
-      if (covered === 0 || counts.length === 0) map[so.student.id] = "none";
-      else if (covered >= coverageGoalIds.length) map[so.student.id] = "all";
-      else map[so.student.id] = "some";
-    }
+  const criterionIds = useMemo(() => captureLesson?.criteria.map((c) => c.id) ?? [], [captureLesson]);
+  const { data: levelRows = [] } = useCriterionLevels(criterionIds);
+  const currentLevels = useMemo(() => {
+    const map = new Map<string, JctuCode>();
+    for (const l of levelRows) if (l.source === "teacher") map.set(`${l.student_id}:${l.criterion_id}`, l.level);
     return map;
-  }, [studentOverview, coverageGoalIds]);
-
-  useEffect(() => {
-    setSelectedGoalIds([]);
-  }, [selectedLesson, courseId]);
+  }, [levelRows]);
 
   // Proof type helpers
   const proofTypeMap = useMemo(
@@ -134,15 +113,11 @@ export default function E02CaptureToolAddProofs() {
     [proofDots]
   );
 
-  const classLessons = courseLessons.filter(
-    (l: any) => l.status === "ongoing" || l.status === "prepared"
+  // Lessons still to be taught first; taught ones stay reachable.
+  const classLessons = useMemo(
+    () => [...planLessons].sort((a, b) => Number(a.status === "past") - Number(b.status === "past")),
+    [planLessons],
   );
-
-  useEffect(() => {
-    if (!selectedLesson && classLessons.length === 1) {
-      setSelectedLesson(classLessons[0].id);
-    }
-  }, [classLessons, selectedLesson]);
 
   // Keyboard shortcuts: 1-9 to select proof types, Escape to deselect
   useEffect(() => {
@@ -222,7 +197,7 @@ export default function E02CaptureToolAddProofs() {
     setSelectedStudents([]);
   };
 
-  const selectedLessonObj = classLessons.find((l) => l.id === selectedLesson);
+  const selectedLessonObj = classLessons.find((l) => l.id === selectedLesson) ?? (lessonDetail?.id === selectedLesson ? lessonDetail : undefined);
 
   // Action buttons for proof types
   const actionButtons = (
@@ -264,7 +239,8 @@ export default function E02CaptureToolAddProofs() {
         onCourseDropdownToggle={() => { setCourseDropdownOpen(!courseDropdownOpen); setLessonOpen(false); }}
         allCourses={allCourses}
         currentCourseId={courseId}
-        onCourseSelect={(id) => { setCourseDropdownOpen(false); navigate(`/capture/${id}`); }}
+        onCourseSelect={(id) => { setCourseDropdownOpen(false); setSelectedLesson(null); navigate(`/capture/${id}`); }}
+        backHref={selectedLesson ? `/lekce/${selectedLesson}` : "/"}
         lessonOpen={lessonOpen}
         onLessonToggle={() => { setLessonOpen(!lessonOpen); setCourseDropdownOpen(false); }}
         selectedLesson={selectedLesson}
@@ -324,20 +300,22 @@ export default function E02CaptureToolAddProofs() {
       )}
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+      {/* Side panel from 768px, so a phone held landscape (zadání kap. 3,
+          bod 6) keeps the pupils and the level buttons side by side. */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         <StudentGrid
           students={students}
           selectedStudents={selectedStudents}
           proofDots={proofDots}
           proofTypeMap={proofTypeMap}
-          coverageMap={coverageMap}
           seatingData={seatingData}
-          coverageGoalIds={coverageGoalIds}
+          levelCriteria={criterionIds}
+          currentLevels={currentLevels}
           onToggleStudent={toggleStudent}
         />
 
         {/* Desktop right panel */}
-        <div className="hidden lg:flex lg:flex-col w-[380px] shrink-0 border-l border-border bg-card min-h-0">
+        <div className="hidden md:flex md:flex-col w-[300px] lg:w-[380px] shrink-0 border-l border-border bg-card min-h-0">
           {manageMode ? (
             <div className="flex-1 p-4 overflow-auto min-h-0">
               <ProofTypeManager proofTypes={customProofTypes} onClose={() => setManageMode(false)} />
@@ -353,11 +331,8 @@ export default function E02CaptureToolAddProofs() {
                     key={activeProofTypeId}
                     proofType={activeProofType}
                     selectedStudents={selectedStudents}
-                    students={students}
-                    selectedLesson={selectedLesson}
-                    courseId={courseId}
-                    selectedGoalIds={selectedGoalIds}
-                    setSelectedGoalIds={setSelectedGoalIds}
+                    lesson={captureLesson}
+                    currentLevels={currentLevels}
                     onCaptured={handleCaptured}
                   />
                 </div>
@@ -368,7 +343,7 @@ export default function E02CaptureToolAddProofs() {
       </div>
 
       {/* Mobile: bottom bar */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         {manageMode ? (
           <div className="border-t border-border bg-card p-3 max-h-[70vh] overflow-auto">
             <ProofTypeManager proofTypes={proofTypes} onClose={() => setManageMode(false)} />
@@ -384,11 +359,8 @@ export default function E02CaptureToolAddProofs() {
                   key={activeProofTypeId}
                   proofType={activeProofType}
                   selectedStudents={selectedStudents}
-                  students={students}
-                  selectedLesson={selectedLesson}
-                  courseId={courseId}
-                  selectedGoalIds={selectedGoalIds}
-                  setSelectedGoalIds={setSelectedGoalIds}
+                  lesson={captureLesson}
+                  currentLevels={currentLevels}
                   onCaptured={handleCaptured}
                 />
               </div>

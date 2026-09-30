@@ -1,48 +1,53 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Camera, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateProof } from "@/hooks/useProofs";
-import { useSetStudentGoalLevel } from "@/hooks/useStudentGoalLevels";
-import { useGoal, useGoalsForCourse } from "@/hooks/useGoals";
-import { useLessonGoals } from "@/hooks/useLessons";
-import { getStudentShortName } from "@/hooks/useStudents";
+import { AudioRecorder } from "@/components/shared/AudioRecorder";
+import { CriterionLevelPanel } from "@/components/capture/CriterionLevelPanel";
+import type { LessonCriterion } from "@/hooks/usePlanLessons";
+import type { JctuCode } from "@/constants/jctu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildUploadPath } from "@/lib/storage";
 import type { ProofTypeRow, ProofFieldKind } from "@/constants/proofTypes";
 
+/** The lesson being recorded: its goal and criteria. */
+export interface CaptureLesson {
+  id: string;
+  goalId: string | null;
+  criteria: LessonCriterion[];
+}
+
 interface CapturePanelProps {
   proofType: ProofTypeRow;
   selectedStudents: string[];
-  students: any[];
-  selectedLesson: string | null;
-  courseId: string | undefined;
-  selectedGoalIds: string[];
-  setSelectedGoalIds: (ids: string[]) => void;
+  lesson: CaptureLesson | null;
+  /** Teacher's current level per `${studentId}:${criterionId}`. */
+  currentLevels: Map<string, JctuCode>;
   onCaptured: (studentIds: string[], proofTypeId: string) => void;
 }
 
 export default function CapturePanel({
   proofType,
   selectedStudents,
-  students,
-  selectedLesson,
-  courseId,
-  selectedGoalIds,
-  setSelectedGoalIds,
+  lesson,
+  currentLevels,
   onCaptured,
 }: CapturePanelProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const createProof = useCreateProof();
-  const setStudentGoalLevel = useSetStudentGoalLevel();
+  const selectedLesson = lesson?.id ?? null;
+  // Proofs captured in a lesson count towards the lesson's goal.
+  const lessonGoalIds = lesson?.goalId ? [lesson.goalId] : undefined;
 
   const fields = proofType.fields as ProofFieldKind[];
   const hasText = fields.includes("text");
   const hasImage = fields.includes("image");
   const hasLevel = fields.includes("level");
+  const hasAudio = fields.includes("audio");
   const isInstant = fields.includes("none") || fields.length === 0;
   const dbProofTypeId = proofType.builtin ? undefined : proofType.id;
 
@@ -55,39 +60,10 @@ export default function CapturePanel({
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Level state
-  const [progressLevel, setProgressLevel] = useState("");
-  const [studentNotes, setStudentNotes] = useState<Record<string, string>>({});
+  // Audio state
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioKey, setAudioKey] = useState(0);
   const [saving, setSaving] = useState(false);
-
-  // Goals
-  const { data: lessonGoals = [] } = useLessonGoals(selectedLesson || undefined);
-  const { data: courseGoals = [] } = useGoalsForCourse(courseId);
-  const availableGoals = useMemo(
-    () => (selectedLesson && lessonGoals.length > 0 ? lessonGoals : courseGoals),
-    [selectedLesson, lessonGoals, courseGoals]
-  );
-
-  const singleGoalId = selectedGoalIds.length === 1 ? selectedGoalIds[0] : undefined;
-  const { data: goalDetail } = useGoal(singleGoalId);
-
-  const levelNames = useMemo(() => {
-    if (singleGoalId) {
-      const fromCourse = courseGoals.find((g) => g.id === singleGoalId);
-      if (fromCourse?.evaluation_criteria?.length) {
-        return fromCourse.evaluation_criteria[0].level_descriptors.map((ld) => ld.level);
-      }
-    }
-    if (!goalDetail?.evaluation_criteria?.length) return [];
-    return goalDetail.evaluation_criteria[0].level_descriptors.map((ld) => ld.level);
-  }, [singleGoalId, courseGoals, goalDetail]);
-
-  // Auto-select when there's only one available goal
-  useEffect(() => {
-    if (hasLevel && availableGoals.length === 1 && selectedGoalIds.length === 0) {
-      setSelectedGoalIds([availableGoals[0].id]);
-    }
-  }, [hasLevel, availableGoals, selectedGoalIds.length]);
 
   // Instant capture: fire on mount if no fields needed and students selected
   useEffect(() => {
@@ -110,7 +86,7 @@ export default function CapturePanel({
     }
 
     // Validate based on fields
-    if (hasText && !hasLevel && !hasImage && !noteText.trim()) {
+    if (hasText && !hasLevel && !hasImage && !hasAudio && !noteText.trim()) {
       toast({ title: "Napište poznámku", variant: "destructive" });
       return;
     }
@@ -118,15 +94,9 @@ export default function CapturePanel({
       toast({ title: "Nejdříve vyfoťte nebo vyberte obrázek", variant: "destructive" });
       return;
     }
-    if (hasLevel) {
-      if (!singleGoalId) {
-        toast({ title: "Vyberte právě jeden cíl", variant: "destructive" });
-        return;
-      }
-      if (!progressLevel) {
-        toast({ title: "Vyberte úroveň", variant: "destructive" });
-        return;
-      }
+    if (hasAudio && !audioFile) {
+      toast({ title: "Nejdřív nahrajte hlasovou poznámku", variant: "destructive" });
+      return;
     }
 
     // Optimistically update dots immediately for instant feedback
@@ -136,13 +106,12 @@ export default function CapturePanel({
     // Reset form state immediately so teacher can keep working
     const savedNote = noteText;
     const savedPhoto = photoFile;
-    const savedLevel = progressLevel;
-    const savedStudentNotes = { ...studentNotes };
+    const savedAudio = audioFile;
     setNoteText("");
     setPhotoFile(null);
     setPhotoPreview(null);
-    setProgressLevel("");
-    setStudentNotes({});
+    setAudioFile(null);
+    setAudioKey((k) => k + 1);
     if (fileInputRef.current) fileInputRef.current.value = "";
 
     // Save in background
@@ -150,32 +119,29 @@ export default function CapturePanel({
     try {
       const today = new Date().toISOString().split("T")[0];
 
-      // Handle level field: upsert student_goal_levels
-      if (hasLevel && singleGoalId) {
-        for (const sid of capturedStudents) {
-          await setStudentGoalLevel.mutateAsync({
-            studentId: sid,
-            goalId: singleGoalId,
-            level: savedLevel,
-          });
-          const note = savedStudentNotes[sid]?.trim();
-          if (note) {
-            await createProof.mutateAsync({
-              title: `${proofType.name}: ${savedLevel}`,
-              type: "text",
-              note,
-              date: today,
-              lessonId: selectedLesson,
-              studentIds: [sid],
-              goalIds: [singleGoalId],
-              proofTypeId: dbProofTypeId,
-            });
-          }
-        }
+      // Handle audio field: the recording becomes a voice proof
+      if (hasAudio && savedAudio) {
+        setUploading(true);
+        if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
+        const path = buildUploadPath(user.id, savedAudio.name);
+        const { error: uploadErr } = await supabase.storage.from("proof-files").upload(path, savedAudio);
+        if (uploadErr) throw uploadErr;
+        await createProof.mutateAsync({
+          title: `${proofType.name} ${today}`,
+          type: "voice",
+          note: savedNote || "",
+          date: today,
+          lessonId: selectedLesson,
+          studentIds: capturedStudents,
+          fileName: savedAudio.name,
+          fileUrl: path,
+          goalIds: lessonGoalIds,
+          proofTypeId: dbProofTypeId,
+        });
       }
-
       // Handle image field
-      if (hasImage && savedPhoto) {
+      // Handle image field
+      else if (hasImage && savedPhoto) {
         setUploading(true);
         if (!user) throw new Error("Nahrání souboru vyžaduje přihlášení.");
         const path = buildUploadPath(user.id, savedPhoto.name || "photo.jpg");
@@ -193,12 +159,12 @@ export default function CapturePanel({
           studentIds: capturedStudents,
           fileName: savedPhoto.name,
           fileUrl: path,
-          goalIds: selectedGoalIds.length > 0 ? selectedGoalIds : undefined,
+          goalIds: lessonGoalIds,
           proofTypeId: dbProofTypeId,
         });
       }
       // Handle text-only (no level, no image)
-      else if (hasText && !hasLevel) {
+      else if (hasText) {
         await createProof.mutateAsync({
           title: `${proofType.name} ${today}`,
           type: "text",
@@ -206,7 +172,7 @@ export default function CapturePanel({
           date: today,
           lessonId: selectedLesson,
           studentIds: capturedStudents,
-          goalIds: selectedGoalIds.length > 0 ? selectedGoalIds : undefined,
+          goalIds: lessonGoalIds,
           proofTypeId: dbProofTypeId,
         });
       }
@@ -244,78 +210,24 @@ export default function CapturePanel({
     <div className="space-y-3">
       <span className="text-sm font-medium text-foreground">{headerText}</span>
 
-      {/* Level field: goal picker + level picker + per-student notes */}
-      {hasLevel && (
-        <>
-          {availableGoals.length > 0 && (
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">Cíl</span>
-              <div className="flex flex-wrap gap-1.5">
-                {availableGoals.map((goal) => (
-                  <button
-                    key={goal.id}
-                    onClick={() =>
-                      setSelectedGoalIds(singleGoalId === goal.id ? [] : [goal.id])
-                    }
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      singleGoalId === goal.id
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted text-muted-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {goal.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {singleGoalId && levelNames.length > 0 && (
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">Úroveň</span>
-              <div className="flex flex-wrap gap-1.5">
-                {levelNames.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() =>
-                      setProgressLevel(progressLevel === level ? "" : level)
-                    }
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      progressLevel === level
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted text-muted-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {singleGoalId && levelNames.length > 0 && studentCount > 0 && (
-            <div className="space-y-2 max-h-[40vh] lg:max-h-none overflow-auto">
-              {selectedStudents.map((sid) => {
-                const s = students.find((st: any) => st.id === sid);
-                if (!s) return null;
-                return (
-                  <div key={sid} className="space-y-1">
-                    <span className="text-xs font-medium text-foreground">
-                      {getStudentShortName(s)}
-                    </span>
-                    <Textarea
-                      className="min-h-[36px] bg-background text-xs"
-                      placeholder="Poznámka (volitelné)..."
-                      value={studentNotes[sid] || ""}
-                      onChange={(e) =>
-                        setStudentNotes((prev) => ({ ...prev, [sid]: e.target.value }))
-                      }
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
+      {/* Level field: J/Č/T/Ú per criterion of the lesson, saved on tap */}
+      {hasLevel &&
+        (lesson ? (
+          <CriterionLevelPanel
+            criteria={lesson.criteria}
+            selectedStudents={selectedStudents}
+            lessonId={lesson.id}
+            current={currentLevels}
+            onRecorded={(ids) => onCaptured(ids, proofType.id)}
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Úrovně se zapisují ke kritériím lekce. Vyberte nahoře lekci, nebo otevřete záznam z detailu lekce.
+          </p>
+        ))}
+
+      {/* Audio field */}
+      {hasAudio && <AudioRecorder key={audioKey} onChange={setAudioFile} />}
 
       {/* Image field */}
       {hasImage && (
@@ -364,15 +276,15 @@ export default function CapturePanel({
       {hasText && (
         <Textarea
           className="min-h-[80px] bg-background"
-          placeholder={hasImage ? "Volitelná poznámka k fotce..." : "Napište poznámku..."}
+          placeholder={hasImage ? "Volitelná poznámka k fotce..." : hasAudio ? "Volitelná poznámka k nahrávce..." : "Napište poznámku..."}
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           autoFocus={!hasLevel && !hasImage}
         />
       )}
 
-      {/* Save button (not shown for instant types — they auto-save) */}
-      {!isInstant && (
+      {/* Save button (not for instant types, which auto-save, nor for levels, saved on tap) */}
+      {!isInstant && !(hasLevel && !hasText && !hasImage && !hasAudio) && (
         <Button
           className="w-full gap-1"
           onClick={handleSave}

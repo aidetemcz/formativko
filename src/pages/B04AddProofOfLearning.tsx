@@ -21,6 +21,7 @@ import { useStudentClasses } from "@/hooks/useClasses";
 import { useGoalsForClass, type EducationalGoal } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { AudioRecorder } from "@/components/shared/AudioRecorder";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { buildUploadPath } from "@/lib/storage";
@@ -103,10 +104,15 @@ export default function B04AddProofOfLearning() {
       toast({ title: "Zadejte název důkazu", variant: "destructive" });
       return;
     }
-    const needsFile = selectedType === "file" || selectedType === "camera";
+    const needsFile = selectedType === "file" || selectedType === "camera" || selectedType === "voice";
     if (needsFile && !file) {
       toast({
-        title: selectedType === "camera" ? "Vyfoťte nebo vyberte obrázek" : "Vyberte soubor",
+        title:
+          selectedType === "camera"
+            ? "Vyfoťte nebo vyberte obrázek"
+            : selectedType === "voice"
+              ? "Nejdřív nahrajte hlasovou poznámku"
+              : "Vyberte soubor",
         variant: "destructive",
       });
       return;
@@ -278,13 +284,18 @@ export default function B04AddProofOfLearning() {
             </div>
           )}
 
+          {/* The old button did nothing and the text box was not wired up, so
+              whatever the teacher wrote was lost. Now it records audio, stored
+              as the proof's file. */}
           {selectedType === "voice" && (
             <div className="space-y-4">
-              <Button variant="outline" className="w-full gap-2 h-16 text-base">
-                <Mic className="h-5 w-5" />
-                Začít diktovat
-              </Button>
-              <Textarea className="min-h-[80px] bg-card" placeholder="Přepis hlasové poznámky se zobrazí zde..." />
+              <AudioRecorder onChange={(f) => setFile(f)} />
+              <Textarea
+                className="min-h-[80px] bg-card"
+                placeholder="Volitelná poznámka k nahrávce..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
             </div>
           )}
 
