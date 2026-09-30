@@ -15,6 +15,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Uvod = lazy(() => import("./pages/Uvod"));
 const PredmetPlany = lazy(() => import("./pages/PredmetPlany"));
 const PlanDetail = lazy(() => import("./pages/PlanDetail"));
+const ClassDetail = lazy(() => import("./pages/ClassDetail"));
 const LessonDetail = lazy(() => import("./pages/LessonDetail"));
 const LessonPrint = lazy(() => import("./pages/LessonPrint"));
 const Dukazy = lazy(() => import("./pages/Dukazy"));
@@ -85,7 +86,8 @@ const App = () => (
               {/* Printable sheet and exit tickets, without the app's menu. */}
               <Route path="/lekce/:lessonId/tisk/:kind" element={<ProtectedRoute><LessonPrint /></ProtectedRoute>} />
               <Route path="/tridy" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />
-              <Route path="/tridy/:classId" element={<ProtectedRoute><A04EditClass /></ProtectedRoute>} />
+              <Route path="/tridy/:classId" element={<ProtectedRoute><ClassDetail /></ProtectedRoute>} />
+              <Route path="/tridy/:classId/upravit" element={<ProtectedRoute><A04EditClass /></ProtectedRoute>} />
               <Route path="/zaci/:id" element={<ProtectedRoute><B02StudentProfileDetail /></ProtectedRoute>} />
               <Route path="/dukazy" element={<ProtectedRoute><Dukazy /></ProtectedRoute>} />
               <Route path="/napady" element={<ProtectedRoute><Napady /></ProtectedRoute>} />
@@ -107,7 +109,7 @@ const App = () => (
 
               {/* Old addresses that have a new home. */}
               <Route path="/classes" element={<LegacyRedirect to="/tridy" />} />
-              <Route path="/edit-class/:classId" element={<LegacyRedirect to="/tridy/:classId" />} />
+              <Route path="/edit-class/:classId" element={<LegacyRedirect to="/tridy/:classId/upravit" />} />
               <Route path="/student-profiles/:id" element={<LegacyRedirect to="/zaci/:id" />} />
               <Route path="/evaluations" element={<LegacyRedirect to="/hodnoceni" />} />
               <Route path="/evaluations/create" element={<LegacyRedirect to="/hodnoceni/nove" />} />

@@ -95,6 +95,14 @@ npm run test:watch   # Vitest watch mode
   "Vygenerovat lekce" fills goals and criteria one lesson at a time on the
   client (`src/lib/lessonGeneration.ts`, reusing `formulate-goal` and
   `generate-criteria`), so no request runs into the function time limit.
+- **Readiness semafor**: `src/lib/readiness.ts` is the one place with the
+  thresholds — ready when every criterion of lessons marked "probráno" in the
+  period has a teacher's level, "pár důkazů chybí" from `PARTIAL_MIN_SHARE`,
+  otherwise "žádné/málo". Self-assessment does not count. Colours are the
+  `ready`/`partial`/`missing` tokens, not red/green. Terms come from
+  `schoolPeriods()` in `src/constants/schoolYear.ts`.
+- **Server tests** that need Node APIs (multipart, File) start with
+  `// @vitest-environment node`; the shared setup copes without `window`.
 - **Routes**: Czech paths from zadání kap. 4.2 (`/predmety`, `/plany/:id`,
   `/tridy`, `/zaci/:id`, `/dukazy`, `/napady`, `/hodnoceni`, `/nastaveni`,
   public `/s/:token`). Old English paths redirect through `LegacyRedirect`,

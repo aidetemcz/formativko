@@ -68,7 +68,7 @@ export default function A04EditClass() {
     try {
       await updateClass.mutateAsync({ classId, name: className.trim(), studentIds: selectedStudentIds });
       toast({ title: `Třída "${className}" uložena` });
-      navigate("/classes");
+      navigate(`/tridy/${classId}`);
     } catch (err) {
       console.error("Chyba při ukládání třídy", err);
       toast({ title: "Chyba při ukládání třídy", variant: "destructive" });
@@ -80,7 +80,7 @@ export default function A04EditClass() {
     try {
       await deleteClass.mutateAsync(classId);
       toast({ title: "Třída smazána" });
-      navigate("/classes");
+      navigate("/tridy");
     } catch (err) {
       console.error("Chyba při mazání třídy", err);
       toast({ title: "Chyba při mazání třídy", variant: "destructive" });
@@ -92,9 +92,9 @@ export default function A04EditClass() {
       <div className="max-w-2xl mx-auto">
         <AppBreadcrumb
           items={[
-            { label: "Úvod", href: "/" },
-            { label: "Třídy", href: "/classes" },
-            { label: currentClass?.name || "Upravit třídu" },
+            { label: "Třídy", href: "/tridy" },
+            ...(currentClass ? [{ label: currentClass.name, href: `/tridy/${classId}` }] : []),
+            { label: "Upravit třídu" },
           ]}
         />
 

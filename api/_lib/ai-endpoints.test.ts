@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * The methodology endpoints end to end, with a fake model and a fake
  * database: what the model is sent, and what the teacher gets back.
@@ -241,5 +242,36 @@ describe("plan-rows", () => {
   it("asks for a plan when there is none", async () => {
     const { status } = await call("plan-rows", {});
     expect(status).toBe(400);
+  });
+});
+
+describe("extract-names", () => {
+  async function upload(file: File) {
+    const { default: handler } = await import("../extract-names.js");
+    const form = new FormData();
+    form.append("file", file);
+    const req = new Request("https://x/api/extract-names", { method: "POST", body: form, headers: { authorization: "Bearer t" } });
+    const body = Buffer.from(await req.arrayBuffer());
+    const res = fakeRes();
+    await handler(
+      { method: "POST", url: "/api/extract-names", headers: { host: "x", authorization: "Bearer t", "content-type": req.headers.get("content-type")! }, body } as never,
+      res as never,
+    );
+    return { status: res.statusCode, body: JSON.parse(res.body) };
+  }
+
+  it("sends a PDF as a file, not as an image", async () => {
+    answers.jmena_zaku = { names: [{ first: " Adam ", last: "Bílý" }, { first: "", last: "" }] };
+    const { status, body } = await upload(new File([new Uint8Array(200_000)], "trida.pdf", { type: "application/pdf" }));
+    expect(status).toBe(200);
+    expect(body.names).toEqual([{ first: "Adam", last: "Bílý" }]);
+    const parts = sent[0].user as unknown as { type: string }[];
+    expect(parts.map((p) => p.type)).toEqual(["text", "file"]);
+  });
+
+  it("sends a photo as an image", async () => {
+    answers.jmena_zaku = { names: [] };
+    await upload(new File([new Uint8Array(10)], "trida.jpg", { type: "image/jpeg" }));
+    expect((sent[0].user as unknown as { type: string }[])[1].type).toBe("image_url");
   });
 });
