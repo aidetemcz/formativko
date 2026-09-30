@@ -9,6 +9,8 @@ const TEACHER = "t1";
 
 /** Rows per table the fake Supabase client returns (filters are not simulated). */
 let tables: Record<string, unknown[]> = {};
+/** Rows the endpoints inserted, per table. */
+let inserted: Record<string, unknown[]> = {};
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: () => ({
@@ -19,6 +21,12 @@ vi.mock("@supabase/supabase-js", () => ({
       for (const m of ["select", "eq", "in", "not", "order", "limit"]) builder[m] = () => builder;
       builder.single = async () => ({ data: rows()[0] ?? null });
       builder.maybeSingle = async () => ({ data: rows()[0] ?? null });
+      builder.insert = (value: unknown) => {
+        (inserted[table] ??= []).push(...(Array.isArray(value) ? value : [value]));
+        builder.single = async () => ({ data: { id: `${table}-new` }, error: null });
+        builder.then = (resolve: (v: unknown) => void) => resolve({ data: null, error: null });
+        return builder;
+      };
       builder.then = (resolve: (v: unknown) => void) => resolve({ data: rows() });
       return builder;
     },
@@ -35,6 +43,7 @@ beforeEach(() => {
   process.env.SUPABASE_ANON_KEY = "anon";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "service";
   sent = [];
+  inserted = {};
   vi.stubGlobal("fetch", async (_url: string, init: { body: string }) => {
     const body = JSON.parse(init.body);
     const schema = body.response_format.json_schema.name;
@@ -273,5 +282,123 @@ describe("extract-names", () => {
     answers.jmena_zaku = { names: [] };
     await upload(new File([new Uint8Array(10)], "trida.jpg", { type: "image/jpeg" }));
     expect((sent[0].user as unknown as { type: string }[])[1].type).toBe("image_url");
+  });
+});
+
+const SCALE = { J: "j", C: "č", T: "t", U: "ú" };
+const LESSON = {
+  id: "l1",
+  title: "Části rostliny",
+  class_id: "k1",
+  teacher_id: TEACHER,
+  lesson_goals: [
+    {
+      educational_goals: {
+        title: "Popíše části rostliny.",
+        pupil_text: "Popíšu části rostliny.",
+        evaluation_criteria: [
+          { id: "c2", pupil_text: "Pojmenuji květ.", scale: SCALE, position: 2 },
+          { id: "c1", pupil_text: "Ukážu kořen.", scale: SCALE, position: 1 },
+        ],
+      },
+    },
+  ],
+};
+const CLASS = [
+  { students: { id: "s1", first_name: "Adam", last_name: "Bílý", teacher_id: TEACHER } },
+  { students: { id: "s2", first_name: "Eva", last_name: "Malá", teacher_id: TEACHER } },
+  { students: { id: "x", first_name: "Cizí", last_name: "Žák", teacher_id: "other" } },
+];
+const TOKEN = "a".repeat(64);
+
+describe("self-assessment", () => {
+  beforeEach(() => {
+    tables = {
+      self_assessment_sessions: [
+        { id: "ss1", teacher_id: TEACHER, lesson_id: "l1", expires_at: new Date(Date.now() + 3600_000).toISOString(), closed_at: null },
+      ],
+      lessons: [LESSON],
+      class_students: CLASS,
+    };
+  });
+
+  it("shows the lesson, its criteria in order and pupils as first name and initial", async () => {
+    const { status, body } = await call("self-assessment", { action: "load", token: TOKEN });
+    expect(status).toBe(200);
+    expect(body.lesson).toEqual({ title: "Části rostliny", goal: "Popíšu části rostliny." });
+    expect(body.criteria.map((c: { id: string }) => c.id)).toEqual(["c1", "c2"]);
+    expect(body.pupils).toEqual([
+      { id: "s1", label: "Adam B." },
+      { id: "s2", label: "Eva M." },
+    ]);
+    expect(JSON.stringify(body)).not.toContain("Bílý");
+  });
+
+  it("stores the ticket and the steps as the pupil's self-assessment", async () => {
+    const { status } = await call("self-assessment", {
+      action: "submit",
+      token: TOKEN,
+      studentId: "s1",
+      levels: { c1: "T", c2: "C", foreign: "U" },
+      comment: "Květ mi dělá potíž.",
+    });
+    expect(status).toBe(200);
+    expect(inserted.exit_tickets).toEqual([
+      expect.objectContaining({ student_id: "s1", source: "self_qr", teacher_id: TEACHER, pupil_comment: "Květ mi dělá potíž." }),
+    ]);
+    expect(inserted.criterion_assessments).toEqual([
+      expect.objectContaining({ criterion_id: "c1", level: "T", source: "self_qr", exit_ticket_id: "exit_tickets-new" }),
+      expect.objectContaining({ criterion_id: "c2", level: "C", source: "self_qr" }),
+    ]);
+  });
+
+  it("refuses a pupil from outside the class", async () => {
+    const { status } = await call("self-assessment", { action: "submit", token: TOKEN, studentId: "x", levels: { c1: "T" } });
+    expect(status).toBe(400);
+    expect(inserted.exit_tickets).toBeUndefined();
+  });
+
+  it("refuses a closed session and a malformed token", async () => {
+    (tables.self_assessment_sessions[0] as { closed_at: string }).closed_at = new Date().toISOString();
+    const closed = await call("self-assessment", { action: "load", token: TOKEN });
+    expect(closed.status).toBe(400);
+    expect(closed.body.error).toMatch(/uzavřená/);
+    const bad = await call("self-assessment", { action: "load", token: "../../x" });
+    expect(bad.status).toBe(400);
+  });
+});
+
+describe("read-exit-tickets", () => {
+  const photo = `https://db.test/storage/v1/object/sign/proof-files/${TEACHER}/e.jpg?token=x`;
+
+  beforeEach(() => {
+    tables = { lessons: [LESSON], class_students: CLASS };
+    answers.papirova_exitka = {
+      name: "Adam B",
+      criteria: [
+        { number: 1, level: "T" },
+        { number: 2, level: "" },
+      ],
+      pupil_comment: " Baví mě to. ",
+      unclear: "",
+    };
+  });
+
+  it("reads the photo, matches the pupil on the server and saves nothing", async () => {
+    const { status, body } = await call("read-exit-tickets", { lessonId: "l1", fileUrl: photo });
+    expect(status).toBe(200);
+    expect(body).toEqual({ studentId: "s1", readName: "Adam B", levels: { c1: "T", c2: null }, pupilComment: "Baví mě to.", unclear: "" });
+    // The class list never goes to the model.
+    expect(JSON.stringify(sent[0])).not.toContain("Malá");
+    expect(inserted).toEqual({});
+  });
+
+  it("refuses a photo outside the teacher's folder", async () => {
+    const { status } = await call("read-exit-tickets", {
+      lessonId: "l1",
+      fileUrl: "https://db.test/storage/v1/object/sign/proof-files/other/e.jpg?token=x",
+    });
+    expect(status).toBe(400);
+    expect(sent).toHaveLength(0);
   });
 });

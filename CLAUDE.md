@@ -66,6 +66,15 @@ npm run test:watch   # Vitest watch mode
   `criterion_assessments` on tap (`useRecordLevels`); the grid shows each
   pupil's chips. Voice notes are recorded in the browser (`AudioRecorder`) and
   stored as `voice` proofs with the audio file.
+- **Exit tickets** (phase 8): "QR pro žáky" on a lesson opens a
+  `self_assessment_sessions` row and shows its QR (`QrDialog`); pupils fill it
+  at public `/s/:token` through `api/self-assessment` (service role, checks the
+  token, class and the lesson's criteria; pupils listed as "Adam B."). Paper
+  tickets: photos go to `proof-files`, `api/read-exit-tickets` reads one photo
+  and matches the name on the server (`api/_lib/name-match.ts`), saves nothing;
+  the teacher confirms every row in `PaperExitTicketsDialog` and
+  `useSavePaperExitTickets` stores proof + ticket + `self_paper` levels. The
+  lesson's "Exitky" card lists tickets with pupil and teacher comments.
 - **Legacy goal levels**: `student_goal_levels` and the three-step scale in
   `src/constants/goalLevels.ts` now back only the old course overview
   (`/plany/:id/prehled`), goal detail and dashboard; the capture tool no longer
