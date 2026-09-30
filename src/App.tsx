@@ -40,8 +40,6 @@ const K01Courses = lazy(() => import("./pages/K01Courses"));
 const K02CreateCourse = lazy(() => import("./pages/K02CreateCourse"));
 const K03CourseDetail = lazy(() => import("./pages/K03CourseDetail"));
 const R01Rvp = lazy(() => import("./pages/R01Rvp"));
-const Z01Import = lazy(() => import("./pages/Z01Import"));
-const Z02FixAttachments = lazy(() => import("./pages/Z02FixAttachments"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,8 +103,6 @@ const App = () => (
               <Route path="/capture" element={<ProtectedRoute><E01CaptureToolChooseClass /></ProtectedRoute>} />
               <Route path="/capture/:courseId" element={<ProtectedRoute><E02CaptureToolAddProofs /></ProtectedRoute>} />
               <Route path="/rvp" element={<ProtectedRoute><R01Rvp /></ProtectedRoute>} />
-              <Route path="/import" element={<ProtectedRoute><Z01Import /></ProtectedRoute>} />
-              <Route path="/fix-attachments" element={<ProtectedRoute><Z02FixAttachments /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

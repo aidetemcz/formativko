@@ -1,12 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
 import { getRvpContext } from "./_lib/rvp.js";
+import {
+  depseudonymize,
+  pseudonymize,
+  PSEUDONYM_PROMPT_RULE,
+  type PseudonymPerson,
+} from "../src/lib/pseudonym.js";
 
 /**
- * Ported from the Supabase Edge Function of the same name. Only the entry
- * point and the environment lookups changed — the prompts, the OpenAI calls
- * and the response handling below are unchanged from the version that was
- * already running in production.
+ * Ported from the Supabase Edge Function of the same name.
+ *
+ * The model never sees a pupil's real name: the prompt carries the nickname
+ * (`students.nickname`), every name found in notes and earlier evaluations is
+ * pseudonymised, and the nickname in the answer is turned back into the first
+ * name here. SVP details are included only when the teacher asks for them.
  */
 export const config = { maxDuration: 60 };
 
@@ -31,16 +39,29 @@ export default webHandler(async (req: Request): Promise<Response> => {
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { studentId, evalType, dateFrom, dateTo, preferences, goalId, className, tone, person, length, customSystemPrompt } = await req.json();
+    const { studentId, evalType, dateFrom, dateTo, preferences, goalId, className, tone, person, length, includeSvp } = await req.json();
 
-    // --- Fetch all context data in parallel ---
+    // The service-role client bypasses RLS, so every query below that can
+    // reach another teacher's rows is filtered by teacher_id explicitly.
 
-    const studentPromise = supabase
+    // Load the student first: nothing else is fetched for a student who does
+    // not belong to this teacher.
+    const { data: student } = await supabase
       .from("students")
-      .select("first_name, last_name, svp, interests, communication_preferences, learning_styles, svp_details, notes")
+      .select("first_name, last_name, nickname, svp, interests, communication_preferences, learning_styles, svp_details, notes")
       .eq("id", studentId)
       .eq("teacher_id", user.id)
       .single();
+    if (!student) throw new Error("Student not found");
+
+    // --- Fetch all context data in parallel ---
+
+    // Every pupil of this teacher, so that names of classmates mentioned in a
+    // proof note are pseudonymised too.
+    const peoplePromise = supabase
+      .from("students")
+      .select("first_name, last_name, nickname")
+      .eq("teacher_id", user.id);
 
     const proofsPromise = supabase
       .from("proof_students")
@@ -56,50 +77,49 @@ export default webHandler(async (req: Request): Promise<Response> => {
       .order("created_at", { ascending: false })
       .limit(2);
 
-    // Goal + criteria (if goalId provided)
+    // Goal (if goalId provided) — only one of this teacher's own goals.
     const goalPromise = goalId
-      ? supabase.from("educational_goals").select("title, description, subject_id, subjects(name)").eq("id", goalId).single()
+      ? supabase
+          .from("educational_goals")
+          .select("title, description, subject_id, subjects(name)")
+          .eq("id", goalId)
+          .eq("teacher_id", user.id)
+          .maybeSingle()
       : Promise.resolve({ data: null });
-
-    const criteriaPromise = goalId
-      ? supabase.from("evaluation_criteria").select("description, level_descriptors, sort_order").eq("goal_id", goalId).order("sort_order")
-      : Promise.resolve({ data: null });
-
-    // Student goal level (if goalId provided)
-    const goalLevelPromise = goalId
-      ? supabase.from("student_goal_levels").select("level").eq("student_id", studentId).eq("goal_id", goalId).maybeSingle()
-      : Promise.resolve({ data: null });
-
-    // Proof-goal links (to show which proofs support which goals)
-    const proofGoalsPromise = supabase
-      .from("proof_goals")
-      .select("proof_id, goal_id, educational_goals(title)")
-      .eq("educational_goals.teacher_id", user.id);
 
     const [
-      { data: student },
+      { data: people },
       { data: proofLinks },
       { data: previousEvals },
       { data: goal },
-      { data: criteria },
-      { data: goalLevel },
-      { data: proofGoalsRaw },
-    ] = await Promise.all([
-      studentPromise, proofsPromise, previousEvalsPromise,
-      goalPromise, criteriaPromise, goalLevelPromise, proofGoalsPromise,
-    ]);
+    ] = await Promise.all([peoplePromise, proofsPromise, previousEvalsPromise, goalPromise]);
 
-    // Build proof→goals lookup
-    const proofGoalsMap: Record<string, string[]> = {};
-    for (const pg of proofGoalsRaw || []) {
-      const goalTitle = (pg as any).educational_goals?.title;
-      if (goalTitle) {
-        if (!proofGoalsMap[pg.proof_id]) proofGoalsMap[pg.proof_id] = [];
-        proofGoalsMap[pg.proof_id].push(goalTitle);
-      }
-    }
+    // Criteria and the pupil's level are read only once the goal is known to
+    // be this teacher's.
+    const [{ data: criteria }, { data: goalLevel }] = goal
+      ? await Promise.all([
+          supabase
+            .from("evaluation_criteria")
+            .select("description, level_descriptors, sort_order")
+            .eq("goal_id", goalId)
+            .order("sort_order"),
+          supabase
+            .from("student_goal_levels")
+            .select("level")
+            .eq("student_id", studentId)
+            .eq("goal_id", goalId)
+            .eq("teacher_id", user.id)
+            .maybeSingle(),
+        ])
+      : [{ data: null }, { data: null }];
 
-    if (!student) throw new Error("Student not found");
+    const pupil: PseudonymPerson = {
+      first_name: student.first_name,
+      last_name: student.last_name,
+      nickname: student.nickname,
+    };
+    const everyone: PseudonymPerson[] = [pupil, ...((people || []) as PseudonymPerson[])];
+    const anon = (text: string | null | undefined) => pseudonymize(text, everyone);
 
     // --- Filter proofs by date range ---
 
@@ -119,6 +139,23 @@ export default webHandler(async (req: Request): Promise<Response> => {
       });
     }
 
+    // --- Proof→goals lookup, limited to this student's proofs and this
+    // teacher's goals ---
+
+    const proofGoalsMap: Record<string, string[]> = {};
+    const { data: proofGoalsRaw } = await supabase
+      .from("proof_goals")
+      .select("proof_id, goal_id, educational_goals!inner(title, teacher_id)")
+      .in("proof_id", proofs.map((p: any) => p.id))
+      .eq("educational_goals.teacher_id", user.id);
+    for (const pg of proofGoalsRaw || []) {
+      const goalTitle = (pg as any).educational_goals?.title;
+      if (goalTitle) {
+        if (!proofGoalsMap[pg.proof_id]) proofGoalsMap[pg.proof_id] = [];
+        proofGoalsMap[pg.proof_id].push(goalTitle);
+      }
+    }
+
     // --- Fetch lesson context for proofs that have lesson_id ---
 
     const lessonIds = [...new Set(proofs.map((p: any) => p.lesson_id).filter(Boolean))];
@@ -127,7 +164,8 @@ export default webHandler(async (req: Request): Promise<Response> => {
       const { data: lessons } = await supabase
         .from("lessons")
         .select("id, title, planned_activities, observation_focus")
-        .in("id", lessonIds);
+        .in("id", lessonIds)
+        .eq("teacher_id", user.id);
       if (lessons) {
         lessonsMap = Object.fromEntries(lessons.map((l: any) => [l.id, l]));
       }
@@ -214,19 +252,22 @@ export default webHandler(async (req: Request): Promise<Response> => {
 
     // Student profile section
     const profileLines: string[] = [];
-    if (student.interests) profileLines.push(`- Zájmy a motivace: ${student.interests}`);
+    if (student.interests) profileLines.push(`- Zájmy a motivace: ${anon(student.interests)}`);
     if (student.communication_preferences) profileLines.push(`- Komunikační preference: ${student.communication_preferences}`);
     if (student.learning_styles) profileLines.push(`- Preferované styly učení: ${student.learning_styles}`);
-    if (student.svp && student.svp_details) profileLines.push(`- Speciální vzdělávací potřeby: ${student.svp_details}`);
-    if (student.notes) profileLines.push(`- Poznámky učitele: ${student.notes}`);
+    // SVP details only when the teacher ticked them for this call.
+    if (includeSvp === true && student.svp && student.svp_details) {
+      profileLines.push(`- Speciální vzdělávací potřeby: ${anon(student.svp_details)}`);
+    }
+    if (student.notes) profileLines.push(`- Poznámky učitele: ${anon(student.notes)}`);
     const profileSection = profileLines.length > 0
       ? `\n## Profil žáka\n${profileLines.join("\n")}`
       : "";
 
     // Proofs section with lesson context and goal links
     const proofLines = proofs.map((p: any) => {
-      let line = `- ${p.title} (${p.type}, ${p.date})`;
-      if (p.note) line += `: ${p.note}`;
+      let line = `- ${anon(p.title)} (${p.type}, ${p.date})`;
+      if (p.note) line += `: ${anon(p.note)}`;
       const linkedGoals = proofGoalsMap[p.id];
       if (linkedGoals && linkedGoals.length > 0) {
         line += `\n  [Cíle: ${linkedGoals.join(", ")}]`;
@@ -244,7 +285,7 @@ export default webHandler(async (req: Request): Promise<Response> => {
     let previousSection = "";
     if (previousEvals && previousEvals.length > 0) {
       const prevLines = previousEvals.map((e: any) =>
-        `- Období ${e.period}: ${e.text}`
+        `- Období ${e.period}: ${anon(e.text)}`
       ).join("\n");
       previousSection = `\n## Předchozí hodnocení (pro zachycení vývoje)\n${prevLines}`;
     }
@@ -270,7 +311,9 @@ export default webHandler(async (req: Request): Promise<Response> => {
 
 6. **Vazba na kritéria:** Zpětná vazba musí být opřena o dodaná kritéria a důkazy o učení. Vyhni se obecným a prázdným frázím (např. „skvělé", „mohlo by to být lepší"). Každé tvrzení musí být podloženo konkrétním důkazem.`;
 
-    const rulesSection = customSystemPrompt || defaultRules;
+    const rulesSection = `${defaultRules}
+
+7. **Soukromí:** ${PSEUDONYM_PROMPT_RULE}`;
 
     const personExamples = person === "2"
       ? 'Oslovuj žáka přímo (ty/tebe/tobě/tvůj). Příklad: „Zvládáš…", „Dokázal/a jsi…", „Zkus se zaměřit na…".'
@@ -291,12 +334,12 @@ export default webHandler(async (req: Request): Promise<Response> => {
 - Pokud je k dispozici profil žáka, přizpůsob jazyk jeho komunikačním preferencím.${preferences ? `
 
 # Kritický pokyn od učitele (musíš ho striktně dodržet)
-${preferences}` : ""}
+${anon(preferences)}` : ""}
 ${rvpContext}`;
 
     // --- User prompt with structured data ---
 
-    const userPrompt = `Napiš ${config.label} pro žáka **${student.first_name} ${student.last_name}**.
+    const userPrompt = `Napiš ${config.label} pro žáka **${pupil.nickname}** (přezdívka).
 
 ## Kontext
 - Období: ${dateFrom || "neurčeno"} – ${dateTo || "neurčeno"}${className ? `\n- Třída: ${className}` : ""}${subjectName ? `\n- Předmět: ${subjectName}` : ""}
@@ -342,7 +385,7 @@ Na základě těchto pravidel a vstupních dat napiš souvislý, smysluplný a m
     }
 
     const result = await aiResponse.json();
-    const text = result.choices?.[0]?.message?.content || "";
+    const text = depseudonymize(result.choices?.[0]?.message?.content || "", pupil);
 
     // Build source proofs summary for the frontend
     const sourceProofs = proofs.map((p: any) => ({

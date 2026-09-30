@@ -17,7 +17,7 @@ import {
   toCommaSeparated,
   getOptionLabels,
 } from "@/constants/studentProfile";
-import { useStudent, useUpdateStudent, useDeleteStudent, getStudentDisplayName } from "@/hooks/useStudents";
+import { useStudent, useUpdateStudent, useDeleteStudent, getStudentDisplayName, isDuplicateNickname } from "@/hooks/useStudents";
 import { useStudentClasses } from "@/hooks/useClasses";
 import { useProofsForStudent, useDeleteProof } from "@/hooks/useProofs";
 import { useGoalCoverageForStudent } from "@/hooks/useGoals";
@@ -66,6 +66,7 @@ export default function B02StudentProfileDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [editFirst, setEditFirst] = useState("");
   const [editLast, setEditLast] = useState("");
+  const [editNickname, setEditNickname] = useState("");
   const [editSvp, setEditSvp] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [editInterests, setEditInterests] = useState("");
@@ -108,15 +109,16 @@ export default function B02StudentProfileDetail() {
     if (student) {
       setEditFirst(student.first_name);
       setEditLast(student.last_name);
+      setEditNickname(student.nickname ?? "");
       setEditSvp(student.svp ?? false);
       setEditNotes(student.notes ?? "");
       setEditInterests(student.interests ?? "");
       const commValues = parseCommaSeparated(student.communication_preferences ?? "");
-      const knownCommValues = COMMUNICATION_OPTIONS.map((o) => o.value);
+      const knownCommValues: string[] = COMMUNICATION_OPTIONS.map((o) => o.value);
       setEditCommPrefs(commValues.filter((v) => knownCommValues.includes(v)));
       setEditCommOther(commValues.filter((v) => !knownCommValues.includes(v)).join(", "));
       const learnValues = parseCommaSeparated(student.learning_styles ?? "");
-      const knownLearnValues = LEARNING_STYLE_OPTIONS.map((o) => o.value);
+      const knownLearnValues: string[] = LEARNING_STYLE_OPTIONS.map((o) => o.value);
       setEditLearningStyles(learnValues.filter((v) => knownLearnValues.includes(v)));
       setEditLearningOther(learnValues.filter((v) => !knownLearnValues.includes(v)).join(", "));
       setEditSvpDetails(student.svp_details ?? "");
@@ -135,6 +137,8 @@ export default function B02StudentProfileDetail() {
         id,
         first_name: editFirst.trim(),
         last_name: editLast.trim(),
+        // Left empty, the database generates a fresh nickname.
+        nickname: editNickname.trim(),
         svp: editSvp,
         notes: editNotes,
         interests: editInterests,
@@ -146,7 +150,11 @@ export default function B02StudentProfileDetail() {
       setEditOpen(false);
     } catch (err) {
       console.error("Chyba při úpravě", err);
-      toast({ title: "Chyba při úpravě", variant: "destructive" });
+      toast({
+        title: "Chyba při úpravě",
+        description: isDuplicateNickname(err) ? "Tuto přezdívku už má jiný žák. Zvolte prosím jinou." : undefined,
+        variant: "destructive",
+      });
     }
   };
 
@@ -195,6 +203,11 @@ export default function B02StudentProfileDetail() {
           {studentClasses.map((c) => (
             <Badge key={c.id} variant="secondary">{c.name}</Badge>
           ))}
+          {student.nickname && (
+            <Badge variant="outline" className="text-xs font-normal" title="Pod přezdívkou žáka vidí AI. Jméno nikdy neopouští aplikaci.">
+              Přezdívka: {student.nickname}
+            </Badge>
+          )}
           <div className="ml-auto flex gap-1">
             <button onClick={handleEditOpen} className="p-2 hover:bg-accent rounded-lg" title="Upravit jméno">
               <Pencil className="h-4 w-4 text-muted-foreground" />
@@ -233,6 +246,18 @@ export default function B02StudentProfileDetail() {
               <div className="space-y-2">
                 <Input placeholder="Jméno" value={editFirst} onChange={(e) => setEditFirst(e.target.value)} />
                 <Input placeholder="Příjmení" value={editLast} onChange={(e) => setEditLast(e.target.value)} />
+              </div>
+
+              {/* Přezdívka */}
+              <div>
+                <label htmlFor="student-nickname" className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">Přezdívka</label>
+                <Input
+                  id="student-nickname"
+                  placeholder="Nechte prázdné a aplikace vymyslí novou"
+                  value={editNickname}
+                  onChange={(e) => setEditNickname(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">Pod přezdívkou žáka vidí AI. Jméno nikdy neopouští aplikaci.</p>
               </div>
 
               {/* Zájmy a motivace */}

@@ -23,7 +23,6 @@ import { useToast } from "@/hooks/use-toast";
 import { DEFAULT_LEVEL_DESCRIPTORS, type LevelDescriptor } from "@/constants/goalLevels";
 import { ShimmerField } from "@/components/ui/field-shimmer";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { createSignedUrl, EDGE_FUNCTION_URL_TTL_SECONDS } from "@/lib/storage";
 
 export default function G03CreateGoal() {
   usePageTitle("Vzdělávací cíl");
@@ -151,14 +150,8 @@ export default function G03CreateGoal() {
       const subjectName = selectedCourse?.subjects?.name;
       const className = classes.find((c) => c.id === selectedCourse?.class_id)?.name;
 
-      const hasThematicPlan = !!selectedCourse?.thematic_plan_file_url;
-      const defaultNames = DEFAULT_LEVEL_DESCRIPTORS.map((d) => d.level);
       const currentNames = levels.map((l) => l.level).filter((l) => l.trim());
-      const isDefaultLevels =
-        currentNames.length === defaultNames.length &&
-        currentNames.every((l, i) => l === defaultNames[i]);
-      const sendLevelNames =
-        currentNames.length > 0 && (!hasThematicPlan || !isDefaultLevels);
+      const sendLevelNames = currentNames.length > 0;
 
       // Step 1: Formulate goal
       const { data: formData, error: formErr } = await invokeAi(
@@ -183,16 +176,6 @@ export default function G03CreateGoal() {
       // Title+description done, now generating criteria
       setGenPhase("criteria");
 
-      // The bucket is private, so the edge function gets a short-lived signed
-      // URL rather than the stored object path.
-      const signedPlanUrl = hasThematicPlan
-        ? await createSignedUrl(
-            "course-files",
-            selectedCourse.thematic_plan_file_url,
-            EDGE_FUNCTION_URL_TTL_SECONDS,
-          )
-        : null;
-
       // Step 2: Generate criteria
       const { data: critData, error: critErr } = await invokeAi(
         "generate-criteria",
@@ -203,7 +186,6 @@ export default function G03CreateGoal() {
             subject: subjectName || undefined,
             levelNames: sendLevelNames ? currentNames : undefined,
             className: className || undefined,
-            thematicPlanFileUrl: signedPlanUrl ?? undefined,
           },
         }
       );
@@ -259,7 +241,7 @@ export default function G03CreateGoal() {
         (a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order
       );
       if (crit.length > 0) {
-        const firstLevels = crit[0].level_descriptors || [];
+        const firstLevels = (crit[0].level_descriptors as unknown as LevelDescriptor[]) || [];
         if (firstLevels.length > 0) {
           setLevels(firstLevels.map((ld: LevelDescriptor) => ({ ...ld })));
         }

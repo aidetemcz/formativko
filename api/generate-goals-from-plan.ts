@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { webHandler } from "./_lib/handler.js";
 import { getRvpContext } from "./_lib/rvp.js";
+import { isOwnSignedStorageUrl } from "./_lib/storage-url.js";
 
 /**
  * Ported from the Supabase Edge Function of the same name. Only the entry
@@ -38,12 +39,17 @@ export default webHandler(async (req: Request): Promise<Response> => {
 
     const { fileUrl, subject, className, count } = await req.json();
     if (!fileUrl) throw new Error("fileUrl is required");
+    if (!isOwnSignedStorageUrl(fileUrl, process.env.SUPABASE_URL)) {
+      return new Response(JSON.stringify({ error: "Neplatný odkaz na soubor s plánem." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
 
     // Fetch the file
-    const fileResponse = await fetch(fileUrl);
+    const fileResponse = await fetch(fileUrl, { redirect: "error" });
     if (!fileResponse.ok) throw new Error("Failed to fetch thematic plan file");
     const fileBytes = new Uint8Array(await fileResponse.arrayBuffer());
 

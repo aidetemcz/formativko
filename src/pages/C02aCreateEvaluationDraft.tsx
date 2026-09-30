@@ -3,6 +3,7 @@ import { AppBreadcrumb } from "@/components/layout/AppBreadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useClassStudents } from "@/hooks/useClasses";
@@ -12,7 +13,7 @@ import { getStudentDisplayName } from "@/hooks/useStudents";
 import { useToast } from "@/hooks/use-toast";
 import { invokeAi } from "@/lib/ai";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, Sparkles, ChevronDown, RotateCcw, Code2, AlertTriangle } from "lucide-react";
+import { Loader2, Sparkles, ChevronDown, RotateCcw, AlertTriangle } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 const evalTypes = [
@@ -46,22 +47,6 @@ const typeDefaults: Record<string, { tone: string; person: string; length: strin
   vlastni: { tone: "pratelsky", person: "3", length: "stredni" },
 };
 
-const DEFAULT_SYSTEM_PROMPT = `Jsi profesionální pedagogický asistent a expert na formativní hodnocení. Tvým úkolem je vytvořit pro učitele návrh slovního hodnocení žáka. Tento text bude sloužit pouze jako draft, který učitel následně zkontroluje, upraví a převezme za něj finální zodpovědnost.
-
-# Pravidla pro tvorbu textu (striktně dodržuj)
-
-1. **Struktura a obsah:** Hodnocení musí posoudit výsledky žáka v jejich vývoji. Automaticky a vyváženě zapoj informace o silných stránkách, konkrétním pokroku a případných obtížích.
-
-2. **Naznačení dalšího rozvoje:** Text musí obsahovat zdůvodnění a konkrétní, srozumitelná doporučení, jak předcházet případným neúspěchům a jak je překonávat.
-
-3. **Oddělení chování od učení:** Nespojuj a nesměšuj hodnocení výsledků učení s hodnocením chování, snahy nebo aktivity. Vyvaruj se frází jako „málo se snažíš", „je pilný/á", „pracuje pomalu".
-
-4. **Respektující a popisný jazyk:** Používej výhradně popisný jazyk zaměřený na proces a výsledky učení. Absolutně se vyvaruj hodnocení osobnosti žáka (např. „jsi roztržitý") a jakéhokoliv nálepkování (např. „jsi lajdák", „jsi pomalý").
-
-5. **Bezpečné prostředí:** Text nesmí obsahovat sarkasmus, ironii ani srovnávání žáka s ostatními spolužáky. Nepoužívej hodnocení jako formu trestu nebo odměny závislé na pocitech učitele (např. „udělal jsi mi radost").
-
-6. **Vazba na kritéria:** Zpětná vazba musí být opřena o dodaná kritéria a důkazy o učení. Vyhni se obecným a prázdným frázím (např. „skvělé", „mohlo by to být lepší"). Každé tvrzení musí být podloženo konkrétním důkazem.`;
-
 export default function C02aCreateEvaluationDraft() {
   usePageTitle("Tvorba hodnocení");
   const navigate = useNavigate();
@@ -90,9 +75,8 @@ export default function C02aCreateEvaluationDraft() {
   const [person, setPerson] = useState<string>(restored?.person || defaults.person);
   const [evalLength, setEvalLength] = useState<string>(restored?.evalLength || defaults.length);
   const [outputOpen, setOutputOpen] = useState(false);
-  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
-  const [promptOpen, setPromptOpen] = useState(false);
-  const systemPromptModified = systemPrompt !== DEFAULT_SYSTEM_PROMPT;
+  // SVP details reach the AI only when the teacher ticks this for the call.
+  const [includeSvp, setIncludeSvp] = useState<boolean>(restored?.includeSvp === true);
 
   // Update defaults when type changes
   const handleTypeChange = (typeId: string) => {
@@ -147,7 +131,7 @@ export default function C02aCreateEvaluationDraft() {
           tone,
           person,
           length: evalLength,
-          customSystemPrompt: systemPromptModified ? systemPrompt : null,
+          includeSvp,
         },
       });
 
@@ -195,7 +179,7 @@ export default function C02aCreateEvaluationDraft() {
         tone,
         person,
         evalLength,
-        customSystemPrompt: systemPromptModified ? systemPrompt : null,
+        includeSvp,
       };
       sessionStorage.setItem("evalPreviewState", JSON.stringify(previewState));
       navigate("/evaluations/create/preview", { state: previewState });
@@ -222,41 +206,6 @@ export default function C02aCreateEvaluationDraft() {
         <h1 className="text-2xl font-bold mb-6">Tvorba hodnocení</h1>
 
         <div className="space-y-6">
-          {/* System prompt editor */}
-          <Collapsible open={promptOpen} onOpenChange={setPromptOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide w-full">
-              <Code2 className="h-3.5 w-3.5" />
-              Systémový prompt
-              {systemPromptModified && (
-                <span className="text-[10px] normal-case tracking-normal font-normal px-1.5 py-0.5 rounded bg-primary/10 text-primary">upraveno</span>
-              )}
-              <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform ${promptOpen ? "rotate-180" : ""}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Toto jsou instrukce pro AI model, který generuje hodnocení. Úpravy platí pouze pro tuto relaci.
-                </p>
-                <Textarea
-                  className="min-h-[300px] bg-background font-mono text-xs leading-relaxed"
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                />
-                {systemPromptModified && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={() => setSystemPrompt(DEFAULT_SYSTEM_PROMPT)}
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                    Obnovit výchozí
-                  </Button>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
           {/* Step 1: Type */}
           <div>
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-2">
@@ -402,6 +351,16 @@ export default function C02aCreateEvaluationDraft() {
                 value={preferences}
                 onChange={(e) => setPreferences(e.target.value)}
               />
+              <label className="mt-3 flex items-start gap-2 text-sm text-muted-foreground">
+                <Checkbox
+                  checked={includeSvp}
+                  onCheckedChange={(v) => setIncludeSvp(v === true)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Zohlednit podrobnosti o SVP žáků. Bez zaškrtnutí je AI neuvidí.
+                </span>
+              </label>
             </div>
           )}
 

@@ -109,6 +109,24 @@ TypeScript maps back to the `.ts` source. Vercel compiles these files with
 endpoint returns a 500 with no JSON body. `tsconfig.api.json` sets the same
 resolution mode so `npm run typecheck` catches it first.
 
+### Regenerating the Supabase types
+
+`src/integrations/supabase/types.ts` is generated, never hand-edited. When a
+migration adds or changes a table, regenerate it or `tsc` will report errors for
+columns the code legitimately uses:
+
+```sh
+npx supabase gen types typescript --project-id btqkjdyvwiojfcsjlifh > src/integrations/supabase/types.ts
+```
+
+Without access to the project, the same file can be produced from the migrations
+alone: apply `supabase/migrations/*.sql` in order to an empty PostgreSQL 16
+database — first creating the `auth` and `storage` objects they reference, and
+`auth.uid()` / `auth.role()` / `storage.foldername()` — then point the generator
+at that database with `--db-url`. Do not install `pgcrypto` into `public`; its
+functions would end up in the generated output, and Postgres 16 already provides
+`gen_random_uuid()`.
+
 ### Required environment variables
 
 Set these in Vercel under Project > Settings > Environment Variables. They are
