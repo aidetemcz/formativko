@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { LevelDescriptor } from "@/constants/goalLevels";
 import type { Json } from "@/integrations/supabase/types";
+import { planCriteriaUpdate } from "@/lib/criteriaDiff";
 
 export interface EvaluationCriterion {
   id: string;
@@ -158,22 +159,42 @@ export function useUpdateGoal() {
         .eq("id", id);
       if (error) throw error;
 
-      // Replace criteria: delete all, then insert new
-      const { error: delErr } = await supabase
+      // Update criteria in place: pupils' levels (criterion_assessments) are
+      // tied to a criterion's id and would be deleted along with it.
+      const { data: existing, error: selErr } = await supabase
         .from("evaluation_criteria")
-        .delete()
-        .eq("goal_id", id);
-      if (delErr) throw delErr;
+        .select("id")
+        .eq("goal_id", id)
+        .order("sort_order")
+        .order("created_at");
+      if (selErr) throw selErr;
 
-      if (criteria.length > 0) {
-        const rows = criteria.map((c) => ({
-          goal_id: id,
-          description: c.description,
-          level_descriptors: c.level_descriptors as unknown as Json,
-          sort_order: c.sort_order,
-        }));
-        const { error: insErr } = await supabase.from("evaluation_criteria").insert(rows);
+      const toRow = (c: (typeof criteria)[number]) => ({
+        description: c.description,
+        level_descriptors: c.level_descriptors as unknown as Json,
+        sort_order: c.sort_order,
+      });
+      const plan = planCriteriaUpdate((existing || []).map((c) => c.id), criteria);
+
+      for (const { id: criterionId, value } of plan.updates) {
+        const { error: updErr } = await supabase
+          .from("evaluation_criteria")
+          .update(toRow(value))
+          .eq("id", criterionId);
+        if (updErr) throw updErr;
+      }
+      if (plan.inserts.length > 0) {
+        const { error: insErr } = await supabase
+          .from("evaluation_criteria")
+          .insert(plan.inserts.map((c) => ({ goal_id: id, ...toRow(c) })));
         if (insErr) throw insErr;
+      }
+      if (plan.deleteIds.length > 0) {
+        const { error: delErr } = await supabase
+          .from("evaluation_criteria")
+          .delete()
+          .in("id", plan.deleteIds);
+        if (delErr) throw delErr;
       }
     },
     onSuccess: () => {
