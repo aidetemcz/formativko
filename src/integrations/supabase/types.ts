@@ -47,6 +47,69 @@ export type Database = {
           },
         ]
       }
+      classes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      course_student_seats: {
+        Row: {
+          course_id: string
+          id: string
+          seat_col: number
+          seat_row: number
+          student_id: string
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          seat_col: number
+          seat_row: number
+          student_id: string
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          seat_col?: number
+          seat_row?: number
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_student_seats_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_student_seats_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           class_id: string
@@ -97,30 +160,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      classes: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          teacher_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          teacher_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          teacher_id?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       educational_goals: {
         Row: {
@@ -186,7 +225,7 @@ export type Database = {
           description: string
           goal_id: string
           id: string
-          level_descriptors: Json
+          level_descriptors: NonNullable<Json>
           sort_order: number
         }
         Insert: {
@@ -194,7 +233,7 @@ export type Database = {
           description: string
           goal_id: string
           id?: string
-          level_descriptors?: Json
+          level_descriptors?: NonNullable<Json>
           sort_order?: number
         }
         Update: {
@@ -202,7 +241,7 @@ export type Database = {
           description?: string
           goal_id?: string
           id?: string
-          level_descriptors?: Json
+          level_descriptors?: NonNullable<Json>
           sort_order?: number
         }
         Relationships: [
@@ -276,6 +315,7 @@ export type Database = {
           group_id: string | null
           id: string
           period: string
+          source_proof_ids: Json | null
           status: string
           student_id: string
           subject: string
@@ -289,6 +329,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           period: string
+          source_proof_ids?: Json | null
           status?: string
           student_id: string
           subject: string
@@ -302,6 +343,7 @@ export type Database = {
           group_id?: string | null
           id?: string
           period?: string
+          source_proof_ids?: Json | null
           status?: string
           student_id?: string
           subject?: string
@@ -550,6 +592,45 @@ export type Database = {
           },
         ]
       }
+      proof_types: {
+        Row: {
+          color: string
+          created_at: string
+          description: string
+          fields: string[]
+          icon: string
+          id: string
+          name: string
+          sort_order: number
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string
+          fields?: string[]
+          icon?: string
+          id?: string
+          name: string
+          sort_order?: number
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string
+          fields?: string[]
+          icon?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       proofs_of_learning: {
         Row: {
           created_at: string
@@ -559,6 +640,7 @@ export type Database = {
           id: string
           lesson_id: string | null
           note: string | null
+          proof_type_id: string | null
           teacher_id: string
           title: string
           type: string
@@ -572,6 +654,7 @@ export type Database = {
           id?: string
           lesson_id?: string | null
           note?: string | null
+          proof_type_id?: string | null
           teacher_id: string
           title: string
           type: string
@@ -585,6 +668,7 @@ export type Database = {
           id?: string
           lesson_id?: string | null
           note?: string | null
+          proof_type_id?: string | null
           teacher_id?: string
           title?: string
           type?: string
@@ -596,6 +680,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proofs_of_learning_proof_type_id_fkey"
+            columns: ["proof_type_id"]
+            isOneToOne: false
+            referencedRelation: "proof_types"
             referencedColumns: ["id"]
           },
         ]
@@ -620,6 +711,122 @@ export type Database = {
           teacher_id?: string
         }
         Relationships: []
+      }
+      student_goal_levels: {
+        Row: {
+          created_at: string | null
+          goal_id: string
+          id: string
+          level: string
+          student_id: string
+          teacher_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_id: string
+          id?: string
+          level: string
+          student_id: string
+          teacher_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_id?: string
+          id?: string
+          level?: string
+          student_id?: string
+          teacher_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_goal_levels_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "educational_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_goal_levels_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "student_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_group_members_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_groups: {
+        Row: {
+          class_id: string
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          teacher_id: string
+        }
+        Insert: {
+          class_id: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          teacher_id: string
+        }
+        Update: {
+          class_id?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_groups_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
@@ -714,12 +921,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -743,11 +950,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -768,11 +975,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -793,11 +1000,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -810,11 +1017,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
