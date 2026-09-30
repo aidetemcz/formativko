@@ -13,6 +13,7 @@ import CapturePanel, { type CaptureLesson } from "@/components/capture/CapturePa
 import ProofTypeManager from "@/components/capture/ProofTypeManager";
 import SeatingChartEditor from "@/components/shared/SeatingChartEditor";
 import { CaptureHeader } from "@/components/capture/CaptureHeader";
+import { PaperExitTicketsDialog } from "@/components/lesson/PaperExitTicketsDialog";
 import { GroupPillBar } from "@/components/capture/GroupPillBar";
 import { StudentGrid } from "@/components/capture/StudentGrid";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -75,6 +76,7 @@ export default function E02CaptureToolAddProofs() {
     persistSession();
   }, [persistSession]);
   const [manageMode, setManageMode] = useState(false);
+  const [paperOpen, setPaperOpen] = useState(false);
 
   // Quick Groups
   const { data: groups = [] } = useStudentGroups(classId);
@@ -259,7 +261,17 @@ export default function E02CaptureToolAddProofs() {
         manageMode={manageMode}
         onToggleManage={() => { setManageMode(!manageMode); setActiveProofTypeId(null); }}
         onOpenSeating={() => setShowSeatingEditor(true)}
+        onUploadExitTickets={lessonDetail && selectedLesson && lessonDetail.criteria.length > 0 ? () => setPaperOpen(true) : undefined}
       />
+      {lessonDetail && selectedLesson && lessonDetail.criteria.length > 0 && (
+        <PaperExitTicketsDialog
+          open={paperOpen}
+          onOpenChange={setPaperOpen}
+          lesson={lessonDetail}
+          goalId={lessonDetail.goal?.id ?? null}
+          criteria={lessonDetail.criteria}
+        />
+      )}
 
       <GroupPillBar
         groups={groups}

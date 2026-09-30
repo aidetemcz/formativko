@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Home, Settings, LayoutGrid } from "lucide-react";
+import { Home, Settings, LayoutGrid, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CaptureHeaderProps {
@@ -23,6 +23,8 @@ interface CaptureHeaderProps {
   onOpenSeating: () => void;
   /** Where the home button leads: the lesson being recorded, or the welcome page. */
   backHref: string;
+  /** Upload photos of paper exit tickets; offered once a lesson with criteria is chosen. */
+  onUploadExitTickets?: () => void;
 }
 
 export function CaptureHeader({
@@ -45,6 +47,7 @@ export function CaptureHeader({
   onToggleManage,
   onOpenSeating,
   backHref,
+  onUploadExitTickets,
 }: CaptureHeaderProps) {
   return (
     <header className="flex items-center justify-between p-2 sm:p-3 border-b border-border bg-card gap-1">
@@ -127,6 +130,11 @@ export function CaptureHeader({
         >
           <Settings className="h-5 w-5 text-muted-foreground" />
         </button>
+        {onUploadExitTickets && (
+          <button onClick={onUploadExitTickets} className="p-2 hover:bg-accent rounded-lg" title="Nahrát vyplněné exitky">
+            <Upload className="h-5 w-5 text-muted-foreground" />
+          </button>
+        )}
         <button
           onClick={onOpenSeating}
           className="p-2 hover:bg-accent rounded-lg"

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CheckCircle2, ClipboardList, FileText, QrCode, Trash2, Upload, Users } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -9,6 +10,9 @@ import { GoalEditor } from "@/components/lesson/GoalEditor";
 import { CriteriaEditor } from "@/components/lesson/CriteriaEditor";
 import { LessonInfoEditor } from "@/components/lesson/LessonInfoEditor";
 import { LessonLevelsOverview } from "@/components/lesson/LessonLevelsOverview";
+import { LessonExitTickets } from "@/components/lesson/LessonExitTickets";
+import { PaperExitTicketsDialog } from "@/components/lesson/PaperExitTicketsDialog";
+import { QrDialog } from "@/components/lesson/QrDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useDeleteLesson, useLessonDetail, useUpdateLessonInfo } from "@/hooks/usePlanLessons";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -25,6 +29,8 @@ export default function LessonDetail() {
   const { data: lesson, isLoading } = useLessonDetail(lessonId);
   const update = useUpdateLessonInfo();
   const remove = useDeleteLesson();
+  const [qrOpen, setQrOpen] = useState(false);
+  const [paperOpen, setPaperOpen] = useState(false);
   usePageTitle(lesson?.title ?? "Lekce");
 
   if (isLoading || !lesson) {
@@ -125,8 +131,7 @@ export default function LessonDetail() {
                     Exitky
                   </Link>
                 </Button>
-                {/* Coming in phase 8 (exit tickets and self-assessment). */}
-                <Button variant="outline" disabled title="Připravujeme">
+                <Button variant="outline" disabled={!ready} onClick={() => setQrOpen(true)}>
                   <QrCode />
                   QR pro žáky
                 </Button>
@@ -136,11 +141,20 @@ export default function LessonDetail() {
                     Zaznamenat důkazy v hodině
                   </Link>
                 </Button>
-                <Button variant="outline" disabled title="Připravujeme">
+                <Button variant="outline" disabled={!ready} onClick={() => setPaperOpen(true)}>
                   <Upload />
                   Nahrát vyplněné exitky
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Exitky</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LessonExitTickets lessonId={lesson.id} criteria={lesson.criteria} />
             </CardContent>
           </Card>
 
@@ -161,6 +175,16 @@ export default function LessonDetail() {
           </div>
         </div>
       </div>
+      {qrOpen && <QrDialog lessonId={lesson.id} title={lesson.goal?.pupil_text || lesson.title} onClose={() => setQrOpen(false)} />}
+      {ready && (
+        <PaperExitTicketsDialog
+          open={paperOpen}
+          onOpenChange={setPaperOpen}
+          lesson={lesson}
+          goalId={lesson.goal?.id ?? null}
+          criteria={lesson.criteria}
+        />
+      )}
     </AppLayout>
   );
 }

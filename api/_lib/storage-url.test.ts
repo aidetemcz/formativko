@@ -23,3 +23,12 @@ describe("isOwnSignedStorageUrl", () => {
     expect(isOwnSignedStorageUrl(value, BASE)).toBe(false);
   });
 });
+
+describe("isOwnSignedStorageUrl for proof photos", () => {
+  it("accepts only the teacher's own folder in proof-files", () => {
+    const url = (path: string) => `${BASE}/storage/v1/object/sign/proof-files/${path}?token=x`;
+    expect(isOwnSignedStorageUrl(url("t1/a.jpg"), BASE, "proof-files", "t1")).toBe(true);
+    expect(isOwnSignedStorageUrl(url("t2/a.jpg"), BASE, "proof-files", "t1")).toBe(false);
+    expect(isOwnSignedStorageUrl(url("t1/a.jpg"), BASE, "course-files", "t1")).toBe(false);
+  });
+});

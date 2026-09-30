@@ -73,6 +73,46 @@ Pravidla:
 ${STYLE_GUIDE}`;
 }
 
+// ─── Papírová exitka z fotky ─────────────────────────────────────────────────
+
+export interface ReadExitTicketOutput {
+  name: string;
+  criteria: { number: number; level: "J" | "C" | "T" | "U" | "" }[];
+  pupil_comment: string;
+  unclear: string;
+}
+
+export const READ_EXIT_TICKET_SCHEMA: JsonSchema = {
+  name: "papirova_exitka",
+  schema: objectSchema({
+    name: stringSchema,
+    criteria: {
+      type: "array",
+      items: objectSchema({ number: { type: "number" }, level: { type: "string", enum: ["J", "C", "T", "U", ""] } }),
+    },
+    pupil_comment: stringSchema,
+    unclear: stringSchema,
+  }),
+};
+
+/**
+ * Reads one photographed paper exit ticket (zadání kap. 3, bod 5). Children's
+ * handwriting is read unreliably, so the teacher confirms everything before
+ * it is saved; the prompt asks the model to leave out what it cannot see.
+ */
+export function readExitTicketPrompt(criteria: string[]): string {
+  return `Na fotografii je vyplněná papírová exitka jednoho žáka. Přečti z ní:
+- name: jméno žáka tak, jak je na exitce (předtištěné nebo napsané rukou). Když nejde přečíst, nech prázdné.
+- criteria: u každého kritéria (číslované od 1) písmeno políčka, které žák zaškrtl: J, Č (napiš "C"), T nebo Ú (napiš "U"). Když není zaškrtnuté nic, nebo jsou zaškrtnutá dvě a nejde poznat které, dej "".
+- pupil_comment: text, který žák napsal do části „Můj komentář“, přesně jak je napsaný. Když tam nic není, nech prázdné.
+- unclear: krátce, co se nedalo přečíst jistě (např. „kritérium 2 – dvě zaškrtnutá políčka“). Jinak prázdné.
+
+Nic si nedomýšlej. Učitel všechno zkontroluje.
+
+Kritéria na exitce (v pořadí):
+${criteria.map((c, i) => `${i + 1}. ${c}`).join("\n")}`;
+}
+
 // ─── 01 · Výukový cíl ─────────────────────────────────────────────────────────
 
 export interface GoalInput {
