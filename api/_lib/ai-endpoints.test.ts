@@ -199,6 +199,25 @@ describe("generate-evaluation", () => {
     expect(sent[0].user).toContain("Speciální vzdělávací potřeby: Modrá vydra má dyslexii");
   });
 
+  it("with a subject chosen, writes only from that subject's proofs and levels", async () => {
+    tables.proof_students.push({
+      proof_id: "p2",
+      proofs_of_learning: { id: "p2", title: "Slovní úloha", type: "text", date: "2026-09-19", note: "", lesson_id: "l-mat" },
+    });
+    (tables.proof_students[0] as { proofs_of_learning: { lesson_id: string } }).proofs_of_learning.lesson_id = "l-prv";
+    tables.lessons = [
+      { id: "l-prv", title: "Rostliny", observation_focus: "", subject_id: "prv" },
+      { id: "l-mat", title: "Zlomky", observation_focus: "", subject_id: "mat" },
+    ];
+    (tables.evaluation_criteria[0] as { educational_goals: Record<string, unknown> }).educational_goals.subject_id = "mat";
+    const { body } = await call("generate-evaluation", { studentId: "s1", subjectId: "prv", subject: "Prvouka" });
+    expect(body.sourceProofs.map((p: { id: string }) => p.id)).toEqual(["p1"]);
+    const user = sent.find((s) => s.schema === "slovni_hodnoceni")!.user;
+    expect(user).not.toContain("Slovní úloha");
+    expect(user).not.toContain("Popíše části rostliny");
+    expect(user).toContain("Prvouka");
+  });
+
   it("answers without the model when there is nothing to write from", async () => {
     tables.proof_students = [];
     tables.current_criterion_levels = [];

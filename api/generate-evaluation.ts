@@ -44,6 +44,7 @@ const SOURCE_LABELS: Record<string, string> = {
 const TONES: Record<string, string> = {
   pratelsky: "přátelský, povzbuzující",
   formalni: "věcný, výstižný",
+  vyvazeny: "věcný a zároveň vlídný",
 };
 
 const LENGTHS: Record<string, string> = {
@@ -121,7 +122,25 @@ export default webHandler(async (req: Request): Promise<Response> => {
 
     // --- Proofs in the period ---
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const proofs = (proofLinks ?? []).map((pl: any) => pl.proofs_of_learning).filter(Boolean).filter((p: any) => inPeriod(p.date));
+    const proofsInPeriod = (proofLinks ?? []).map((pl: any) => pl.proofs_of_learning).filter(Boolean).filter((p: any) => inPeriod(p.date));
+
+    // --- Lessons of the proofs; with a subject chosen, only that subject's proofs count ---
+    const subjectId = field(body.subjectId, 100) || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lessonIds = [...new Set(proofsInPeriod.map((p: any) => p.lesson_id).filter(Boolean))];
+    const { data: lessons } = lessonIds.length
+      ? await supabase
+          .from("lessons")
+          .select("id, title, observation_focus, subject_id")
+          .in("id", lessonIds)
+          .eq("teacher_id", user.id)
+      : { data: [] };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lessonById = new Map((lessons ?? []).map((l: any) => [l.id, l]));
+    const proofs = subjectId
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        proofsInPeriod.filter((p: any) => lessonById.get(p.lesson_id)?.subject_id === subjectId)
+      : proofsInPeriod;
 
     // --- Current levels per criterion (teacher and self-assessment) ---
     const { data: levelRows } = await supabase
@@ -135,28 +154,22 @@ export default webHandler(async (req: Request): Promise<Response> => {
     const { data: criteria } = criterionIds.length
       ? await supabase
           .from("evaluation_criteria")
-          .select("id, teacher_text, description, goal_id, educational_goals!inner(title, teacher_id)")
+          .select("id, teacher_text, description, goal_id, educational_goals!inner(title, teacher_id, subject_id)")
           .in("id", criterionIds)
           .eq("educational_goals.teacher_id", user.id)
       : { data: [] };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const criterionById = new Map((criteria ?? []).map((c: any) => [c.id, c]));
-    const levels = levelsInPeriod.filter(
-      (l) => criterionById.has(l.criterion_id) && (!goal || criterionById.get(l.criterion_id).goal_id === goal.id),
-    );
+    const levels = levelsInPeriod.filter((l) => {
+      const c = criterionById.get(l.criterion_id);
+      if (!c) return false;
+      if (goal && c.goal_id !== goal.id) return false;
+      return !subjectId || c.educational_goals?.subject_id === subjectId;
+    });
 
     if (proofs.length === 0 && levels.length === 0) {
       return json({ text: "", noProofs: true, proofCount: 0, sourceProofs: [], sentences: [] });
     }
-
-    // --- Lessons of the proofs ---
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lessonIds = [...new Set(proofs.map((p: any) => p.lesson_id).filter(Boolean))];
-    const { data: lessons } = lessonIds.length
-      ? await supabase.from("lessons").select("id, title, observation_focus").in("id", lessonIds).eq("teacher_id", user.id)
-      : { data: [] };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lessonById = new Map((lessons ?? []).map((l: any) => [l.id, l]));
 
     // --- Sources the model cites: D1… for proofs, U1… for levels ---
     const refs = new Map<string, { proofId?: string; assessmentId?: string }>();
@@ -198,7 +211,7 @@ export default webHandler(async (req: Request): Promise<Response> => {
       mode,
       nickname: pupil.nickname,
       grade: gradeFromClassName(className),
-      subject: g?.subjects?.name ?? "",
+      subject: g?.subjects?.name ?? field(body.subject, 100),
       period: `${dateFrom || "neurčeno"} – ${dateTo || "neurčeno"}`,
       goal: g ? anon([g.title, g.description].filter(Boolean).join(" — ")) : "",
       profile,

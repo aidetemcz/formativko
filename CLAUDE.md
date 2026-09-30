@@ -18,10 +18,10 @@ npm run test:watch   # Vitest watch mode
 
 ### Directory Structure
 
-- `src/pages/` — 21 pages with alphabetic prefix grouping:
+- `src/pages/` — pages with alphabetic prefix grouping:
   - **A** series: Setup (Dashboard, Student Profiles, Classes)
   - **B** series: Student management (Profiles, Details, Add Proof)
-  - **C** series: Evaluations (List, Create, Edit)
+  - Evaluations: `Hodnoceni`, `HodnoceniNove`, `HodnoceniDetail`
   - **D** series: Lessons
   - **E** series: Capture tool (photo/media capture for quick evidence)
   - **F** series: Classes listing
@@ -82,6 +82,17 @@ npm run test:watch   # Vitest watch mode
   `NAPADY_BATCH`), shows the pupil's self-assessment and last proof, and
   writes through `useRecordLevels`. Filters live in the URL (`?trida=`,
   `?predmet=`, `?obdobi=`).
+- **Hodnocení** (phase 9b): `/hodnoceni/nove` creates a batch
+  (`evaluation_groups` with `mode`, `subject_id`, `settings`) and an empty
+  draft per chosen pupil (the pupil list shows the readiness semafor);
+  `/hodnoceni/:id` then writes the drafts one pupil at a time on the client
+  (`generateEvaluation` in `src/lib/evaluations.ts` + `runQueue`), so a class
+  never hits the function time limit and an interrupted batch resumes with
+  "Dopsat chybějící". Each evaluation stores `sentences` (with the proof and
+  level ids each sentence came from, shown as "Napsáno z…"), the Rádce's
+  `review` and `recommendations_outside`; status goes draft → approved, and
+  only approved texts are copied or exported. `generate-evaluation` takes an
+  optional `subjectId` that limits proofs and levels to that subject.
 - **Legacy goal levels**: `student_goal_levels` and the three-step scale in
   `src/constants/goalLevels.ts` now back only the old course overview
   (`/plany/:id/prehled`), goal detail and dashboard; the capture tool no longer

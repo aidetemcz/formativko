@@ -19,6 +19,8 @@ interface RadceReviewProps {
   initialReview?: Review | null;
   /** Report mode: next steps the model kept out of the text. */
   recommendationsOutside?: string[];
+  /** Called with a new review after "Zkontrolovat znovu", e.g. to store it. */
+  onReviewed?: (review: Review) => void;
 }
 
 /**
@@ -32,6 +34,7 @@ export function RadceReview({
   studentId,
   initialReview,
   recommendationsOutside = [],
+  onReviewed,
 }: RadceReviewProps) {
   const [review, setReview] = useState<Review | null>(initialReview ?? null);
   const [checking, setChecking] = useState(false);
@@ -45,7 +48,10 @@ export function RadceReview({
     });
     setChecking(false);
     if (err) setError(err.message);
-    else setReview(data);
+    else {
+      setReview(data);
+      onReviewed?.(data);
+    }
   };
 
   if (!text.trim()) return null;
