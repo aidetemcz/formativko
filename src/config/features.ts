@@ -12,7 +12,7 @@
  */
 
 /**
- * Lesson planning: the /lessons pages, the sidebar entry, the lesson picker on
+ * The OLD lesson planning: the /lessons pages, the sidebar entry, the lesson picker on
  * a proof of learning and in the capture tool, the lesson section of a course,
  * and the AI that drafts lessons from a thematic plan.
  *
@@ -22,5 +22,9 @@
  * evaluations entry appears once goals are set — none of it waits for a lesson
  * to be planned. Proofs still carry a nullable `lesson_id`, so records written
  * while lessons were on keep their link.
+ *
+ * The new version's lessons (phase 5) live inside thematic plans — /plany/:id
+ * and /lekce/:id, src/hooks/usePlanLessons.ts — and are not governed by this
+ * flag. It keeps the superseded pages above out of reach.
  */
 export const LESSONS_ENABLED: boolean = false;

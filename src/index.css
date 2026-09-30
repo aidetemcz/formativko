@@ -114,3 +114,11 @@
     font-family: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
   }
 }
+
+/* Printable lesson sheet and exit tickets (src/pages/LessonPrint.tsx). */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}

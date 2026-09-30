@@ -14,6 +14,9 @@ import { LegacyRedirect } from "@/components/LegacyRedirect";
 const Login = lazy(() => import("./pages/Login"));
 const Uvod = lazy(() => import("./pages/Uvod"));
 const PredmetPlany = lazy(() => import("./pages/PredmetPlany"));
+const PlanDetail = lazy(() => import("./pages/PlanDetail"));
+const LessonDetail = lazy(() => import("./pages/LessonDetail"));
+const LessonPrint = lazy(() => import("./pages/LessonPrint"));
 const Dukazy = lazy(() => import("./pages/Dukazy"));
 const Napady = lazy(() => import("./pages/Napady"));
 const Nastaveni = lazy(() => import("./pages/Nastaveni"));
@@ -32,7 +35,6 @@ const C02bCreateEvaluationDraft = lazy(() => import("./pages/C02bCreateEvaluatio
 const C03EditEvaluationDrafts = lazy(() => import("./pages/C03EditEvaluationDrafts"));
 const D01Lessons = lazy(() => import("./pages/D01Lessons"));
 const D02CreateLesson = lazy(() => import("./pages/D02CreateLesson"));
-const D03LessonDetail = lazy(() => import("./pages/D03LessonDetail"));
 const F01Classes = lazy(() => import("./pages/F01Classes"));
 const E01CaptureToolChooseClass = lazy(() => import("./pages/E01CaptureToolChooseClass"));
 const E02CaptureToolAddProofs = lazy(() => import("./pages/E02CaptureToolAddProofs"));
@@ -76,7 +78,12 @@ const App = () => (
               <Route path="/" element={<ProtectedRoute><Uvod /></ProtectedRoute>} />
               <Route path="/predmety" element={<ProtectedRoute><H01Subjects /></ProtectedRoute>} />
               <Route path="/predmety/:subjectId" element={<ProtectedRoute><PredmetPlany /></ProtectedRoute>} />
-              <Route path="/plany/:courseId" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
+              <Route path="/plany/:courseId" element={<ProtectedRoute><PlanDetail /></ProtectedRoute>} />
+              {/* The old course page, with goals made before lessons existed. */}
+              <Route path="/plany/:courseId/prehled" element={<ProtectedRoute><K03CourseDetail /></ProtectedRoute>} />
+              <Route path="/lekce/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
+              {/* Printable sheet and exit tickets, without the app's menu. */}
+              <Route path="/lekce/:lessonId/tisk/:kind" element={<ProtectedRoute><LessonPrint /></ProtectedRoute>} />
               <Route path="/tridy" element={<ProtectedRoute><F01Classes /></ProtectedRoute>} />
               <Route path="/tridy/:classId" element={<ProtectedRoute><A04EditClass /></ProtectedRoute>} />
               <Route path="/zaci/:id" element={<ProtectedRoute><B02StudentProfileDetail /></ProtectedRoute>} />
@@ -87,11 +94,10 @@ const App = () => (
               <Route path="/hodnoceni/nove/nahled" element={<ProtectedRoute><C02bCreateEvaluationDraft /></ProtectedRoute>} />
               <Route path="/hodnoceni/:id" element={<ProtectedRoute><C03EditEvaluationDrafts /></ProtectedRoute>} />
               <Route path="/nastaveni" element={<ProtectedRoute><Nastaveni /></ProtectedRoute>} />
-              {/* Lessons come back with phase 5; until the flag is on, the
-                  routes are not registered and a bookmarked URL lands on 404. */}
+              {/* The old stand-alone lesson pages stay off; lessons now live
+                  in thematic plans (/plany/:id, /lekce/:id). */}
               {LESSONS_ENABLED && (
                 <>
-                  <Route path="/lekce/:lessonId" element={<ProtectedRoute><D03LessonDetail /></ProtectedRoute>} />
                   <Route path="/lessons" element={<ProtectedRoute><D01Lessons /></ProtectedRoute>} />
                   <Route path="/lessons/create" element={<ProtectedRoute><D02CreateLesson /></ProtectedRoute>} />
                   <Route path="/lessons/:lessonId" element={<LegacyRedirect to="/lekce/:lessonId" />} />
