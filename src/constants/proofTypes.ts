@@ -82,6 +82,6 @@ export interface ProofTypeRow {
 
 export const BUILTIN_PROOF_TYPES: ProofTypeRow[] = [
   { id: "__builtin_note",     teacher_id: "", name: "Poznámka", description: "Textová poznámka zachycující pozorování učitele o práci žáka.", icon: "pencil",      color: "blue",    fields: ["text"],  sort_order: -3, created_at: "", updated_at: "", builtin: true },
-  { id: "__builtin_level",    teacher_id: "", name: "Úroveň",   description: "Záznam dosažené úrovně žáka podle kritérií vzdělávacího cíle.", icon: "trending-up", color: "emerald", fields: ["level"], sort_order: -2, created_at: "", updated_at: "", builtin: true },
+  { id: "__builtin_level",    teacher_id: "", name: "Úroveň",   description: "Záznam dosažené úrovně žáka podle kritérií vzdělávacího cíle.", icon: "trending-up", color: "violet", fields: ["level"], sort_order: -2, created_at: "", updated_at: "", builtin: true },
   { id: "__builtin_photo",    teacher_id: "", name: "Foto",      description: "Fotografie práce žáka jako vizuální důkaz učení.",              icon: "camera",      color: "amber",   fields: ["image"], sort_order: -1, created_at: "", updated_at: "", builtin: true },
 ];

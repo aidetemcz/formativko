@@ -25,6 +25,8 @@
  *
  * The new version's lessons (phase 5) live inside thematic plans — /plany/:id
  * and /lekce/:id, src/hooks/usePlanLessons.ts — and are not governed by this
- * flag. It keeps the superseded pages above out of reach.
+ * flag, and neither is the lesson picker of the capture tool, which offers
+ * the plan's lessons since phase 7. The flag keeps the superseded pages above
+ * out of reach.
  */
 export const LESSONS_ENABLED: boolean = false;

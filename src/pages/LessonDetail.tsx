@@ -125,14 +125,16 @@ export default function LessonDetail() {
                     Exitky
                   </Link>
                 </Button>
-                {/* Coming in the phases that build them (7 and 8). */}
+                {/* Coming in phase 8 (exit tickets and self-assessment). */}
                 <Button variant="outline" disabled title="Připravujeme">
                   <QrCode />
                   QR pro žáky
                 </Button>
-                <Button variant="outline" disabled title="Připravujeme">
-                  <Users />
-                  Zaznamenat důkazy v hodině
+                <Button asChild>
+                  <Link to={`/lekce/${lesson.id}/zaznam`}>
+                    <Users />
+                    Zaznamenat důkazy v hodině
+                  </Link>
                 </Button>
                 <Button variant="outline" disabled title="Připravujeme">
                   <Upload />
